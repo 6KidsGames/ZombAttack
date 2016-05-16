@@ -5,19 +5,19 @@
   "homepage": "https://github.com/erikma/ScratchPlus2016Project",
   "repository": "https://github.com/erikma/ScratchPlus2016Project",
   "author": "Erik Mavrinac <erikma1@hotmail.com>",
-  "tags": [
-  ],
-  "files": [
-  ],
-  "bin": {
-  },
+  "tags": [],
+  "files": [],
+  "bin": {},
   "man": "",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
+    "del": "^2.2.0",
+    "gulp": "^3.9.1",
+    "gulp-uglify": "^1.5.3",
+    "path": "^0.12.7",
+    "pump": "^1.0.1"
   },
-  "scripts": {
-  },
+  "scripts": {},
   "engines": {
     "node": ">= 4.0"
   },
