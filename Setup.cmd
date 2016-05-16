@@ -23,3 +23,20 @@ echo   del - deletes files and folders
 echo   path - Always better than using string concatenation.
 echo.
 call npm install --save-dev gulp-uglify pump del path
+if ERRORLEVEL 1 echo ERROR: npm install failed for Gulp modules  with errorlevel %ERRORLEVEL% && exit /b 1
+
+echo.
+echo Installing site modules we need:
+echo   primus - wrapper onto various HTML5 WebSockets libraries, with some additional sugar. https://github.com/primus/primus
+echo   uws - fast WebSockets implementation, compatible with Primus.
+echo   ws - needed for client side of connection to uws 
+echo   google-protobuf - Google Protocol Buffers for JavaScript, for higher speed and lower latency as compared to JSON based messages. protoc compiler in bin/ProtoC.
+echo.
+call npm install --save primus uws ws google-protobuf
+if ERRORLEVEL 1 echo ERROR: npm install failed for site modules with errorlevel %ERRORLEVEL% && exit /b 1
+
+echo.
+echo ==========================================================================
+echo Complete!
+echo ==========================================================================
+echo.
