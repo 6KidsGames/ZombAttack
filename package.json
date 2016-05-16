@@ -1,0 +1,25 @@
+{
+  "name": "ScratchPlus2016Project",
+  "description": "Class project for Summer 2016",
+  "version": "1.0.0",
+  "homepage": "https://github.com/erikma/ScratchPlus2016Project",
+  "repository": "https://github.com/erikma/ScratchPlus2016Project",
+  "author": "Erik Mavrinac <erikma1@hotmail.com>",
+  "tags": [
+  ],
+  "files": [
+  ],
+  "bin": {
+  },
+  "man": "",
+  "dependencies": {
+  },
+  "devDependencies": {
+  },
+  "scripts": {
+  },
+  "engines": {
+    "node": ">= 4.0"
+  },
+  "license": "MIT"
+}
