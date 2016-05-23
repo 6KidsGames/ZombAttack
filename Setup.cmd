@@ -44,10 +44,12 @@ echo     sugar. https://github.com/primus/primus . Also includes JSON and Binary
 echo     ^(https://github.com/binaryjs/js-binarypack^) which is based on MessagePack
 echo     ^(http://msgpack.org/^) wire formats for a choice of debuggability and wire
 echo     speed.
-echo   ws - needed for Primus as a WebSockets implementation. 
+echo   ws - needed for Primus as a WebSockets implementation.
+echo   binary-pack - needed for using a binary-mode transport in Primus.
+echo   Express - web site framework. http://expressjs.com/
 echo ==========================================================================
 echo.
-call npm install --save primus ws
+call npm install --save primus ws binary-pack express
 if ERRORLEVEL 1 echo ERROR: npm install failed for site modules with errorlevel %ERRORLEVEL% && exit /b 1
 
 echo.

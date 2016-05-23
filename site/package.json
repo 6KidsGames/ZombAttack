@@ -1,16 +1,14 @@
 {
-  "name": "echo",
-  "version": "0.0.1",
-  "description": "simple echo example",
-  "main": "index.js",
+  "name": "Class2016",
+  "version": "1.0.0",
+  "description": "Primary Node.js server for class project",
+  "main": "RunNodeSiteServer.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "primus",
-    "example",
-    "echo"
+    "primus"
   ],
-  "author": "Arnout Kazemier",
+  "author": "Erik Mavrinac",
   "license": "MIT"
 }

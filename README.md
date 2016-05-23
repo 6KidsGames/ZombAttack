@@ -31,4 +31,8 @@ We have integrated executing the Node.js server into Visual Studio Code. There a
 
 * Pressing the `F5` key will run the project within VSCode.
 * To stop running, press `Shift+F5`.
-* If you are already running and have changed code and want to run again, use `Shift+F5` to stop, 'Ctrl+Shift+B` to build, the `F5` to run.
+* If you are already running and have changed code and want to run again, use `Shift+F5` to stop, `Ctrl+Shift+B` to build, then `F5` to run.
+
+## Useful Links
+
+* JSDoc - JavaScript doc comment format. http://usejsdoc.org/

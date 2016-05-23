@@ -68,7 +68,7 @@ gulp.task('copy-site-content', ['clean'], function () {
     return gulp.copy([ Paths.SiteAll ], Paths.OutputRoot);
 });
 
-gulp.task('copy-web-primus-script', ['copy-site-content'], function() {
+gulp.task('copy-web-primus-script', ['clean'], function() {
     // Primus web site scripts into 'scripts' directory.
     return pump([
             gulp.src([ Paths.PrimusWebSiteScriptsRoot + '/*.js' ]),
