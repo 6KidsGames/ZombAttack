@@ -10,7 +10,6 @@
   "bin": {},
   "man": "",
   "dependencies": {
-    "google-protobuf": "^3.0.0-alpha.5",
     "primus": "^5.2.1",
     "uws": "^0.4.1",
     "ws": "^1.1.0"

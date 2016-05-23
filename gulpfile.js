@@ -3,6 +3,8 @@
 // Gulp home is at http://gulpjs.com/ 
 //
 
+"use strict";
+
 // Base Gulp library.
 var gulp = require('gulp');
 
@@ -28,7 +30,7 @@ Paths = {
 };
 
 gulp.task('default', function() {
-    gulp.run('compress');
+    gulp.run('compress-site-scripts');
 });
 
 gulp.task('clean', function (done) {
@@ -36,7 +38,7 @@ gulp.task('clean', function (done) {
     del([Paths.OutputRoot]);
 });
 
-gulp.task('compress', function (cb) {
+gulp.task('compress-site-script', function (cb) {
     pump([
             gulp.src(Paths.Site + 'scripts/**/*.js'),
             uglify(),

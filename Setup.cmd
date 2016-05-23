@@ -27,12 +27,15 @@ if ERRORLEVEL 1 echo ERROR: npm install failed for Gulp modules  with errorlevel
 
 echo.
 echo Installing site modules we need:
-echo   primus - wrapper onto various HTML5 WebSockets libraries, with some additional sugar. https://github.com/primus/primus
+echo   primus - wrapper onto various HTML5 WebSockets libraries, with some additional
+echo     sugar. https://github.com/primus/primus . Also includes JSON and BinaryePack
+echo     ^(https://github.com/binaryjs/js-binarypack^) which is based on MessagePack
+echo     ^(http://msgpack.org/^) wire formats for a choice of debuggability and wire
+echo     speed.
 echo   uws - fast WebSockets implementation, compatible with Primus.
 echo   ws - needed for client side of connection to uws 
-echo   google-protobuf - Google Protocol Buffers for JavaScript, for higher speed and lower latency as compared to JSON based messages. protoc compiler in bin/ProtoC.
 echo.
-call npm install --save primus uws ws google-protobuf
+call npm install --save primus uws ws
 if ERRORLEVEL 1 echo ERROR: npm install failed for site modules with errorlevel %ERRORLEVEL% && exit /b 1
 
 echo.
