@@ -23,26 +23,26 @@ var pump = require('pump');
 const del = require('del');
 
 // Keep important paths here for reference. Only use Paths.Xxx in code below instead of duplicating these strings.
-Paths = {
+var Paths = {
     Site: 'site/',
     OutputRoot: 'out/',
     SiteOutput: 'out/site/'
 };
-
-gulp.task('default', function() {
-    gulp.run('compress-site-scripts');
-});
 
 gulp.task('clean', function (done) {
     // Clean up temp and output directories.
     del([Paths.OutputRoot]);
 });
 
-gulp.task('compress-site-script', function (cb) {
+gulp.task('compress-site-scripts', function (cb) {
     pump([
             gulp.src(Paths.Site + 'scripts/**/*.js'),
             uglify(),
             gulp.dest(path.join(Paths.SiteOutput, 'scripts'))
         ],
         cb);
+});
+
+gulp.task('default', function() {
+    gulp.run('compress-site-scripts');
 });
