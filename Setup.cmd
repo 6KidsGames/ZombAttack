@@ -38,6 +38,17 @@ if ERRORLEVEL 1 echo ERROR: npm install failed for Gulp modules  with errorlevel
 
 echo.
 echo ==========================================================================
+echo Installing development modules we need:
+echo   Mocha - unit testing framework that uses Node.js and fits well into
+echo     Visual Studio Code. https://mochajs.org/
+echo   Chai - assertion library for use in Mocha. http://chaijs.com/
+echo ==========================================================================
+echo.
+call npm install --save-dev mocha chai
+if ERRORLEVEL 1 echo ERROR: npm install failed for dev modules with errorlevel %ERRORLEVEL% && exit /b 1
+
+echo.
+echo ==========================================================================
 echo Installing site modules we need:
 echo   Primus - wrapper onto various HTML5 WebSockets libraries, with some additional
 echo     sugar. https://github.com/primus/primus . Also includes JSON and BinaryePack

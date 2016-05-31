@@ -32,6 +32,13 @@
             "outDir": null,
             "localRoot": "${workspaceRoot}/out/site",
             "remoteRoot": null
+        },
+        {
+            "name": "Mocha Test",
+            "type": "node",
+            "request": "localhost",
+            "port": 5858,
+            "sourceMaps": false
         }
     ]
 }
