@@ -77,7 +77,7 @@ gulp.task('copy-web-primus-script', ['clean'], function() {
 });
 
 // Minify scripts - .js files in /site/scripts/... get converted to .js.min files
-// in /out/site/scr
+// in /out/site/scripts
 gulp.task('compress-site-scripts', ['copy-site-content'], function () {
     return pump([
             gulp.src(Paths.SiteScriptsAll + '/*.js'),

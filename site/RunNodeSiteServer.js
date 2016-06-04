@@ -5,6 +5,7 @@ var Express = require('../../node_modules/express');
 var webApp = Express();
 
 var httpServer = require('http').createServer(webApp);
+var Network = require('./Network.js');
 
 // Set up static file serving and a default route to serve index.html.
 webApp.use(Express.static('scripts'));
@@ -44,6 +45,8 @@ primus.on('disconnection', spark => {
   console.log(spark.id, 'Spark disconnected from', spark.address);
   currentSparks.remove(spark);
 });
+
+Network.DisplayLocalIPAddresses();
 
 httpServer.listen(8080, function() {
   console.log('Open http://localhost:8080 in your browser');

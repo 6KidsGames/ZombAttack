@@ -33,6 +33,23 @@ We have integrated executing the Node.js server into Visual Studio Code. There a
 * To stop running, press `Shift+F5`.
 * If you are already running and have changed code and want to run again, use `Shift+F5` to stop, `Ctrl+Shift+B` to build, then `F5` to run.
 
+### The Chat Server
+Lesson 1 includes running the first code in the class project, the chat program.
+When you press `F5` to run the program, you're told to open a browser and go to http://localhost:8080.
+You can type messages and press Enter. They will get sent to everyone connected to your server.
+
+But wait! If you're running a server on your computer, and connecting with your browser, and everyone else is doing the same with their own computers, how can you chat to each other?
+
+In order to connect to another person's server you need to find the IP address of their computer. It's displayed on your server, like this:
+
+`This machine has IP address: 10.0.0.16 (interface: Wi-Fi)`
+
+The 10.0.0.16 address is just an example; yours will likely be different. If others take that address and make a browser URL for it:
+
+`http://10.0.0.16:8080`
+
+Everyone can connect to one server, and the chats will be shared.
+
 ## Useful Links
 
 * JSDoc - JavaScript doc comment format. http://usejsdoc.org/
