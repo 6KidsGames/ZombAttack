@@ -31,9 +31,17 @@ echo   Uglify - for minifying JavaScript
 echo   pump - simplifies dealing with Node.js streams when lots of piping is used.
 echo   del - deletes files and folders
 echo   path - Always better than using string concatenation.
+echo.
+echo TODO - get working:
+echo   gulp-spritesmith - Lets us assemble a spritesheet/tilemap for Pixi.js
+echo     from individual sprite images.
+echo     https://www.npmjs.com/package/gulp.spritesmith/
+echo   spritesmith-texturepacker - Creates JSON based outputs for spritesheets
+echo     from SpriteSmith, for use with Pixi.js.
 echo ==========================================================================
 echo.
 call npm install --save-dev gulp-uglify pump del path
+@rem TODO - add some or all of these back and get spritesheet compilation working on Windows: gulp-spritesmith spritesmith-texturepacker gulp-imagemin
 if ERRORLEVEL 1 echo ERROR: npm install failed for Gulp modules  with errorlevel %ERRORLEVEL% && exit /b 1
 
 echo.
@@ -42,9 +50,11 @@ echo Installing development modules we need:
 echo   Mocha - unit testing framework that uses Node.js and fits well into
 echo     Visual Studio Code. https://mochajs.org/
 echo   Chai - assertion library for use in Mocha. http://chaijs.com/
+echo   spritesheet-js - Assembles individual sprite images into a spritesheet
+echo     suitable for Pixi.js. https://github.com/krzysztof-o/spritesheet.js/
 echo ==========================================================================
 echo.
-call npm install --save-dev mocha chai
+call npm install --save-dev mocha chai spritesheet-js
 if ERRORLEVEL 1 echo ERROR: npm install failed for dev modules with errorlevel %ERRORLEVEL% && exit /b 1
 
 echo.
@@ -58,10 +68,28 @@ echo     speed.
 echo   ws - needed for Primus as a WebSockets implementation.
 echo   binary-pack - needed for using a binary-mode transport in Primus.
 echo   Express - web site framework. http://expressjs.com/
+echo   compression - Express plugin for compressing content sent over the network.
+echo   Pixi.JS - WebGL/Canvas wrapper for Flash-like game and animation authoring.
+echo     https://github.com/pixijs/pixi.js
 echo ==========================================================================
 echo.
-call npm install --save primus ws binary-pack express
+call npm install --save primus ws binary-pack express compression Pixi.JS
 if ERRORLEVEL 1 echo ERROR: npm install failed for site modules with errorlevel %ERRORLEVEL% && exit /b 1
+
+echo.
+echo ==========================================================================
+echo Setting aliases for easier command line experience
+echo ==========================================================================
+echo.
+doskey master = git checkout master
+doskey cb = git checkout dev/%USERNAME%/$*
+doskey nb = git checkout dev/%USERNAME%/$*
+doskey pull = git pull
+doskey branch = git branch
+doskey stat = git status
+doskey mmerge = "git checkout master && git merge dev/%USERNAME%/$* --squash && git commit"
+
+doskey /macros
 
 echo.
 echo ==========================================================================

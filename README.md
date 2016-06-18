@@ -1,17 +1,29 @@
 # ScratchPlus class - 2016 summer project
 
-Public repo for use with the Summer 2016 class project.
+Public repo for use with the ScratchPlus Summer 2016 class project.
 
-## Getting started
+## Getting started - First Time Setup
 
 1. Install Git from https://git-scm.com/download/win (for Windows), or https://git-scm.com/download for other operating systems.
 1. Install Node.js from https://nodejs.org (click the Current button to get the latest).
 1. Install Visual Studio Code from https://www.visualstudio.com/products/code-vs
+1. Install Paint.NET from http://www.dotpdn.com/downloads/pdn.html (click the Free Download Now link, then open the resulting ZIP file and run the install executable).
+1. Install ImageMagick from http://www.imagemagick.org/script/binary-releases.php#windows
+1. Install GraphicsMagick from https://sourceforge.net/projects/graphicsmagick/files/graphicsmagick-binaries/ - click the highest version number, then click the "Q8" link at the top of the list. 
 1. Open a Windows console: Windows+R (to open the Run box), then type `cmd` and press Enter.
 1. Create a new folder: `mkdir c:\Class2016`
+
+## Every day - syncing code and installing updates
+When you're developing code with a team, you're going to need to get their code as well as upload your code. A good time to do this is at the start of
+each day, unless you're in the middle of something.
+
+1. (If you don't already have a console open) Open a Windows console: Windows+R (to open the Run box), then type `cmd` and press Enter.
 1. Change location to that folder: `cd c:\Class2016`
+1. See if you have any fies changed locally, and if you're in a working branch: `git status` . If you are not on the `master` branch or you have files changed, get it committed and `git checkout master`, or talk to the teacher.
+1. Change to the `master` branch, which is where done code gets put. Run: `git checkout master`
 1. Pull down a copy of the code from this repo, using Git: `git clone https://github.com/erikma/ScratchPlus2016Project.git .`
-1. Run Setup.cmd by entering: `Setup`
+1. Run Setup.cmd(which installs the latesthelper code from the Internet) by entering: `Setup`
+
 
 ## Editing code
 
@@ -50,6 +62,15 @@ The 10.0.0.16 address is just an example; yours will likely be different. If oth
 
 Everyone can connect to one server, and the chats will be shared.
 
+### Pixi.js as a Game Engine
+We're using Pixi.js as our game engine, since it provides fast animation on pretty much any modern browser, and is structured similer
+to Flash when programming it.
+
+* Pixi main site: http://www.pixijs.com/
+* Leaning Pixi: https://github.com/kittykatattack/learningPixi
+
 ## Useful Links
 
+* Learning the basics of JavaScript - https://www.codecademy.com/learn/javascript
+* More JavaScript lessons - Khan Academy - games using Processing.js (we're using Pixi.js but many ideas are similar) - https://www.khanacademy.org/computing/computer-programming
 * JSDoc - JavaScript doc comment format. http://usejsdoc.org/
