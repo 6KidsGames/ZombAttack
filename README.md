@@ -21,12 +21,20 @@ each day, unless you're in the middle of something.
 1. Change location to that folder: `cd c:\Class2016`
 1. See if you have any fies changed locally, and if you're in a working branch: `git status` . If you are not on the `master` branch or you have files changed, get it committed and `git checkout master`, or talk to the teacher.
 1. Pull down the latest code: `git pull`
-1. Run Setup.cmd(which installs the latesthelper code from the Internet) by entering: `Setup`
+1. Run Setup.cmd (which installs the latest helper code from the Internet) by entering: `Setup`
 
-## Editing code
+## Editing Code
 
 1. Open a Windows console and change to the c:\Class2016 folder.
 1. Now you can edit everything in the repo by running Visual Studio Code from where you are: `code .` (where `.` means "in this folder")
+
+### Changing the Code
+When you want to make changes that others in your team will get to see, you need to use Git to create
+what's called a "topic branch," which is a way of saying you use Git to create a container for your changes.
+When you are done with your change you'll use GitHub to send the changes 
+
+1. To create a topic branch - be sure you've run Setup.cmd, and type: `cb 
+
 
 ## Building code
 We use Gulp (https://gulpjs.org/) as a simple build system to convert code files into final results.
