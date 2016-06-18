@@ -24,7 +24,6 @@ each day, unless you're in the middle of something.
 1. Pull down a copy of the code from this repo, using Git: `git clone https://github.com/erikma/ScratchPlus2016Project.git .`
 1. Run Setup.cmd(which installs the latesthelper code from the Internet) by entering: `Setup`
 
-
 ## Editing code
 
 1. Open a Windows console and change to the c:\Class2016 folder.
@@ -42,8 +41,7 @@ You can also run the build in the Windows console if you need to by running the 
 We have integrated executing the Node.js server into Visual Studio Code. There are several options for running:
 
 * Pressing the `F5` key will run the project within VSCode.
-* To stop running, press `Shift+F5`.
-* If you are already running and have changed code and want to run again, use `Shift+F5` to stop, `Ctrl+Shift+B` to build, then `F5` to run.
+* If you are already running and have changed code and want to run again, use `Ctrl+Shift+F5` which will stop, build, and start again.
 
 ### The Chat Server
 Lesson 1 includes running the first code in the class project, the chat program.
