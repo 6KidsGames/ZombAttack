@@ -20,8 +20,7 @@ each day, unless you're in the middle of something.
 1. (If you don't already have a console open) Open a Windows console: Windows+R (to open the Run box), then type `cmd` and press Enter.
 1. Change location to that folder: `cd c:\Class2016`
 1. See if you have any fies changed locally, and if you're in a working branch: `git status` . If you are not on the `master` branch or you have files changed, get it committed and `git checkout master`, or talk to the teacher.
-1. Change to the `master` branch, which is where done code gets put. Run: `git checkout master`
-1. Pull down a copy of the code from this repo, using Git: `git clone https://github.com/erikma/ScratchPlus2016Project.git .`
+1. Pull down the latest code: `git pull`
 1. Run Setup.cmd(which installs the latesthelper code from the Internet) by entering: `Setup`
 
 ## Editing code
