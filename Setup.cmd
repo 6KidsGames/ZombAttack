@@ -73,7 +73,7 @@ echo   Pixi.JS - WebGL/Canvas wrapper for Flash-like game and animation authorin
 echo     https://github.com/pixijs/pixi.js
 echo ==========================================================================
 echo.
-call npm install --save primus ws binary-pack express compression Pixi.JS
+call npm install --save primus ws binary-pack express compression pixi.js
 if ERRORLEVEL 1 echo ERROR: npm install failed for site modules with errorlevel %ERRORLEVEL% && exit /b 1
 
 echo.
