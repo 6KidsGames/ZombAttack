@@ -31,10 +31,18 @@ each day, unless you're in the middle of something.
 ### Changing the Code
 When you want to make changes that others in your team will get to see, you need to use Git to create
 what's called a "topic branch," which is a way of saying you use Git to create a container for your changes.
-When you are done with your change you'll use GitHub to send the changes 
+When you are done with your changes you'll use GitHub to send the changes to teacher approval. 
 
-1. To create a topic branch - be sure you've run Setup.cmd, and type: `cb 
+1. To create a topic branch - be sure you've run Setup.cmd, and type: `cb WhatYouAreWorkingOn` where "WhatYouAreWorkingOn" is a short description of the work you are doing. For example, it could be AddSprites or FixNetworkErrors or something else.
+1. Now you're ready to make changes to the code.
+1. When you have something done that you want to check in, use `git commit` and give a good description of the changes you made.
+1. When you are done with everything in your change, it is time to push your code to the cloud (GitHub.com). Use `git push`, which may require you to do a bit more setup and push again - follow the instructions.
+1. Now you can request request that the team accept the changes in your topic branch. In your browser go to https://github.com/erikma/ScratchPlus2016Project and click the `New pull request` button.
+1. Select your topic branch name from the list.
+1. On the next page, click the "Create pull request" button.
+1. Add some information into the pull request instructions if you need to, then click "Create pull request"
 
+The team can now see a pull request waiting. Tell the teacher as well.
 
 ## Building code
 We use Gulp (https://gulpjs.org/) as a simple build system to convert code files into final results.
