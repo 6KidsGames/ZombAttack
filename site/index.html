@@ -20,6 +20,7 @@
     <input placeholder="write message that should echo" id="echo" />
     <button type="submit">echo</button>
   </form>
+  
   <p>Use A,S,D,W to move, Space to inflate, E to reset.</p>
   <script>
     var output = document.getElementById('output');
@@ -99,7 +100,12 @@
       if (keyPressed[KEY_A]) { bananaSprite.x -= 1; }
       if (keyPressed[KEY_D]) { bananaSprite.x += 1; }
       if (keyPressed[KEY_SPACE]) { bananaSprite.scale.x *= 1.01; bananaSprite.scale.y *= 1.01; }
-      if (keyPressed[KEY_E]) { bananaSprite.scale.x = 1; bananaSprite.scale.y = 1; }
+      if (keyPressed[KEY_E]) {
+        bananaSprite.scale.x = 1;
+        bananaSprite.scale.y = 1;
+        bananaSprite.x = 0;
+        bananaSprite.y = 0;
+      }
 
       // Render the results to the stage.
       renderer.render(stage);
