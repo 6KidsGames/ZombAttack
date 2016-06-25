@@ -19,7 +19,10 @@ each day, unless you're in the middle of something.
 
 1. (If you don't already have a console open) Open a Windows console: Windows+R (to open the Run box), then type `cmd` and press Enter.
 1. Change location to that folder: `cd c:\Class2016`
-1. See if you have any files changed locally, and if you're in a working branch: `git status` . If you are not on the `master` branch or you have files changed, get it committed and `git checkout master`, or talk to the teacher.
+1. See if you have any files changed locally, and if you're in a working branch: `git status` .
+1. If you are not on the `master` branch, run `git checkout master`
+1. If "package.json" is listed in red, run `git checkout -- package.json`
+1. If you have other files changed, get it committed and `git checkout master`, or talk to the teacher.
 1. Pull down the latest code: `git pull`
 1. Run Setup.cmd (which installs the latest helper code from the Internet) by entering: `Setup`
 1. Run Visual Studio Code: `code .`
