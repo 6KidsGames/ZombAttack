@@ -42,7 +42,7 @@ When you are done with your changes you'll use GitHub to send the changes to tea
 1. On the next page, click the "Create pull request" button.
 1. Add some information into the pull request instructions if you need to, then click "Create pull request"
 
-The team can now see a pull request waiting. Tell the teacher as well.
+The team can now see a pull request waiting. Tell the teacher as well. The teacher can merge your pull request into master.
 
 ## Building code
 We use Gulp (https://gulpjs.org/) as a simple build system to convert code files into final results.
