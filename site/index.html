@@ -46,6 +46,8 @@
       console.log(PIXI.loader.resources);
       bananaSprite = new PIXI.Sprite(PIXI.loader.resources["images/BananaDoesNotApprove.png"].texture);
       stage.addChild(bananaSprite);
+      bananaSprite.scale.x = 0.5;
+      bananaSprite.scale.y = 0.5;
 
       renderer.render(stage);
 
@@ -101,8 +103,8 @@
       if (keyPressed[KEY_D]) { bananaSprite.x += 1; }
       if (keyPressed[KEY_SPACE]) { bananaSprite.scale.x *= 1.01; bananaSprite.scale.y *= 1.01; }
       if (keyPressed[KEY_E]) {
-        bananaSprite.scale.x = 1;
-        bananaSprite.scale.y = 1;
+        bananaSprite.scale.x = 0.5;
+        bananaSprite.scale.y = 0.5;
         bananaSprite.x = 0;
         bananaSprite.y = 0;
       }
