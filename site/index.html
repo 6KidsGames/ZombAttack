@@ -21,7 +21,7 @@
     <button type="submit">echo</button>
   </form>
   
-  <p>Use A,S,D,W to move, Space to inflate, E to reset.</p>
+  <p>Use A,S,D,W to move, Space to inflate, E to reset,B to go forward faster,V to go backward faster,C to go up faster,N to go down faster,P to turn into a ghost</p>
   <script>
     var output = document.getElementById('output');
     var echo = document.getElementById('echo');
@@ -88,7 +88,12 @@
     var KEY_D = 68;
     var KEY_SPACE = 32;
     var KEY_E = 69;
-
+    var KEY_B = 66;
+    var KEY_V = 86;
+    var KEY_P = 80;
+    var KEY_N = 78;
+    var KEY_C = 67;
+    var KEY_J = 74;
     function gameLoop() {
       // This call returns when we're at the beginning of the next frame time.
       // Rendering is at 60 frames per second by default, which is fast enough not to appear flickery.
@@ -105,8 +110,13 @@
         bananaSprite.scale.y = 1;
         bananaSprite.x = 0;
         bananaSprite.y = 0;
+        bananaSprite.alpha = 1;
       }
-
+      if (keyPressed[KEY_B]) { bananaSprite.x += 10; }
+      if (keyPressed[KEY_V]) { bananaSprite.x -= 10; }
+      if (keyPressed[KEY_P]) { bananaSprite.alpha *= 0.95; }
+      if (keyPressed[KEY_N]) { bananaSprite.y += 5; }
+      if (keyPressed[KEY_C]) { bananaSprite.y -= 5; }
       // Render the results to the stage.
       renderer.render(stage);
     }
