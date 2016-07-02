@@ -21,7 +21,7 @@
     <button type="submit">echo</button>
   </form>
   
-  <p>Use A,S,D,W to move, Space to inflate, E to reset.</p>
+  <p>Use A,S,D,W to move, Space to inflate, E to reset, R to rotate, G to become a ghost, T to change color.</p>
   <script>
     var output = document.getElementById('output');
     var echo = document.getElementById('echo');
@@ -32,7 +32,7 @@
     var renderer = PIXI.autoDetectRenderer(800, 128, { antialias: false, transparent: false, resolution: 1 });
     renderer.autoResize = true;
     document.body.appendChild(renderer.view);
-    renderer.resize(window.innerWidth, 256);
+    renderer.resize(window.innerWidth, 500);
     var stage = new PIXI.Container();
     PIXI.loader
       .add([ "images/BananaDoesNotApprove.png" ])
@@ -88,7 +88,9 @@
     var KEY_D = 68;
     var KEY_SPACE = 32;
     var KEY_E = 69;
-
+    var KEY_R = 82;
+    var KEY_G = 71;
+    var KEY_T = 84;
     function gameLoop() {
       // This call returns when we're at the beginning of the next frame time.
       // Rendering is at 60 frames per second by default, which is fast enough not to appear flickery.
@@ -105,8 +107,14 @@
         bananaSprite.scale.y = 1;
         bananaSprite.x = 0;
         bananaSprite.y = 0;
+        bananaSprite.alpha = 1;
+        bananaSprite.rotation = 0;
+        bananaSprtie.tint = 0xffffff;
       }
-
+      if (keyPressed[KEY_R]) {bananaSprite.rotation += 0.1; }
+      if (keyPressed[KEY_G]) {bananaSprite.alpha *= 0.98; }
+      if (keyPressed[KEY_T]) {bananaSprite.tint =  0xff00ff; }
+      
       // Render the results to the stage.
       renderer.render(stage);
     }
