@@ -15,15 +15,15 @@
     "express": "^4.14.0",
     "pixi.js": "^3.0.11",
     "primus": "^5.2.2",
-    "ws": "^1.1.0"
+    "ws": "^1.1.1"
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "del": "^2.2.0",
+    "del": "^2.2.1",
     "gulp": "^3.9.1",
     "gulp-imagemin": "^3.0.1",
     "gulp-spritesmith": "0.0.2",
-    "gulp-uglify": "^1.5.3",
+    "gulp-uglify": "^1.5.4",
     "mocha": "^2.5.3",
     "path": "^0.12.7",
     "pump": "^1.0.1",
