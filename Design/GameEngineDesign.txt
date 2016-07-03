@@ -1,0 +1,48 @@
+Design for game server over websockets
+
+Server state universes: Lobby, Game
+
+Lobby state
+- Games
+- Non-playing player mapping to games
+
+Game state
+- Closed/open
+- In-progress or gathering players
+- Players
+- World
+- Scores
+- End state determination
+
+World state
+- Static objects
+- Nonplayer characters
+- Players
+
+Player state
+- Name
+- Score
+- Position
+- Orientation
+- Velocity
+- Health
+- Inventory
+- Actions underway
+
+Nonplayer character state
+- AI state
+- Position
+- Orientation
+- Velocity
+- Health
+- Actions underway
+
+Static object state
+- Position
+- Orientation
+- Health
+- Actions underway
+
+Action state
+- Name
+- Time-based state machine and state
