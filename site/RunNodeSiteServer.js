@@ -62,7 +62,8 @@ primusServer.on('connection', spark => {
     playerInfo: {
       id: spark.id,
       name: '',
-      currentPosition: { x: 0, y: 0 }
+      currentPosition: { x: 0, y: 0 },
+      scale: 1.0
     }
   };
 
@@ -131,7 +132,9 @@ function worldUpdateLoop() {
     if (controlInfo.rightPressed) {
       playerInfo.currentPosition.x += 1;
     }
-
+    if (controlInfo.inflatePressed) {
+      playerInfo.scale *= 1.01; 
+    }
     // Never push the 'players' object to this array - Primus sparks
     // are not comparable and should not be sent over the wire.
     // We send only the information in player.playerInfo.
