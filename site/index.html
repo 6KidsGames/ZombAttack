@@ -186,6 +186,8 @@
         // Update the sprite with current world information.
         playerData.sprite.x = player.currentPosition.x;
         playerData.sprite.y = player.currentPosition.y;
+        playerData.sprite.scale.x = player.scale;
+        playerData.sprite.scale.y = player.scale;
       }
 
       // Find any playerDatas that were not touched this round and remove -
@@ -205,10 +207,10 @@
       if (keyPressed[KEY_S]) { controlInfo.downPressed = true; }
       if (keyPressed[KEY_A]) { controlInfo.leftPressed = true; }
       if (keyPressed[KEY_D]) { controlInfo.rightPressed = true; }
-
+      if (keyPressed[KEY_SPACE]) { controlInfo.inflatePressed = true; }
+      
       // TODO: bananaSprite no longer exists. This means keys below will not work.
       var bananaSprite = null;
-      if (keyPressed[KEY_SPACE]) { bananaSprite.scale.x *= 1.01; bananaSprite.scale.y *= 1.01; }
       if (keyPressed[KEY_E]) {
         bananaSprite.scale.x = 0.5;
         bananaSprite.scale.y = 0.5;
