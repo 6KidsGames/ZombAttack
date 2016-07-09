@@ -113,12 +113,14 @@ gulp.task('compress-site-scripts', ['copy-site-content'], function () {
 // Based on: http://www.nonostante.io/devblog/2015-12-02-automate-sprite-management-with-texture-packer.html
 // With: https://www.codeandweb.com/texturepacker/documentation
 gulp.task('assemble-spritesheet', ['clean'], function() {
-    var texturePackerCmd = '"C:\\Program Files\\CodeAndWeb\\TexturePacker\\bin\\TexturePacker.exe" ';
+    var texturePackerCmd = '"C:\\Program Files\\CodeAndWeb\\TexturePacker\\bin\\TexturePacker.exe"';
     var spritesheetBaseName = "ZombieDefenseSpritesheet";
     var outputSpritesheetImageFile = path.join(Paths.SiteImagesOutput, spritesheetBaseName + ".png");
     var outputSpritesheetDataFile = path.join(Paths.SiteImagesOutput, spritesheetBaseName + ".json");
 
-    return exec(texturePackerCmd +
+    console.log("Building in current working folder:", __dirname);
+
+    var command = texturePackerCmd +
         " --data " + outputSpritesheetDataFile +
         " --sheet " + outputSpritesheetImageFile +
         " --trim-sprite-names" +  // Removes .png extensions so you can refer to sprites by their base names (e.g. flower instead of flower.png)
@@ -128,5 +130,15 @@ gulp.task('assemble-spritesheet', ['clean'], function() {
         " --trim-mode None" +  // Trim optimizations require pro license.
         " --png-opt-level 0" +  // PNG optimization requires pro license
         " --disable-auto-alias" +  // Automatic deduplication of sprite images is a pro license feature
-        " " + Paths.SpritesRoot);
+        "  c:\\class2016\\" + Paths.SpritesRoot;
+
+    return exec(texturePackerCmd, (err, stdout, stderr) => {
+      if (err) {
+        console.log("Failed running TexturePacker command:", command);
+        //console.log('TexturePacker error:', err);
+        //console.log('TexturePacker stderr:', stderr);
+        //console.log('TexturePacker stdout:', stdout);
+        throw err;
+      }
+    });
 });
