@@ -8,8 +8,7 @@ Public repo for use with the ScratchPlus Summer 2016 class project.
 1. Install Node.js from https://nodejs.org (click the Current button to get the latest).
 1. Install Visual Studio Code from https://www.visualstudio.com/products/code-vs
 1. Install Paint.NET from http://www.dotpdn.com/downloads/pdn.html (click the Free Download Now link, then open the resulting ZIP file and run the install executable).
-1. Install ImageMagick from http://www.imagemagick.org/script/binary-releases.php#windows
-1. Install GraphicsMagick from https://sourceforge.net/projects/graphicsmagick/files/graphicsmagick-binaries/ - click the highest version number, then click the "Q8" link at the top of the list. 
+1. Install TexturePacker from https://www.codeandweb.com/texturepacker/download . We use this tool during the build for creating spritesheets. For basic info, see https://www.codeandweb.com/texturepacker/documentation
 1. Open a Windows console: Windows+R (to open the Run box), then type `cmd` and press Enter.
 1. Create a new folder: `mkdir c:\Class2016`
 

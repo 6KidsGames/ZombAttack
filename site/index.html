@@ -42,13 +42,14 @@
     // Pixi.js setup - we use Pixi's auto-detect for the browser's capabilities.
     // It will choose a fast WebGL viewport or fall back to HTML5 Canvas. 
     console.log(PIXI);
-    var renderer = PIXI.autoDetectRenderer(800, 128, { antialias: false, transparent: false, resolution: 1 });
+    var stageHeightPx = 500;
+    var renderer = PIXI.autoDetectRenderer(800, stageHeightPx, { antialias: false, transparent: false, resolution: 1 });
     renderer.autoResize = true;
     gameArea.appendChild(renderer.view);
-    renderer.resize(window.innerWidth, 500);
+    renderer.resize(window.innerWidth, stageHeightPx);
     var stage = new PIXI.Container();
     PIXI.loader
-      .add([ "images/BananaDoesNotApprove.png" ])
+      .add([ "images/ZombieDefenseSpritesheet.json" ])
       .load(setupPixi);
 
     // Called asynchronously when PIXI.loader.load() has finished loading all textures and we can create sprites.
@@ -245,7 +246,10 @@
     }
 
     function createNewPlayerSprite() {
-      var sprite  = new PIXI.Sprite(PIXI.loader.resources["images/BananaDoesNotApprove.png"].texture);
+      console.log("Creating player sprite");
+      console.log(PIXI.utils.TextureCache);
+      var texture = PIXI.utils.TextureCache["BananaDoesNotApprove"];
+      var sprite = new PIXI.Sprite(texture);
       stage.addChild(sprite);
       sprite.scale.x = 0.5;
       sprite.scale.y = 0.5;

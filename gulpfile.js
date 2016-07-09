@@ -8,6 +8,9 @@
 // Base Gulp library.
 var gulp = require('gulp');
 
+// Node.js's exec() for use in running command line tools.
+var exec = require('child_process').exec;
+
 // Use the path class for path joining.
 var path = require('path');
 
@@ -21,12 +24,6 @@ var pump = require('pump');
 
 // del allows cleaning up folders and files. 
 const del = require('del');
-
-// Used to compile sprite images into a spritesheet with all images listed in JSON for Pixi consumption.
-// TODO var spritesheet = require('spritesheet-js');
-// TODO var spritesmith = require('gulp.spritesmith');
-// TODO var imagemin = require('gulp-imagemin');
-// TODO var texturepacker = require('spritesmith-texturepacker');
 
 // Helper method - allows recursive copying a directory structure.
 // http://stackoverflow.com/questions/25038014/how-do-i-copy-directories-recursively-with-gulp#25038015
@@ -72,8 +69,7 @@ gulp.task('default', [
     'compress-site-scripts',
     'copy-web-primus-script',
     'copy-pixi-js-script',
-    // TODO 'assemble-spritesheet',
-    'copy-sprites',
+    'assemble-spritesheet'
 ]);
 gulp.task('build', ['default']);
 
@@ -113,25 +109,24 @@ gulp.task('compress-site-scripts', ['copy-site-content'], function () {
         ]);
 });
 
-// http://www.addlime.com/blog/game-development/using-gulp-automate-texture-atlas-sprite-sheet-creation-phaser/
-/* TODO - toolchain not working on Windows - debug and get spritesheets running.
-   For now we simply copy the source sprite files across to the output instead of generating an optimized spritesheet.
+// Use Texture Packer basic mode to create a spritesheet from all sprite files under the sprite root folder.
+// Based on: http://www.nonostante.io/devblog/2015-12-02-automate-sprite-management-with-texture-packer.html
+// With: https://www.codeandweb.com/texturepacker/documentation
 gulp.task('assemble-spritesheet', ['clean'], function() {
-    var spriteData = gulp.src(Paths.SpritesRoot + '/*.png')
-        .pipe(spritesmith({
-            imgName: 'ZombieDefense.png',
-            cssName: 'ZombieDefense.json',
-            algorithm: 'binary-tree',
-            cssTemplate: texturepacker
-    }));
-    spriteData.img.pipe(imagemin()).pipe(gulp.dest(Paths.SiteImagesOutput));
-    spriteData.css.pipe(gulp.dest(Paths.SiteCssOutput));
-});
-*/
-gulp.task('copy-sprites', ['clean'], function () {
-    // Individual sprite files. TODO - change to compiling a spritesheet - see above.
-    return pump([
-            gulp.src([ Paths.SpritesRoot + '/*.png' ]),
-            gulp.dest(Paths.SiteImagesOutput)
-        ]);
+    var texturePackerCmd = '"C:\\Program Files\\CodeAndWeb\\TexturePacker\\bin\\TexturePacker.exe" ';
+    var spritesheetBaseName = "ZombieDefenseSpritesheet";
+    var outputSpritesheetImageFile = path.join(Paths.SiteImagesOutput, spritesheetBaseName + ".png");
+    var outputSpritesheetDataFile = path.join(Paths.SiteImagesOutput, spritesheetBaseName + ".json");
+
+    return exec(texturePackerCmd +
+        " --data " + outputSpritesheetDataFile +
+        " --sheet " + outputSpritesheetImageFile +
+        " --trim-sprite-names" +  // Removes .png extensions so you can refer to sprites by their base names (e.g. flower instead of flower.png)
+        " --format json" +  //Create a JSON-hash output format that Pixi/Hexi likes.
+        " --algorithm Basic" +  // Anything more means buying a TexturePacker pro license per student.
+        " --extrude 0" +  // No extrude might cause flickering, but pro license needed.
+        " --trim-mode None" +  // Trim optimizations require pro license.
+        " --png-opt-level 0" +  // PNG optimization requires pro license
+        " --disable-auto-alias" +  // Automatic deduplication of sprite images is a pro license feature
+        " " + Paths.SpritesRoot);
 });
