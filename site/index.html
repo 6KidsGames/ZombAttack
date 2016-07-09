@@ -217,17 +217,6 @@
       if (keyPressed[KEY_T]) { controlInfo.tintPressed = true; }
       if (keyPressed[KEY_E]) { controlInfo.resetPressed = true; }
       
-      // TODO: bananaSprite no longer exists. This means keys below will not work.
-      var bananaSprite = null;
-
-      // TODO: These are not hooked up the server and the server updates will
-      // overwrite any changes made here. Either hook up to the server as
-      // "fast control keys", or remove.
-      if (keyPressed[KEY_B]) { bananaSprite.x += 10; }
-      if (keyPressed[KEY_V]) { bananaSprite.x -= 10; }
-      if (keyPressed[KEY_N]) { bananaSprite.y += 5; }
-      if (keyPressed[KEY_C]) { bananaSprite.y -= 5; }
-
       // Send the control update to the game server if it's different from the last update.
       // TODO: This should be handled asynchronously instead of in the game
       // loop to avoid slowing down local animation.

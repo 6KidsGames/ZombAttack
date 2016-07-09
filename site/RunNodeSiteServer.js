@@ -121,6 +121,7 @@ function worldUpdateLoop() {
   forEachPlayer(player => {
     var playerInfo = player.playerInfo;
     var controlInfo = player.latestControlInfo;
+
     if (controlInfo.upPressed) {
       playerInfo.currentPosition.y -= 1;
     }
