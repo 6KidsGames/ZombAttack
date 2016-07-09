@@ -130,7 +130,7 @@ gulp.task('assemble-spritesheet', ['clean'], function() {
         " --trim-mode None" +  // Trim optimizations require pro license.
         " --png-opt-level 0" +  // PNG optimization requires pro license
         " --disable-auto-alias" +  // Automatic deduplication of sprite images is a pro license feature
-        "  c:\\class2016\\" + Paths.SpritesRoot;
+        " " + Paths.SpritesRoot;
 
     return execCommand(command, (err, stdout, stderr) => {
       if (err) {
