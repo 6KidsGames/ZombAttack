@@ -76,20 +76,7 @@ echo.
 call npm install --save primus ws binary-pack express compression pixi.js
 if ERRORLEVEL 1 echo ERROR: npm install failed for site modules with errorlevel %ERRORLEVEL% && exit /b 1
 
-echo.
-echo ==========================================================================
-echo Setting aliases for easier command line experience
-echo ==========================================================================
-echo.
-doskey master = git checkout master
-doskey cb = git checkout dev/%USERNAME%/$*
-doskey nb = git checkout dev/%USERNAME%/$*
-doskey pull = git pull
-doskey branch = git branch
-doskey stat = git status
-doskey mmerge = "git checkout master && git merge dev/%USERNAME%/$* --squash && git commit"
-
-doskey /macros
+call %~dp0Init.cmd
 
 echo.
 echo ==========================================================================
