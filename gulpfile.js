@@ -9,7 +9,7 @@
 var gulp = require('gulp');
 
 // Node.js's exec() for use in running command line tools.
-var exec = require('child_process').exec;
+var execCommand = require('child_process').exec;
 
 // Use the path class for path joining.
 var path = require('path');
@@ -132,7 +132,7 @@ gulp.task('assemble-spritesheet', ['clean'], function() {
         " --disable-auto-alias" +  // Automatic deduplication of sprite images is a pro license feature
         "  c:\\class2016\\" + Paths.SpritesRoot;
 
-    return exec(texturePackerCmd, (err, stdout, stderr) => {
+    return execCommand(command, (err, stdout, stderr) => {
       if (err) {
         console.log("Failed running TexturePacker command:", command);
         //console.log('TexturePacker error:', err);

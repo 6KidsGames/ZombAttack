@@ -21,15 +21,10 @@
     "chai": "^3.5.0",
     "del": "^2.2.1",
     "gulp": "^3.9.1",
-    "gulp-imagemin": "^3.0.1",
-    "gulp-spritesmith": "0.0.2",
-    "gulp-uglify": "^1.5.4",
+  "gulp-uglify": "^1.5.4",
     "mocha": "^2.5.3",
     "path": "^0.12.7",
-    "pump": "^1.0.1",
-    "spritesheet-js": "^1.1.9",
-    "spritesmith-texturepacker": "^1.0.0"
-  },
+    "pump": "^1.0.1"   },
   "scripts": {},
   "engines": {
     "node": ">= 4.0"
