@@ -122,11 +122,9 @@ function worldUpdateLoop() {
     var playerInfo = player.playerInfo;
     var controlInfo = player.latestControlInfo;
     if (controlInfo.upPressed) {
-      log("upPressed");
       playerInfo.currentPosition.y -= 1;
     }
     if (controlInfo.downPressed) {
-      log("downPressed");
       playerInfo.currentPosition.y += 1;
     }
     if (controlInfo.leftPressed) {
@@ -139,7 +137,6 @@ function worldUpdateLoop() {
       playerInfo.scale *= 1.01; 
     }
     if (controlInfo.ghostPressed) {
-      log("ghostPressed");
       playerInfo.alpha *= 0.97;
     }
     if (controlInfo.rotationPressed) {
@@ -148,7 +145,15 @@ function worldUpdateLoop() {
     if (controlInfo.tintPressed) {
       playerInfo.tint = 0xff00ff;
     }
-    
+    if (controlInfo.resetPressed) {
+      playerInfo.scale = 0.5;
+      playerInfo.currentPosition.x = 0;
+      playerInfo.currentPosition.y = 0;
+      playerInfo.alpha = 1.0;
+      playerInfo.rotation = 0.0;
+      playerInfo.tint = 0xffffff;
+    }
+
     // Never push the 'players' object to this array - Primus sparks
     // are not comparable and should not be sent over the wire.
     // We send only the information in player.playerInfo.

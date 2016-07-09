@@ -31,17 +31,9 @@ echo   Uglify - for minifying JavaScript
 echo   pump - simplifies dealing with Node.js streams when lots of piping is used.
 echo   del - deletes files and folders
 echo   path - Always better than using string concatenation.
-echo.
-echo TODO - get working:
-echo   gulp-spritesmith - Lets us assemble a spritesheet/tilemap for Pixi.js
-echo     from individual sprite images.
-echo     https://www.npmjs.com/package/gulp.spritesmith/
-echo   spritesmith-texturepacker - Creates JSON based outputs for spritesheets
-echo     from SpriteSmith, for use with Pixi.js.
 echo ==========================================================================
 echo.
 call npm install --save-dev gulp-uglify pump del path
-@rem TODO - add some or all of these back and get spritesheet compilation working on Windows: gulp-spritesmith spritesmith-texturepacker gulp-imagemin
 if ERRORLEVEL 1 echo ERROR: npm install failed for Gulp modules  with errorlevel %ERRORLEVEL% && exit /b 1
 
 echo.
@@ -50,11 +42,9 @@ echo Installing development modules we need:
 echo   Mocha - unit testing framework that uses Node.js and fits well into
 echo     Visual Studio Code. https://mochajs.org/
 echo   Chai - assertion library for use in Mocha. http://chaijs.com/
-echo   spritesheet-js - Assembles individual sprite images into a spritesheet
-echo     suitable for Pixi.js. https://github.com/krzysztof-o/spritesheet.js/
 echo ==========================================================================
 echo.
-call npm install --save-dev mocha chai spritesheet-js
+call npm install --save-dev mocha chai
 if ERRORLEVEL 1 echo ERROR: npm install failed for dev modules with errorlevel %ERRORLEVEL% && exit /b 1
 
 echo.
@@ -75,6 +65,20 @@ echo ==========================================================================
 echo.
 call npm install --save primus ws binary-pack express compression pixi.js
 if ERRORLEVEL 1 echo ERROR: npm install failed for site modules with errorlevel %ERRORLEVEL% && exit /b 1
+
+echo.
+echo ==========================================================================
+echo Verifying you installed TexturePacker, and accepting EULA.
+echo ==========================================================================
+echo.
+set __TexturePackerExePath="C:\Program Files\CodeAndWeb\TexturePacker\bin\TexturePacker.exe"
+if not exist %__TexturePackerExePath% (
+    echo ERROR: TexturePacker does not seem to be installed.
+    echo ERROR: Make sure you install it from https://www.codeandweb.com/texturepacker/download
+    exit /b 1
+)
+@rem Auto-accept TexturePacker EULA to avoid it waiting for user input during the build.
+call reg add "HKCU\Software\code-and-web.de\TexturePacker\licensing" /v agreementsAccepted /t REG_MULTI_SZ /d "eb31f92f7b39abde5722aa4fe9ba6c1c" /f
 
 call %~dp0Init.cmd
 
