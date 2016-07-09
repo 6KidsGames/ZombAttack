@@ -63,7 +63,10 @@ primusServer.on('connection', spark => {
       id: spark.id,
       name: '',
       currentPosition: { x: 0, y: 0 },
-      scale: 1.0
+      scale: 1.0,
+      alpha: 1.0,
+      rotation: 0.0,
+      tint: 0xffffff
     }
   };
 
@@ -135,6 +138,17 @@ function worldUpdateLoop() {
     if (controlInfo.inflatePressed) {
       playerInfo.scale *= 1.01; 
     }
+    if (controlInfo.ghostPressed) {
+      log("ghostPressed");
+      playerInfo.alpha *= 0.97;
+    }
+    if (controlInfo.rotationPressed) {
+      playerInfo.rotation += 0.1;
+    }
+    if (controlInfo.tintPressed) {
+      playerInfo.tint = 0xff00ff;
+    }
+    
     // Never push the 'players' object to this array - Primus sparks
     // are not comparable and should not be sent over the wire.
     // We send only the information in player.playerInfo.

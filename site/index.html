@@ -188,6 +188,9 @@
         playerData.sprite.y = player.currentPosition.y;
         playerData.sprite.scale.x = player.scale;
         playerData.sprite.scale.y = player.scale;
+        playerData.sprite.alpha = player.alpha;
+        playerData.sprite.rotation = player.rotation;
+        playerData.sprite.tint = player.tint;
       }
 
       // Find any playerDatas that were not touched this round and remove -
@@ -208,6 +211,9 @@
       if (keyPressed[KEY_A]) { controlInfo.leftPressed = true; }
       if (keyPressed[KEY_D]) { controlInfo.rightPressed = true; }
       if (keyPressed[KEY_SPACE]) { controlInfo.inflatePressed = true; }
+      if (keyPressed[KEY_G]) { controlInfo.ghostPressed = true; }
+      if (keyPressed[KEY_R]) { controlInfo.rotationPressed = true; }
+      if (keyPressed[KEY_T]) { controlInfo.tintPressed = true; }
       
       // TODO: bananaSprite no longer exists. This means keys below will not work.
       var bananaSprite = null;
@@ -220,9 +226,6 @@
         bananaSprite.rotation = 0;
         bananaSprite.tint = 0xffffff;
       }
-      if (keyPressed[KEY_R]) { bananaSprite.rotation += 0.1; }
-      if (keyPressed[KEY_G]) { bananaSprite.alpha *= 0.97; }
-      if (keyPressed[KEY_T]) { bananaSprite.tint =  0xff00ff; }
 
       // TODO: These are not hooked up the server and the server updates will
       // overwrite any changes made here. Either hook up to the server as
