@@ -17,8 +17,7 @@
 <body>
   <input placeholder="Player name" id="playerName"></input>
   <p>
-    Use A,S,D,W to move, Space to inflate, E to reset, R to rotate, G to become a ghost, T to change color,
-    B to go forward faster, V to go backward faster, C to go up faster, N to go down faster.
+    Use A,S,D,W to move, Space to inflate, E to reset, R to rotate, G to become a ghost, T to change color.
   </p>
   <div id="gameArea"></div>
   <form id="chatForm">
@@ -26,7 +25,10 @@
     <button type="submit">Send</button>
   </form>
   <textarea id="output" rows="3" cols="60" readonly></textarea>
-  
+  <p>
+    Copyright &#169; 2016 6KidsGames.com
+    <img src="/images/six kids rectangle.png" alt="6KidsGames Logo" height=192 width=512></img>
+  </p>
   <script>
     var output = document.getElementById('output');
     output.value = '';
@@ -56,6 +58,13 @@
     function setupPixi() {
       // Image load complete. Create sprites from the tileset.
       console.log("Pixi setup complete, creating stage");
+
+      // Site logo as translucent background.
+      var texture = PIXI.utils.TextureCache["6KidsLogo"];
+      var backgroundSprite = new PIXI.Sprite(texture);
+      backgroundSprite.alpha = 0.2;
+      stage.addChild(backgroundSprite);
+
       // console.log(PIXI.loader.resources);
       renderer.render(stage);
 
