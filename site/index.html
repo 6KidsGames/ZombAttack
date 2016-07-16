@@ -1,4 +1,4 @@
-f<!doctype html>
+<!doctype html>
 <!-- Based on Echo sample from Primus. -->
 <html lang="en">
 <head>
@@ -6,7 +6,8 @@ f<!doctype html>
   <title>ScratchPlus Summer 2016 Project</title>
   <link rel="stylesheet" href="//cdn.jsdelivr.net/normalize/3.0.1/normalize.min.css">
   <script src="/primus/primus.js"></script>
-  <script src="/scripts/hexi.min.js"></script>
+  <script src="/scripts/pixi.js"></script>
+  <script src="/scripts/spriteUtilities.js"></script>
   <style>
     body { padding: 5px }
     #output { display: block; border: 0; outline: 0; margin: 0 0 4px }
@@ -43,6 +44,7 @@ f<!doctype html>
 
     // Pixi.js setup - we use Pixi's auto-detect for the browser's capabilities.
     // It will choose a fast WebGL viewport or fall back to HTML5 Canvas. 
+    console.log(PIXI);
     var stageHeightPx = 500;
     var renderer = PIXI.autoDetectRenderer(800, stageHeightPx, { antialias: false, transparent: false, resolution: 1 });
     renderer.autoResize = true;
