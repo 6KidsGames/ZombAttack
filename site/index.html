@@ -6,7 +6,8 @@
   <title>ScratchPlus Summer 2016 Project</title>
   <link rel="stylesheet" href="//cdn.jsdelivr.net/normalize/3.0.1/normalize.min.css">
   <script src="/primus/primus.js"></script>
-  <script src="/scripts/pixi.min.js"></script>
+  <script src="/scripts/pixi.js"></script>
+  <script src="/scripts/spriteUtilities.js"></script>
   <style>
     body { padding: 5px }
     #output { display: block; border: 0; outline: 0; margin: 0 0 4px }
@@ -53,6 +54,7 @@
     PIXI.loader
       .add([ "images/ZombieDefenseSpritesheet.json" ])
       .load(setupPixi);
+    var spriteUtils = new SpriteUtilities(PIXI);
 
     // Called asynchronously when PIXI.loader.load() has finished loading all textures and we can create sprites.
     function setupPixi() {
@@ -240,9 +242,9 @@
 
     function createNewPlayerSprite() {
       console.log("Creating player sprite");
-      console.log(PIXI.utils.TextureCache);
-      var texture = PIXI.utils.TextureCache["BananaDoesNotApprove"];
-      var sprite = new PIXI.Sprite(texture);
+      var sprite = spriteUtils.sprite(spriteUtils.frameSeries(0, 1, "vnormalzombie"), 0, 0);
+      sprite.fps = 2;
+      sprite.playAnimation();
       stage.addChild(sprite);
       sprite.scale.x = 0.5;
       sprite.scale.y = 0.5;
