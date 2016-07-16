@@ -12,15 +12,7 @@ echo ==========================================================================
 echo Setting aliases for easier command line experience
 echo ==========================================================================
 echo.
-doskey n = notepad $*
-doskey master = git checkout master
-doskey cb = git checkout -b dev/%__GitUserName%/$*
-doskey nb = git checkout dev/%__GitUserName%/$*
-doskey pull = git pull
-doskey branch = git branch
-doskey stat = git status
-doskey mmerge = "git checkout master && git merge dev/%__GitUserName%/$* --squash && git commit"
-
+doskey /macrofile=aliases.txt
 doskey /macros
 
 

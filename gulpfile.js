@@ -25,6 +25,10 @@ var pump = require('pump');
 // del allows cleaning up folders and files. 
 const del = require('del');
 
+// Allow filtering file name sets.
+// https://github.com/sindresorhus/gulp-filter
+const filter = require('gulp-filter');
+
 // Helper method - allows recursive copying a directory structure.
 // http://stackoverflow.com/questions/25038014/how-do-i-copy-directories-recursively-with-gulp#25038015
 // 'finishedAsyncTaskCallback' param is optional and is the Gulp completion callback for asynchronous tasks.
@@ -53,7 +57,6 @@ var Paths = {
     // Node.js packages.
     PrimusNodeJsRoot: 'node_modules/primus',
     PrimusWebSiteScriptsRoot: 'node_modules/primus/dist',  // The scripts intended for use from a web site client.
-    PixiJsRoot: 'node_modules/pixi.js/bin',
 
     // Sprite graphics.
     SpritesRoot: 'Sprites',
@@ -68,7 +71,6 @@ gulp.task('default', [
     'copy-site-content',
     'compress-site-scripts',
     'copy-web-primus-script',
-    'copy-pixi-js-script',
     'assemble-spritesheet'
 ]);
 gulp.task('build', ['default']);
@@ -91,19 +93,15 @@ gulp.task('copy-web-primus-script', ['clean'], function() {
         ]);
 });
 
-gulp.task('copy-pixi-js-script', ['clean'], function() {
-    // Primus web site scripts into 'scripts' directory.
-    return pump([
-            gulp.src([ Paths.PixiJsRoot + '/*' ]),
-            gulp.dest(Paths.SiteScriptsOutput)
-        ]);
-});
-
 // Minify scripts - .js files in /site/scripts/... get converted to .js.min files
 // in /out/site/scripts
 gulp.task('compress-site-scripts', ['copy-site-content'], function () {
+    // Filter for any .min.js file so we don't re-minify.
+    let filterMinJS = filter('!*.min.js');
+
     return pump([
             gulp.src(Paths.SiteScriptsAll + '/*.js'),
+            filterMinJS,
             uglify(),
             gulp.dest(Paths.SiteScriptsOutput)
         ]);

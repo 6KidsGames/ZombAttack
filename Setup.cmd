@@ -31,9 +31,12 @@ echo   Uglify - for minifying JavaScript
 echo   pump - simplifies dealing with Node.js streams when lots of piping is used.
 echo   del - deletes files and folders
 echo   path - Always better than using string concatenation.
+echo   gulp-filter - Allows filtering files out of a stream.
+echo     Used to avoid re-minifying scripts when building.
+echo     https://github.com/sindresorhus/gulp-filter
 echo ==========================================================================
 echo.
-call npm install --save-dev gulp-uglify pump del path
+call npm install --save-dev gulp-uglify pump del path gulp-filter
 if ERRORLEVEL 1 echo ERROR: npm install failed for Gulp modules  with errorlevel %ERRORLEVEL% && exit /b 1
 
 echo.
@@ -59,11 +62,13 @@ echo   ws - needed for Primus as a WebSockets implementation.
 echo   binary-pack - needed for using a binary-mode transport in Primus.
 echo   Express - web site framework. http://expressjs.com/
 echo   compression - Express plugin for compressing content sent over the network.
-echo   Pixi.JS - WebGL/Canvas wrapper for Flash-like game and animation authoring.
-echo     https://github.com/pixijs/pixi.js
+echo.
+echo Installed into site\scripts:
+echo   Hexi.js - Wrapper onto Pixi.js WebGL/Canvas game engine, Sound.js, and more.
+echo     https://github.com/kittykatattack/hexi
 echo ==========================================================================
 echo.
-call npm install --save primus ws binary-pack express compression pixi.js
+call npm install --save primus ws binary-pack express compression
 if ERRORLEVEL 1 echo ERROR: npm install failed for site modules with errorlevel %ERRORLEVEL% && exit /b 1
 
 echo.
