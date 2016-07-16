@@ -9,6 +9,14 @@ set __GitUserName=%__GitUserName: =%
 
 echo.
 echo ==========================================================================
+echo Ensuring a good editor in place for Git commits on the command line.
+echo ==========================================================================
+echo.
+git config --global core.editor
+if ERRORLEVEL 1 git config --global core.editor "notepad"
+
+echo.
+echo ==========================================================================
 echo Setting aliases for easier command line experience
 echo ==========================================================================
 echo.
