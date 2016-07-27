@@ -240,7 +240,7 @@ f<!doctype html>
 
     function createNewPlayerSprite() {
       console.log("Creating player sprite");
-      var sprite = spriteUtils.sprite(spriteUtils.frameSeries(0, 1, "vnormalzombie"), 0, 0);
+      var sprite = spriteUtils.sprite(spriteUtils.frameSeries(0, 1, "vplayer"), 0, 0);
       sprite.fps = 2;
       sprite.playAnimation();
       stage.addChild(sprite);
