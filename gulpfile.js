@@ -71,7 +71,8 @@ gulp.task('default', [
     'copy-site-content',
     'compress-site-scripts',
     'copy-web-primus-script',
-    'assemble-spritesheet'
+    'assemble-spritesheet',
+    'copy-deployment-files'
 ]);
 gulp.task('build', ['default']);
 
@@ -83,6 +84,13 @@ gulp.task('clean', function () {
 gulp.task('copy-site-content', ['clean'], function () {
     // Base content - Node.js execution script, HTML content, static scripts.
     return gulp.copy([ Paths.SiteAll ], Paths.OutputRoot);
+});
+
+gulp.task('copy-deployment-files', ['clean'], function() {
+    return pump([
+            gulp.src([ "package.json", "Dockerfile" ]),
+            gulp.dest(Paths.OutputRoot)
+        ]);
 });
 
 gulp.task('copy-web-primus-script', ['clean'], function() {

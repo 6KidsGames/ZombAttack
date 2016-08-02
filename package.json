@@ -28,7 +28,9 @@
     "path": "^0.12.7",
     "pump": "^1.0.1"
   },
-  "scripts": {},
+  "scripts": {
+    "start" : "node RunNodeSiteServer.js"
+  },
   "engines": {
     "node": ">= 4.0"
   },
