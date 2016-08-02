@@ -22,5 +22,6 @@ COPY ./site /usr/src/app
 # Default site port
 EXPOSE 8080
 
-# Run Node.js using command info placed in package.json.
-CMD [ "npm", "start" ]
+# Run Node.js directly (best practice to avoid additional npm process,
+# see https://github.com/nodejs/docker-node/blob/master/docs/BestPractices.md).
+CMD [ "node", "RunNodeSiteServer.js" ]
