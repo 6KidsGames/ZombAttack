@@ -216,13 +216,12 @@ f<!doctype html>
 
       // Control keys don't change anything locally, we send to the server and it
       // determines what happens.
-      if (keyPressed[KEY_W]) { controlInfo.upPressed = true; }
-      if (keyPressed[KEY_S]) { controlInfo.downPressed = true; }
-      if (keyPressed[KEY_A]) { controlInfo.leftPressed = true; }
-      if (keyPressed[KEY_D]) { controlInfo.rightPressed = true; }
+      if (keyPressed[KEY_W]) { controlInfo.forwardPressed = true; }
+      if (keyPressed[KEY_S]) { controlInfo.backwardPressed = true; }
+      if (keyPressed[KEY_A]) { controlInfo.rotationLeftPressed = true; }
       if (keyPressed[KEY_SPACE]) { controlInfo.inflatePressed = true; }
       if (keyPressed[KEY_G]) { controlInfo.ghostPressed = true; }
-      if (keyPressed[KEY_R]) { controlInfo.rotationPressed = true; }
+      if (keyPressed[KEY_D]) { controlInfo.rotationRightPressed = true; }
       if (keyPressed[KEY_T]) { controlInfo.tintPressed = true; }
       if (keyPressed[KEY_E]) { controlInfo.resetPressed = true; }
       
@@ -246,6 +245,8 @@ f<!doctype html>
       stage.addChild(sprite);
       sprite.scale.x = 0.5;
       sprite.scale.y = 0.5;
+      sprite.pivot.x = 15;
+      sprite.pivot.y = 22;
       return sprite;
     }
 

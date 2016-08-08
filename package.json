@@ -29,7 +29,7 @@
     "pump": "^1.0.1"
   },
   "scripts": {
-    "start" : "node RunNodeSiteServer.js"
+    "start": "node RunNodeSiteServer.js"
   },
   "engines": {
     "node": ">= 4.0"
