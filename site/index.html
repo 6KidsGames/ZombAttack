@@ -166,6 +166,11 @@ f<!doctype html>
       // Rendering is at 60 frames per second by default, which is fast enough not to appear flickery.
       requestAnimationFrame(gameLoop);
 
+      var r = getRandomInt(0, 10);
+      if (r === 0) {
+        createNewZombieSprite();
+      } 
+      
       // Create a new, empty PlayerControlInfo message to send to the server
       // with our current control status.
       var controlInfo = {
@@ -249,6 +254,17 @@ f<!doctype html>
       sprite.pivot.y = 22;
       return sprite;
     }
+  
+    function createNewZombieSprite() {
+      console.log("Creating zombie sprite");
+      var sprite = spriteUtils.sprite(spriteUtils.frameSeries(0, 1, "vnormalzombie"), 0, 0);
+      sprite.fps = 2;
+      sprite.playAnimation();
+      stage.addChild(sprite);
+      sprite.position.x = getRandomInt(0, window.innerWidth);
+      sprite.position.y = getRandomInt(0, stageHeightPx);
+      return sprite;
+    }
 
     function createEmptyWorldUpdate() {
       return { players: [] };
@@ -300,6 +316,14 @@ f<!doctype html>
           // allows x[ p ] to be set to undefined
       }
       return true;
+    }
+
+    // Returns a random integer between min (included) and max (excluded)
+    // Using Math.round() will give you a non-uniform distribution!
+    function getRandomInt(min, max) {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      return Math.floor(Math.random() * (max - min)) + min;
     }
 
   </script>
