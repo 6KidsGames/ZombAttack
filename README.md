@@ -11,6 +11,7 @@ Public repo for use with the ScratchPlus Summer 2016 class project.
 1. Install TexturePacker from https://www.codeandweb.com/texturepacker/download . We use this tool during the build for creating spritesheets. For basic info, see https://www.codeandweb.com/texturepacker/documentation
 1. Open a Windows console: Windows+R (to open the Run box), then type `cmd` and press Enter.
 1. Create a new folder: `mkdir c:\Class2016`
+1. Clone the Git repo to your new folder: `got clone https://github.com/erikma/ScratchPlus2016Project.git`
 
 ## Every day - syncing code and installing updates
 When you're developing code with a team, you're going to need to get their code as well as upload your code. A good time to do this is at the start of
@@ -78,10 +79,12 @@ The 10.0.0.16 address is just an example; yours will likely be different. If oth
 
 Everyone can connect to one server, and the chats will be shared.
 
-### Pixi.js as a Game Engine
-We're using Pixi.js as our game engine, since it provides fast animation on pretty much any modern browser, and is structured similer
-to Flash when programming it.
+### Hexi.js as a Game Engine
+We're using Hexi.js as our game engine, since its Pixi.js engine provides fast animation on pretty much any modern browser,
+and is structured similar to Flash when programming it. Hexi also includes Sound.js and other helpful classes to help us
+avoid writing lots of extra code.
 
+* Hexi main site: https://github.com/kittykatattack/hexi 
 * Pixi main site: http://www.pixijs.com/
 * Leaning Pixi: https://github.com/kittykatattack/learningPixi
 
