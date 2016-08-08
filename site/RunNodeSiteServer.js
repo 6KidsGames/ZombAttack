@@ -122,17 +122,19 @@ function worldUpdateLoop() {
     var playerInfo = player.playerInfo;
     var controlInfo = player.latestControlInfo;
 
-    if (controlInfo.upPressed) {
-      playerInfo.currentPosition.y -= 1;
+    if (controlInfo.rotationRightPressed) {
+      playerInfo.rotation += 0.1;
     }
-    if (controlInfo.downPressed) {
-      playerInfo.currentPosition.y += 1;
+    if (controlInfo.rotationLeftPressed) {
+      playerInfo.rotation -= 0.1;
     }
-    if (controlInfo.leftPressed) {
-      playerInfo.currentPosition.x -= 1;
+    if (controlInfo.forwardPressed) {
+      playerInfo.currentPosition.x += Math.sin(playerInfo.rotation);
+      playerInfo.currentPosition.y -= Math.cos(playerInfo.rotation);
     }
-    if (controlInfo.rightPressed) {
-      playerInfo.currentPosition.x += 1;
+    if (controlInfo.backwardPressed) {
+      playerInfo.currentPosition.x -= Math.sin(playerInfo.rotation);
+      playerInfo.currentPosition.y += Math.cos(playerInfo.rotation);
     }
     if (controlInfo.inflatePressed) {
       playerInfo.scale *= 1.01; 
@@ -140,9 +142,7 @@ function worldUpdateLoop() {
     if (controlInfo.ghostPressed) {
       playerInfo.alpha *= 0.97;
     }
-    if (controlInfo.rotationPressed) {
-      playerInfo.rotation += 0.1;
-    }
+    
     if (controlInfo.tintPressed) {
       playerInfo.tint = 0xff00ff;
     }
