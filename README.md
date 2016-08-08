@@ -11,7 +11,7 @@ Public repo for use with the ScratchPlus Summer 2016 class project.
 1. Install TexturePacker from https://www.codeandweb.com/texturepacker/download . We use this tool during the build for creating spritesheets. For basic info, see https://www.codeandweb.com/texturepacker/documentation
 1. Open a Windows console: Windows+R (to open the Run box), then type `cmd` and press Enter.
 1. Create a new folder: `mkdir c:\Class2016`
-1. Clone the Git repo to your new folder: `got clone https://github.com/erikma/ScratchPlus2016Project.git`
+1. Clone the Git repo to your new folder: `git clone https://github.com/erikma/ScratchPlus2016Project.git`
 
 ## Every day - syncing code and installing updates
 When you're developing code with a team, you're going to need to get their code as well as upload your code. A good time to do this is at the start of
