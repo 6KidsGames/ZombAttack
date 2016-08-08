@@ -47,6 +47,7 @@ var Paths = {
     SiteScriptsOutput: 'out/site/scripts',
     SiteImagesOutput: 'out/site/images',
     SiteCssOutput: 'out/site/css',
+    SiteSoundsOutput: 'out/site/sounds',
 
     // Web site hosted via Node.js, utilizing Primus for WebSockets support.
     Site: 'site',
@@ -60,6 +61,9 @@ var Paths = {
 
     // Sprite graphics.
     SpritesRoot: 'Sprites',
+
+    // Sound files.
+    SoundsRoot: 'Sounds',
 };
 
 // ---------------------------------------------------------------------------
@@ -72,7 +76,8 @@ gulp.task('default', [
     'compress-site-scripts',
     'copy-web-primus-script',
     'assemble-spritesheet',
-    'copy-deployment-files'
+    'copy-deployment-files',
+    'copy-sounds'
 ]);
 gulp.task('build', ['default']);
 
@@ -84,6 +89,10 @@ gulp.task('clean', function () {
 gulp.task('copy-site-content', ['clean'], function () {
     // Base content - Node.js execution script, HTML content, static scripts.
     return gulp.copy([ Paths.SiteAll ], Paths.OutputRoot);
+});
+
+gulp.task('copy-sounds', ['clean'], function () {
+    return gulp.copy([ Paths.SoundsRoot + '/**/*.mp3' ], Paths.SiteOutput);
 });
 
 gulp.task('copy-deployment-files', ['clean'], function() {

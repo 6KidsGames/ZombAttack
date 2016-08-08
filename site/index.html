@@ -54,6 +54,17 @@ f<!doctype html>
       .load(setupPixi);
     var spriteUtils = new SpriteUtilities(PIXI);
 
+    // Sound.js setup - load sound files.
+    var zombieGrowls = [];
+    sounds.load([
+      'Sounds/ZombieGrowl1.mp3',
+      'Sounds/ZombieGrowl2.mp3'
+    ]);
+    sounds.whenLoaded = function() {
+      zombieGrowls.push(sounds['Sounds/ZombieGrowl1.mp3']);
+      zombieGrowls.push(sounds['Sounds/ZombieGrowl2.mp3']);
+    }
+
     // Called asynchronously when PIXI.loader.load() has finished loading all textures and we can create sprites.
     function setupPixi() {
       // Image load complete. Create sprites from the tileset.
@@ -169,6 +180,7 @@ f<!doctype html>
       var r = getRandomInt(0, 10);
       if (r === 0) {
         createNewZombieSprite();
+        zombieGrowls[getRandomInt(0, zombieGrowls.length)].play();
       } 
       
       // Create a new, empty PlayerControlInfo message to send to the server
