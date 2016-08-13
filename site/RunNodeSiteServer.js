@@ -147,7 +147,7 @@ function worldUpdateLoop() {
       playerInfo.tint = 0xff00ff;
     }
     if (controlInfo.resetPressed) {
-      playerInfo.scale = 0.5;
+      playerInfo.scale = 1;
       playerInfo.currentPosition.x = 0;
       playerInfo.currentPosition.y = 0;
       playerInfo.alpha = 1.0;

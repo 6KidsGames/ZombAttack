@@ -177,7 +177,7 @@ f<!doctype html>
       // Rendering is at 60 frames per second by default, which is fast enough not to appear flickery.
       requestAnimationFrame(gameLoop);
 
-      var r = getRandomInt(0, 10);
+      var r = getRandomInt(0, 120);
       if (r === 0) {
         createNewZombieSprite();
         zombieGrowls[getRandomInt(0, zombieGrowls.length)].play();
