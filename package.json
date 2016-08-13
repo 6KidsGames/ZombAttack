@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "del": "^2.2.1",
+    "del": "^2.2.2",
     "gulp": "^3.9.1",
     "gulp-filter": "^4.0.0",
     "gulp-uglify": "^1.5.4",
