@@ -26,7 +26,7 @@ if ERRORLEVEL 1 echo ERROR: npm install --save-dev gulp failed with errorlevel %
 
 echo.
 echo ==========================================================================
-echo Installing Gulp modules we need:
+echo Installing build tools and Gulp modules we need:
 echo   Uglify - for minifying JavaScript
 echo   pump - simplifies dealing with Node.js streams when lots of piping is used.
 echo   del - deletes files and folders
@@ -34,9 +34,18 @@ echo   path - Always better than using string concatenation.
 echo   gulp-filter - Allows filtering files out of a stream.
 echo     Used to avoid re-minifying scripts when building.
 echo     https://github.com/sindresorhus/gulp-filter
+echo   browserify - Bundles Require declarations in scripts into a single file 
+echo   vinyl-source-stream - Allows using stream conversion tools.
+echo   vinyl-buffer - Buffer/stream conversion
+echo   gulp-sourcemaps - Allows generating a Source Map from .min.js files back
+echo     to the original uncompressed source, for debugging.
+echo   gulp-babel and presets - Uses Babel (http://babeljs.io) to transpile
+echo     ES6 JavaScript to ES5 for older browsers.
+echo   gulp-using - Useful for debugging what files are being processed in Gulp.
+echo   gulp-sort - Allows sorting the order of paths processed from gulp. 
 echo ==========================================================================
 echo.
-call npm install --save-dev gulp-uglify pump del path gulp-filter
+call npm install --save-dev gulp-uglify pump del path gulp-filter browserify vinyl-source-stream vinyl-buffer gulp-sourcemaps gulp-babel babel-preset-es2015 gulp-using gulp-sort
 if ERRORLEVEL 1 echo ERROR: npm install failed for Gulp modules  with errorlevel %ERRORLEVEL% && exit /b 1
 
 echo.

@@ -9,6 +9,7 @@ Public repo for use with the ScratchPlus Summer 2016 class project.
 1. Install Visual Studio Code from https://www.visualstudio.com/products/code-vs
 1. Install Paint.NET from http://www.dotpdn.com/downloads/pdn.html (click the Free Download Now link, then open the resulting ZIP file and run the install executable).
 1. Install TexturePacker from https://www.codeandweb.com/texturepacker/download . We use this tool during the build for creating spritesheets. For basic info, see https://www.codeandweb.com/texturepacker/documentation
+1. Install the Tiled tilemap editor from https://thorbjorn.itch.io/tiled . The Art/Website team uses this for designing tile maps. The main website is at http://www.mapeditor.org/
 1. Open a Windows console: Windows+R (to open the Run box), then type `cmd` and press Enter.
 1. Create a new folder: `mkdir c:\Class2016`
 1. Clone the Git repo to your new folder: `git clone https://github.com/erikma/ScratchPlus2016Project.git .`

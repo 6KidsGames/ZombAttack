@@ -7,6 +7,7 @@ f<!doctype html>
   <link rel="stylesheet" href="//cdn.jsdelivr.net/normalize/3.0.1/normalize.min.css">
   <script src="/primus/primus.js"></script>
   <script src="/scripts/hexi.min.js"></script>
+  <script src="/scripts/game.js"></script>
   <style>
     body { padding: 5px }
     #output { display: block; border: 0; outline: 0; margin: 0 0 4px }
@@ -27,7 +28,6 @@ f<!doctype html>
   <textarea id="output" rows="3" cols="60" readonly></textarea>
   <p>
     Copyright &#169; 2016 6KidsGames.com
-    <img src="/images/six kids rectangle.png" alt="6KidsGames Logo" height=192 width=512></img>
   </p>
   <script>
     var output = document.getElementById('output');
@@ -40,53 +40,64 @@ f<!doctype html>
     // We start with an empty world until the server can get a first message
     // back to us.
     var currentWorld = createEmptyWorldUpdate();
+    var scrollingTileCamera = null;
+    var currentLevelName = null;
+    var levelMapTilesetContainer = null;
 
-    // Pixi.js setup - we use Pixi's auto-detect for the browser's capabilities.
-    // It will choose a fast WebGL viewport or fall back to HTML5 Canvas. 
-    var stageHeightPx = 500;
-    var renderer = PIXI.autoDetectRenderer(800, stageHeightPx, { antialias: false, transparent: false, resolution: 1 });
-    renderer.autoResize = true;
-    gameArea.appendChild(renderer.view);
-    renderer.resize(window.innerWidth, stageHeightPx);
-    var stage = new PIXI.Container();
-    PIXI.loader
-      .add([ "images/ZombieDefenseSpritesheet.json" ])
-      .load(setupPixi);
-    var spriteUtils = new SpriteUtilities(PIXI);
-
-    // Sound.js setup - load sound files.
-    var zombieGrowls = [];
-    sounds.load([
+    // Sound and graphics files we want to load via Hexi.js.
+    var thingsToLoadIntoHexi = [
+      // Sound files.
       'Sounds/ZombieGrowl1.mp3',
-      'Sounds/ZombieGrowl2.mp3'
-    ]);
-    sounds.whenLoaded = function() {
-      zombieGrowls.push(sounds['Sounds/ZombieGrowl1.mp3']);
-      zombieGrowls.push(sounds['Sounds/ZombieGrowl2.mp3']);
+      'Sounds/ZombieGrowl2.mp3',
+      
+      // Spritesheet and tileset JSON metadata files and related PNGs.
+      'images/ZombieDefenseSpritesheet.json',
+      'images/ZombieDefenseTileset.png',
+
+      // Game maps definitions in Tiled Editor (http://mapeditor.org) comma-separated value (CSV)
+      // format, suitable for use with Hexi's GameUtilities.
+      'Levels/SpawnCity.json',
+    ];
+    
+    // Hexi.js (and Pixi.js) setup. Pixi will autodetect the browser's capabilities and
+    // choose the fastest renderer (WebGL or HTML5 Canvas).
+    var hexiObj = hexi(window.innerWidth, window.innerHeight, hexiSetupCompleted, thingsToLoadIntoHexi, hexiLoading);
+    hexiObj.fps = 30;  // Game logic loop runs at this rate. Sprites still render at 60 fps.
+    hexiObj.backgroundColor = 0x000000;  // black
+    hexiObj.scaleToWindow();
+    hexiObj.start();
+
+    var zombieGrowls = [];
+
+    function hexiLoading() {
+      console.log(`Loading: ${hexiObj.loadingFile} (${hexiObj.loadingProcess}%)`);
+      hexiObj.loadingBar();  // TODO: Keep?
     }
 
-    // Called asynchronously when PIXI.loader.load() has finished loading all textures and we can create sprites.
-    function setupPixi() {
-      // Image load complete. Create sprites from the tileset.
-      console.log("Pixi setup complete, creating stage");
+    function hexiSetupCompleted() {
+      console.log("Hexi setup complete");
+
+      zombieGrowls.push(hexiObj.sound('Sounds/ZombieGrowl1.mp3'));
+      zombieGrowls.push(hexiObj.sound('Sounds/ZombieGrowl2.mp3'));
 
       // Site logo as translucent background.
-      var texture = PIXI.utils.TextureCache["6KidsLogo"];
-      var backgroundSprite = new PIXI.Sprite(texture);
+      var backgroundSprite = hexiObj.sprite("6KidsLogo");
       backgroundSprite.alpha = 0.2;
-      stage.addChild(backgroundSprite);
 
-      // console.log(PIXI.loader.resources);
-      renderer.render(stage);
-
-      // Run the game loop from here on out.
-      gameLoop();
+      hexiObj.state = gameLoop;
     }
 
-    // Tell Primus to create a new WebSockets connection to the current domain/port/protocol
+    // Tell Primus to create a new WebSockets connection to the current domain/port/protocol.
+    // Get the primus connection spark ID when we connect - we need it for knowing which player
+    // we are in the world state passed from the server. 
     var primus = Primus.connect();
+    var currentPrimusSparkID;
     primus.on("open", function () {
       console.log("Connected to server through Primus.");
+      primus.id(function (id) {
+        currentPrimusSparkID = id;
+        console.log("Current Primus spark ID: " + id);
+      });
     });
 
     function nameOrUnknown(name) {
@@ -172,17 +183,22 @@ f<!doctype html>
       }
     }
 
+    // Called 30 times per second by the Hexi main loop.
     function gameLoop() {
-      // This call returns when we're at the beginning of the next frame time.
-      // Rendering is at 60 frames per second by default, which is fast enough not to appear flickery.
-      requestAnimationFrame(gameLoop);
-
       var r = getRandomInt(0, 120);
       if (r === 0) {
         createNewZombieSprite();
         zombieGrowls[getRandomInt(0, zombieGrowls.length)].play();
       } 
       
+      // If this is our first world update, load the specified level and create the global camera used to follow the local player.
+      // Note: Should come first to ensure the tile container is first in the list (meaning drawn first, furthest in the background).
+      if (scrollingTileCamera === null) {
+        currentLevelName = currentWorld.levelName;
+        levelMapTilesetContainer = hexiObj.makeTiledWorld("Levels/" + currentLevelName + ".json", 'images/ZombieDefenseTileset.png')
+        scrollingTileCamera = hexiObj.worldCamera(levelMapTilesetContainer, currentWorld.size.width, currentWorld.size.height);
+      }
+
       // Create a new, empty PlayerControlInfo message to send to the server
       // with our current control status.
       var controlInfo = {
@@ -194,6 +210,7 @@ f<!doctype html>
       forEachPlayerData(function(playerData) { playerData.touched = false; });
 
       // Make changes to sprites from the current world state sent by the server.
+      var myPlayerData  = null;
       for (var i = 0; i < currentWorld.players.length; i++) {
         var player = currentWorld.players[i];
 
@@ -209,6 +226,10 @@ f<!doctype html>
           playerData = playerDatas[player.id];
         }
         playerData.touched = true;
+
+        if (myPlayerData == null && player.id === currentPrimusSparkID) {
+          myPlayerData = playerData;
+        }
 
         // Update the sprite with current world information.
         playerData.sprite.x = player.currentPosition.x;
@@ -226,7 +247,7 @@ f<!doctype html>
         if (!playerData.touched) {
           console.log("Removing player", playerData.id, playerData.name, "from the world");
           playerData.sprite.visible = false;
-          stage.removeChild(playerData.sprite);
+          hexiObj.remove(playerData.sprite);
           playerDatas[playerData.id] = undefined;
         }
       });
@@ -250,18 +271,17 @@ f<!doctype html>
         prevControlInfo = controlInfo;
       }
 
-      // Render the results to the stage.
-      renderer.render(stage);
+      // Keep the local player's sprite centered on the screen, and move the level map around the player.
+      scrollingTileCamera.centerOver(myPlayerData.sprite);
     }
 
     function createNewPlayerSprite() {
       console.log("Creating player sprite");
-      var sprite = spriteUtils.sprite(spriteUtils.frameSeries(0, 1, "vplayer"), 0, 0);
+      var sprite = hexiObj.sprite(hexiObj.spriteUtilities.frameSeries(0, 1, "vplayer"), 0, 0);
       sprite.fps = 2;
       sprite.playAnimation();
-      stage.addChild(sprite);
-      sprite.scale.x = 0.5;
-      sprite.scale.y = 0.5;
+      sprite.scale.x = 1.0;
+      sprite.scale.y = 1.0;
       sprite.pivot.x = 15;
       sprite.pivot.y = 22;
       return sprite;
@@ -269,12 +289,11 @@ f<!doctype html>
   
     function createNewZombieSprite() {
       console.log("Creating zombie sprite");
-      var sprite = spriteUtils.sprite(spriteUtils.frameSeries(0, 1, "vnormalzombie"), 0, 0);
+      var sprite = hexiObj.sprite(hexiObj.spriteUtilities.frameSeries(0, 1, "vnormalzombie"), 0, 0);
       sprite.fps = 2;
       sprite.playAnimation();
-      stage.addChild(sprite);
       sprite.position.x = getRandomInt(0, window.innerWidth);
-      sprite.position.y = getRandomInt(0, stageHeightPx);
+      sprite.position.y = getRandomInt(0, window.innerHeight);
       return sprite;
     }
 

@@ -1,6 +1,19 @@
 'use strict';
 
-// Start time of the server so we can show milliseconds relative to start in loggimg.
+require 
+
+// Map/dictionary of weapons in the game, by name.
+const WeaponsMap = {
+  "Dagger" : { Type: "Melee", Damage: 1, RechargeMsec: 1000 },
+  "HalliganTool" : { Type: "Melee", Damage: 8, RechargeMsec: 2000 },
+  "Chainsaw" : { Type: "Melee", Damage: 1, RechargeMsec: 25 },
+  "Pistol" : { Type: "Range", Damage: 2, RechargeMsec: 500, AccuracyConeRad: 0.4, RangePx: 128, Ammo: -1 },
+  "Rifle" : { Type: "Range", Damage: 12, RechargeMsec: 800, AccuracyConeRad: 0.2, RangePx: 384, Ammo: 12 },
+  "MachineGun" : { Type: "Range", Damage: 12, RechargeMsec: 100, AccuracyConeRad: 0.3, RangePx: 318, Ammo: 30 },
+  "Minigun" : { Type: "Range", Damage: 20, RechargeMsec: 10, AccuracyConeRad: 0.3, RangePx: 256, Ammo: 2000 },
+};
+
+// Start time of the server so we can show milliseconds relative to start in log output.
 var startTime = (new Date()).getTime();
 function log() {
   var timeSinceStart = (new Date()).getTime() - startTime;
@@ -37,6 +50,12 @@ var primusOptions = {
 };
 var primusServer = new primus(httpServer, primusOptions);
 
+// Game world info.
+// TODO: Locked to size of SpawnWorld.trx. Build multiple map worlds and have server dictate to players which map is in use, and get size from the map.
+const tileSizePx = 64;
+var gameWorldWidthPx = 31 * tileSizePx;
+var gameWorldHeightPx = 31 * tileSizePx;
+
 var currentPlayers = { };  // Maps from spark ID (string) to player state.
 function forEachPlayer(func) {
   var sparkIDs = Object.keys(currentPlayers);
@@ -51,6 +70,30 @@ function forEachPlayer(func) {
   }
 }
 
+// Returns a PlayerInfo object. Called at connection of the client, before
+// we have any identifying information.
+function spawnPlayer(sparkID) {
+    return {
+      id: sparkID,  // Used by clients to self-identify
+      name: '',
+
+      // Place the player in a random location on the map.
+      // TODO: Account for the contents of the underlying tile - only place users into locations that
+      // make sense, or at map-specific spawn points.
+      currentPosition: {
+        x: getRandomInt(32, gameWorldWidthPx - 32),
+        y: getRandomInt(32, gameWorldHeightPx - 32)
+      },
+      scale: 1.0,
+      alpha: 1.0,
+      rotation: 0.0,
+      tint: 0xffffff,
+      backpack: [],
+      currentWeapon: 'Dagger',
+      health: 5,
+    };
+}
+
 // Listen for WebSockets connections and echo the events sent.
 primusServer.on('connection', spark => {
   log(spark.id, 'Connected to spark from', spark.address, '- sending first world update');
@@ -59,15 +102,7 @@ primusServer.on('connection', spark => {
   currentPlayers[spark.id] = {
     spark: spark,
     latestControlInfo: { },
-    playerInfo: {
-      id: spark.id,
-      name: '',
-      currentPosition: { x: 0, y: 0 },
-      scale: 1.0,
-      alpha: 1.0,
-      rotation: 0.0,
-      tint: 0xffffff
-    }
+    playerInfo: spawnPlayer(spark.id)
   };
 
   spark.on('data', function received(data) {
@@ -113,8 +148,8 @@ Array.prototype.remove = function (v) {
 // server when there have been no changes.
 var prevWorldUpdate = createEmptyWorldUpdateMessage();
 
-// World update loop, runs 60 times a second.
-setInterval(worldUpdateLoop, 17 /*msec*/);
+// World update loop, runs 25 times a second.
+setInterval(worldUpdateLoop, 40 /*msec*/);
 function worldUpdateLoop() {
   var worldUpdateMessage = createEmptyWorldUpdateMessage();
 
@@ -176,6 +211,8 @@ function worldUpdateLoop() {
 function createEmptyWorldUpdateMessage() {
   return {
     type: 'worldUpdate',
+    levelName: 'SpawnCity',
+    size: { width: gameWorldWidthPx, height: gameWorldHeightPx },
     players: []
   };
 }
@@ -226,4 +263,12 @@ function objects_equal(x, y) {
       // allows x[ p ] to be set to undefined
   }
   return true;
+}
+
+// Returns a random integer between min (included) and max (excluded)
+// Using Math.round() will give you a non-uniform distribution!
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min;
 }
