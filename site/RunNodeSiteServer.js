@@ -24,10 +24,10 @@ var httpServer = require('http').createServer(webApp);
 var network = require('./Network.js');
 
 // Set up static file serving and a default route to serve index.html.
-webApp.use('/scripts', express.static(__dirname + '/scripts', { maxAge: '1d' }));
+webApp.use('/scripts', express.static(__dirname + '/scripts', { maxAge: '1m' }));
 webApp.use('/css', express.static(__dirname + '/css', { maxAge: '1d' }));
-webApp.use('/images', express.static(__dirname + '/images', { maxAge: '1d' }));
-webApp.use(express.static(__dirname, { maxAge: '1d' }));
+webApp.use('/images', express.static(__dirname + '/images', { maxAge: '1h' }));
+webApp.use(express.static(__dirname, { maxAge: '1h' }));
 
 // Attach Primus to the HTTP server. We included uws and ws WebSockets
 // frameworks in Setup.cmd.
