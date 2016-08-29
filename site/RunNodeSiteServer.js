@@ -143,6 +143,8 @@ var prevWorldUpdate = createEmptyWorldUpdateMessage();
 // World update loop, runs 25 times a second.
 setInterval(worldUpdateLoop, 40 /*msec*/);
 function worldUpdateLoop() {
+  var loopStartTime = datetimeObj.getTime();
+
   var currentTime = datetimeObj.getTime();
   var worldUpdateMessage = createEmptyWorldUpdateMessage();
 
@@ -209,6 +211,11 @@ function worldUpdateLoop() {
     // Deep clone the original message so we can get new player objects created
     // in order to get a valid comparison in object_equals().
     prevWorldUpdate = JSON.parse(JSON.stringify(worldUpdateMessage));
+  }
+
+  var processingTimeMsec = datetimeObj.getTime() - loopStartTime;
+  if (processingTimeMsec > 50) {
+    console.log("Excessive loop processing time: ${processingTimeMsec} ms");
   }
 }
 
