@@ -77,7 +77,6 @@ function spawnPlayer(sparkID) {
     scale: 1.0,
     alpha: 1.0,
     rotation: 0.0,
-    tint: 0xffffff,
     backpack: [],
     currentWeapon: 'Dagger',
     health: 5,
@@ -143,8 +142,6 @@ var prevWorldUpdate = createEmptyWorldUpdateMessage();
 // World update loop, runs 25 times a second.
 setInterval(worldUpdateLoop, 40 /*msec*/);
 function worldUpdateLoop() {
-  var loopStartTime = datetimeObj.getTime();
-
   var currentTime = datetimeObj.getTime();
   var worldUpdateMessage = createEmptyWorldUpdateMessage();
 
@@ -162,10 +159,10 @@ function worldUpdateLoop() {
     var controlInfo = player.latestControlInfo;
 
     if (controlInfo.rotationRightPressed) {
-      playerInfo.rotation += 0.1;
+      playerInfo.rotation += 0.2;
     }
     if (controlInfo.rotationLeftPressed) {
-      playerInfo.rotation -= 0.1;
+      playerInfo.rotation -= 0.2;
     }
     if (controlInfo.forwardPressed) {
       playerInfo.currentPosition.x += playerSpeedPxPerFrame * Math.sin(playerInfo.rotation);
@@ -184,16 +181,12 @@ function worldUpdateLoop() {
       playerInfo.alpha *= 0.97;
     }
     
-    if (controlInfo.tintPressed) {
-      playerInfo.tint = 0xff00ff;
-    }
     if (controlInfo.resetPressed) {
       playerInfo.scale = 1;
       playerInfo.currentPosition.x = 0;
       playerInfo.currentPosition.y = 0;
       playerInfo.alpha = 1.0;
       playerInfo.rotation = 0.0;
-      playerInfo.tint = 0xffffff;
     }
 
     // Never push the 'players' object to this array - Primus sparks
@@ -213,16 +206,16 @@ function worldUpdateLoop() {
     prevWorldUpdate = JSON.parse(JSON.stringify(worldUpdateMessage));
   }
 
-  var processingTimeMsec = datetimeObj.getTime() - loopStartTime;
+  var processingTimeMsec = datetimeObj.getTime() - currentTime;
   if (processingTimeMsec > 50) {
     console.log("Excessive loop processing time: ${processingTimeMsec} ms");
   }
 }
 
-// Accepts a  position and keeps its value within an acceptable reach of the edges.
+// Accepts a position and keeps its value within an acceptable reach of the edges.
 function clampPositionToLevel(pos) {
-  pos.x = clamp(pos.x, 32, currentLevel.widthPx - 32);
-  pos.y = clamp(pos.y, 32, currentLevel.heightPx - 32);
+  pos.x = Util.clamp(pos.x, 32, currentLevel.widthPx - 32);
+  pos.y = Util.clamp(pos.y, 32, currentLevel.heightPx - 32);
 }
 
 function createEmptyWorldUpdateMessage() {
@@ -234,9 +227,4 @@ function createEmptyWorldUpdateMessage() {
     zombies: [],
     weapons: []
   };
-}
-
-// Forces a value to be within the specified min and max.
-function clamp(val, min, max) {
-  return Math.max(min, Math.min(max, val));
 }

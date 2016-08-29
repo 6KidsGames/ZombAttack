@@ -56,8 +56,14 @@ function objectsEqual(x, y) {
   return true;
 }
 
+// Forces a value to be within the specified min and max.
+function clamp(val, min, max) {
+  return Math.max(min, Math.min(max, val));
+}
+
 
 // --------------------------------------------------------------------
 // Exports
 module.exports.getRandomInt = getRandomInt;
 module.exports.objectsEqual = objectsEqual;
+module.exports.clamp = clamp;
