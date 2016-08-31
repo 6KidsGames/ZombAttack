@@ -146,6 +146,7 @@ function worldUpdateLoop() {
   var worldUpdateMessage = createEmptyWorldUpdateMessage();
 
   if (Util.getRandomInt(0, 250) == 0) {  // About once in 10 seconds
+    // TODO: Don't spawn within easy reach of players' current positions.
     currentZombies.push(Zombie.spawnZombie(currentLevel));
   }
 
@@ -155,8 +156,8 @@ function worldUpdateLoop() {
   });
 
   forEachPlayer(player => {
-    var playerInfo = player.playerInfo;
-    var controlInfo = player.latestControlInfo;
+    let playerInfo = player.playerInfo;
+    let controlInfo = player.latestControlInfo;
 
     if (controlInfo.rotationRightPressed) {
       playerInfo.rotation += 0.2;
