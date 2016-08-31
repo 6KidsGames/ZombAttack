@@ -59,10 +59,10 @@ function hitTestCircles(c1, c2) {
 // sit outside the rectangle (excluding it). Example: Circular sprite intersection with a
 // building.
 function circleRectangleCollision(c, r, exclude = false) {
-    let cLeft = c.centerX - radius;
-    let cTop = c.centerY - radius;
-    let cRight = c.centerX + radius;
-    let cBottom = c.centerY + radius; 
+    let cLeft = c.centerX - c.radius;
+    let cTop = c.centerY - c.radius;
+    let cRight = c.centerX + c.radius;
+    let cBottom = c.centerY + c.radius; 
     let rLeft = r.x;
     let rTop = r.y;
     let region;
@@ -107,9 +107,7 @@ function circleRectangleCollision(c, r, exclude = false) {
         }
         // Circle is above the rectangle. No intersection.
         return false; 
-    } else {
-        // cTop >= rTop.
-
+    } else {  // cTop >= rTop.
         if (cTop < rBottom) {
             // Circle overlaps the half-plane anchored by the bottom of the rectangle. Might not be touching in the x dimension.
             if (cLeft < rLeft) {
