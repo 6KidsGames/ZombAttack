@@ -62,6 +62,9 @@ const sort = require('gulp-sort');
 // http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/
 const sourcemaps  = require('gulp-sourcemaps');
 
+// Gulp wrapper for running Mocha tests.
+const mocha = require('gulp-mocha');
+
 // Keep important paths here for reference. Only use Paths.Xxx in code below instead of duplicating these strings.
 var Paths = {
     OutputRoot: 'out',
@@ -108,7 +111,8 @@ gulp.task('default', [
     'assemble-tileset',
     'copy-deployment-files',
     'copy-sounds',
-    'copy-levels'
+    'copy-levels',
+    'run-unit-tests'
 ]);
 gulp.task('build', ['default']);
 
@@ -172,6 +176,12 @@ gulp.task('assemble-tileset', [ 'clean'], function() {
 
 gulp.task('assemble-spritesheet', ['clean'], function() {
   return runTexturePacker('ZombieDefenseSpritesheet', Paths.SpritesRoot);
+});
+
+// http://andrewconnell.com/blog/running-mocha-tests-with-visual-studio-code
+gulp.task('run-unit-tests', [], function() {
+  return gulp.src('Tests/**/*.js', { read: false })
+    .pipe(mocha({ reporter: 'spec' }));
 });
 
 // Use Texture Packer basic mode to create a spritesheet from all sprite files under the sprite root folder.

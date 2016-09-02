@@ -18,7 +18,7 @@
 <body>
   <input placeholder="Player name" id="playerName"></input>
   <p>
-    Use A,S,D,W to move, Space to inflate, E to reset, R to rotate, G to become a ghost, T to change color.
+    Use A,S,D,W to move, Space to inflate, E to reset, R to rotate, G to become a ghost.
   </p>
   <div id="gameArea"></div>
   <form id="chatForm">
@@ -232,6 +232,7 @@
             id: player.id,
             sprite: createNewPlayerSprite()
           };
+
           playerDatas[player.id] = playerData;
         }
         else {
@@ -241,6 +242,17 @@
 
         if (myPlayerData == null && player.id === currentPrimusSparkID) {
           myPlayerData = playerData;
+
+          // It's hard to tell the current player amongst all the others.
+          // Add a translucent circle centered on the local player. 
+          if (!myPlayerData.markedForBetterViewing) {
+            var highlightCircle = hexiObj.circle(diameter = 64);
+            highlightCircle.alpha = 0.3;
+            highlightCircle.pivot.x =16;
+            highlightCircle.pivot.y = 16;
+            myPlayerData.sprite.addChild(highlightCircle);
+            myPlayerData.markedForBetterViewing = true;
+          }
         }
 
         // Update the sprite with current world information.
@@ -250,7 +262,6 @@
         playerData.sprite.scale.y = player.scale;
         playerData.sprite.alpha = player.alpha;
         playerData.sprite.rotation = player.rotation;
-        playerData.sprite.tint = player.tint;
       }
 
       // Find any playerDatas that were not touched this round and remove -
@@ -324,7 +335,6 @@
       if (keyPressed[KEY_SPACE]) { controlInfo.inflatePressed = true; }
       if (keyPressed[KEY_G]) { controlInfo.ghostPressed = true; }
       if (keyPressed[KEY_D]) { controlInfo.rotationRightPressed = true; }
-      if (keyPressed[KEY_T]) { controlInfo.tintPressed = true; }
       if (keyPressed[KEY_E]) { controlInfo.resetPressed = true; }
       
       // Send the control update to the game server if it's different from the last update.
@@ -444,6 +454,24 @@
       return Math.floor(Math.random() * (max - min)) + min;
     }
 
+    var playerTints = [
+      0xFFFF00,
+      0xFF00FF,
+      0x00FFFF,
+      0xFF0000,
+      0x00FF00,
+      0x0000FF,
+      0x808080,
+      0xFFFF80,
+      0xFF80FF,
+      0x80FFFF,
+      0xFF8080,
+      0x80FF80,
+      0x8080FF,
+    ];
+    function createPlayerTint() {
+      return playerTints[getRandomInt(0, playerTints.length)];
+    }
   </script>
 </body>
 </html>

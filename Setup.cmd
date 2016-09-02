@@ -53,10 +53,11 @@ echo ==========================================================================
 echo Installing development modules we need:
 echo   Mocha - unit testing framework that uses Node.js and fits well into
 echo     Visual Studio Code. https://mochajs.org/
+echo   gulp-mocha - Lets us run Mocha within Gulp to run tests each time we build.
 echo   Chai - assertion library for use in Mocha. http://chaijs.com/
 echo ==========================================================================
 echo.
-call npm install --save-dev mocha chai
+call npm install --save-dev mocha chai gulp-mocha
 if ERRORLEVEL 1 echo ERROR: npm install failed for dev modules with errorlevel %ERRORLEVEL% && exit /b 1
 
 echo.
