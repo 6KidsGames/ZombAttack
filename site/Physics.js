@@ -65,6 +65,8 @@ function circleRectangleCollision(c, r, exclude = false) {
     let cBottom = c.centerY + c.radius; 
     let rLeft = r.x;
     let rTop = r.y;
+    let rRight = r.x + r.width;
+    let rBottom = r.y + r.height;
     let region;
 
     // We treat each dimension similarly but separately: If the circle is overlapping anywhere
@@ -78,26 +80,26 @@ function circleRectangleCollision(c, r, exclude = false) {
                     // Circle overlaps at the top left corner. Collision.
                     if (exclude) {
                         // Move the circle out of the left and top of the rectangle by the overlap amount.
-                        c.x -= rLeft - cRight;
-                        c.y -= cBottom - rTop;  
+                        c.centerX -= cRight - rLeft;
+                        c.centerY -= cBottom - rTop;  
                     }
                     return true;
                 }
                 // Circle is to the upper-left of the rectangle, no collision.
                 return false;
             } else if (cLeft < rRight) {
-                if (cRight < rRight) {
+                if (cRight <= rRight) {
                     // Circle overlaps the top edge of the rectangle.
                     if (exclude) {
                         // Move the circle out of the top edge.
-                        c.y -= cBottom - rTop;
+                        c.centerY -= cBottom - rTop;
                     }
                     return true;
                 } else {
                     // Circle overlaps at the top right corner of the rectangle. Move the circle outward in both dimensions.
                     if (exclude) {
-                        c.x += rRight - cLeft;
-                        c.y -= cBottom - rTop;
+                        c.centerX += rRight - cLeft;
+                        c.centerY -= cBottom - rTop;
                     }
                     return true;
                 }
@@ -112,29 +114,33 @@ function circleRectangleCollision(c, r, exclude = false) {
             // Circle overlaps the half-plane anchored by the bottom of the rectangle. Might not be touching in the x dimension.
             if (cLeft < rLeft) {
                 if (cRight > rLeft) {
-                    // Circle overlaps at the bottom left corner. Collision.
+                    // Circle overlaps at the left side or bottom left corner. Collision.
                     if (exclude) {
                         // Move the circle out of the left and bottom of the rectangle by the overlap amount.
-                        c.x -= rLeft - cRight;
-                        c.y += rBottom - cTop;
+                        c.centerX -= cRight - rLeft;
+                        if (cTop > rTop) {
+                            c.centerY += rBottom - cTop;
+                        }
                     }
                     return true;
                 }
                 // Circle is to the bottom-left of the rectangle, no collision.
                 return false;
             } else if (cLeft < rRight) {
-                if (cRight < rRight) {
+                if (cRight <= rRight) {
                     // Circle overlaps the bottom edge of the rectangle.
                     if (exclude) {
                         // Move the circle out of the bottom edge.
-                        c.y += rBottom - cTop;
+                        c.centerY += rBottom - cTop;
                     }
                     return true;
                 } else {
                     // Circle overlaps at the bottom right corner of the rectangle. Move the circle outward in both dimensions.
                     if (exclude) {
-                        c.x += rRight - cLeft;
-                        c.y += rBottom - cTop;
+                        c.centerX += rRight - cLeft;
+                        if (cTop > rTop) {
+                            c.centerY += rBottom - cTop;
+                        }
                     }
                     return true;
                 }
