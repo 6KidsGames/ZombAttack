@@ -1,7 +1,7 @@
 n = notepad $*
 master = git checkout master
 cb = git checkout dev/%__GitUserName%/$*
-nb = git checkout -b dev/%__GitUserName%/$*
+nb = git checkout master && git checkout -b dev/%__GitUserName%/$*
 pull = git pull
 branch = git branch
 stat = git status
