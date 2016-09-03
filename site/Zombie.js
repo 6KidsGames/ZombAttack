@@ -2,6 +2,7 @@
 
 const Physics = require('./Physics');
 const Util = require('./Util');
+const Log = require('./Log');
 
 // Zombie information by type, including attributes like speed and costume.
 const ZombieTypes = [
@@ -39,7 +40,7 @@ const zombieMinTimeMsecBetweenGrowls = 8000;
 const zombieGrowlProbabilityPerSec = 0.1;
 var nextZombieNumber = 0;
 
-function spawnZombie(level) {
+function spawnZombie(level, currentTime) {
   let zombieID = "z" + nextZombieNumber;
   nextZombieNumber++;
 
@@ -67,6 +68,7 @@ function spawnZombie(level) {
     lastGrowlTime: 0,  // Jan 1, 1970, meaning overdue to growl.
     growlCount: 0,  // Incremented whenever the zombie growls. Used by the client to know when to growl.
     growlSound: '',  // When growlCount is increased, this is the growl sound name to play.
+    lastBiteTime: currentTime,
   };
 
   return zombie;
@@ -87,8 +89,21 @@ function updateZombie(zombie, currentTime) {
   }
 }
 
+function isBiting(zombie, playerInfo, currentTime) {
+  let msecSinceLastBite = currentTime - zombie.lastBiteTime;
+  if (msecSinceLastBite >= 1000) {
+    if (Physics.hitTestCircles(playerInfo.modelCircle, zombie.modelCircle)) {
+      Log.debug(`${zombie.id}: Biting ${playerInfo.id}`);
+      zombie.lastBiteTime = currentTime;
+      return true;
+    }
+  }
+  return false;
+}
+
 
 // --------------------------------------------------------------------
 // Exports
 module.exports.spawnZombie = spawnZombie;
 module.exports.updateZombie = updateZombie;
+module.exports.isBiting = isBiting;

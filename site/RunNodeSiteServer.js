@@ -8,7 +8,6 @@ const Level = require('./Level');
 const Util = require('./Util');
 const Physics = require('./Physics');
 const Log = require('./Log');
-const datetimeObj = new Date();
 
 // We use Express (http://expressjs.com/) for serving web pages and content.
 var express = require('express');
@@ -138,12 +137,12 @@ var prevWorldUpdate = createEmptyWorldUpdateMessage();
 // World update loop, runs 25 times a second.
 setInterval(worldUpdateLoop, 40 /*msec*/);
 function worldUpdateLoop() {
-  var currentTime = datetimeObj.getTime();
+  var currentTime = (new Date()).getTime();
   var worldUpdateMessage = createEmptyWorldUpdateMessage();
 
   if (Util.getRandomInt(0, 250) == 0) {  // About once in 10 seconds
     // TODO: Don't spawn within easy reach of players' current positions.
-    currentZombies.push(Zombie.spawnZombie(currentLevel));
+    currentZombies.push(Zombie.spawnZombie(currentLevel, currentTime));
   }
 
   currentZombies.forEach(zombie => {
@@ -181,19 +180,15 @@ function worldUpdateLoop() {
     }
     
     currentZombies.forEach(zombie => {
-      if (Physics.hitTestCircles(playerInfo.modelCircle, zombie.modelCircle)) {
-        Log.debug(`hitTestZombie: ${zombie.modelCircle.centerX}, ${zombie.modelCircle.centerY} vs. player ${playerInfo.modelCircle.centerX}, ${playerInfo.modelCircle.centerY}`)
+      if (Zombie.isBiting(zombie, playerInfo, currentTime)) {
         // Player got hit by zombie 
         playerInfo.health -= 1;
-        Log.debug(`hit! ${playerInfo.health} health remaining`);
         // TODO: player should make a sound.
         if (playerInfo.health <= 0) {
 
           playerInfo.dead = true;
         }
       }
-      Zombie.updateZombie(zombie, currentTime);
-      worldUpdateMessage.zombies.push(zombie);
     });
 
     // Never push the 'players' object to this array - Primus sparks
@@ -213,9 +208,9 @@ function worldUpdateLoop() {
     prevWorldUpdate = JSON.parse(JSON.stringify(worldUpdateMessage));
   }
 
-  var processingTimeMsec = datetimeObj.getTime() - currentTime;
+  let processingTimeMsec = (new Date()).getTime() - currentTime;
   if (processingTimeMsec > 50) {
-    Log.warning("Excessive loop processing time: ${processingTimeMsec} ms");
+    Log.warning(`Excessive loop processing time: ${processingTimeMsec} ms`);
   }
 }
 
