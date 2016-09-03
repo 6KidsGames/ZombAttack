@@ -6,6 +6,7 @@ const Zombie = require('./Zombie');
 const Weapon = require('./Weapon');
 const Level = require('./Level'); 
 const Util = require('./Util');
+const Physics = require('./Physics');
 const datetimeObj = new Date();
 
 // Start time of the server so we can show milliseconds relative to start in log output.
@@ -63,6 +64,8 @@ var currentLevel = Level.chooseLevel();
 // Returns a PlayerInfo object. Called at connection of the client, before
 // we have any identifying information.
 function spawnPlayer(sparkID) {
+  let x = Util.getRandomInt(32, currentLevel.widthPx - 32);
+  let y = Util.getRandomInt(32, currentLevel.heightPx - 32);
   return {
     id: sparkID,  // Used by clients to self-identify
     name: '',
@@ -71,11 +74,10 @@ function spawnPlayer(sparkID) {
     // TODO: Account for the contents of the underlying tile - only place users into locations that
     // make sense, or at map-specific spawn points.
     currentPosition: {
-      x: Util.getRandomInt(32, currentLevel.widthPx - 32),
-      y: Util.getRandomInt(32, currentLevel.heightPx - 32)
+      x: x,
+      y: y
     },
-    scale: 1.0,
-    alpha: 1.0,
+    modelCircle: Physics.circle(x + 16, y + 16, 16),
     rotation: 0.0,
     backpack: [],
     currentWeapon: 'Dagger',
@@ -166,29 +168,39 @@ function worldUpdateLoop() {
       playerInfo.rotation -= 0.2;
     }
     if (controlInfo.forwardPressed) {
-      playerInfo.currentPosition.x += playerSpeedPxPerFrame * Math.sin(playerInfo.rotation);
-      playerInfo.currentPosition.y -= playerSpeedPxPerFrame * Math.cos(playerInfo.rotation);
+      let dx = playerSpeedPxPerFrame * Math.sin(playerInfo.rotation);
+      let dy = playerSpeedPxPerFrame * Math.cos(playerInfo.rotation);
+      playerInfo.currentPosition.x += dx;
+      playerInfo.currentPosition.y -= dy;
+      playerInfo.modelCircle.centerX += dx;
+      playerInfo.modelCircle.centerY -= dy;
       clampPositionToLevel(playerInfo.currentPosition);
     }
     if (controlInfo.backwardPressed) {
-      playerInfo.currentPosition.x -= playerSpeedPxPerFrame * Math.sin(playerInfo.rotation);
-      playerInfo.currentPosition.y += playerSpeedPxPerFrame * Math.cos(playerInfo.rotation);
+      let dx = playerSpeedPxPerFrame * Math.sin(playerInfo.rotation);
+      let dy = playerSpeedPxPerFrame * Math.cos(playerInfo.rotation);
+      playerInfo.currentPosition.x -= dx;
+      playerInfo.currentPosition.y += dy;
+      playerInfo.modelCircle.centerX -= dx;
+      playerInfo.modelCircle.centerY += dy;
       clampPositionToLevel(playerInfo.currentPosition);
     }
-    if (controlInfo.inflatePressed) {
-      playerInfo.scale *= 1.01; 
-    }
-    if (controlInfo.ghostPressed) {
-      playerInfo.alpha *= 0.97;
-    }
     
-    if (controlInfo.resetPressed) {
-      playerInfo.scale = 1;
-      playerInfo.currentPosition.x = 0;
-      playerInfo.currentPosition.y = 0;
-      playerInfo.alpha = 1.0;
-      playerInfo.rotation = 0.0;
-    }
+    currentZombies.forEach(zombie => {
+      if (Physics.hitTestCircles(playerInfo.modelCircle, zombie.modelCircle)) {
+        log(`hitTestZombie: ${zombie.modelCircle.centerX}, ${zombie.modelCircle.centerY} vs. player ${playerInfo.modelCircle.centerX}, ${playerInfo.modelCircle.centerY}`)
+        // Player got hit by zombie 
+        playerInfo.health -= 1;
+        log(`hit! ${playerInfo.health} health remaining`);
+        // TODO: player should make a sound.
+        if (playerInfo.health <= 0) {
+
+          playerInfo.dead = true;
+        }
+      }
+      Zombie.updateZombie(zombie, currentTime);
+      worldUpdateMessage.zombies.push(zombie);
+    });
 
     // Never push the 'players' object to this array - Primus sparks
     // are not comparable and should not be sent over the wire.

@@ -18,7 +18,7 @@
 <body>
   <input placeholder="Player name" id="playerName"></input>
   <p>
-    Use A,S,D,W to move, Space to inflate, E to reset, R to rotate, G to become a ghost.
+    Use A,S,D,W to move.
   </p>
   <div id="gameArea"></div>
   <form id="chatForm">
@@ -73,6 +73,9 @@
 
     var zombieGrowlMap = { };  // Path to Hexi Sound.js object.
 
+    // User interface spites.
+    var playerHealthSprite = undefined;
+
     function hexiLoading() {
       console.log(`Loading: ${hexiObj.loadingFile} (${hexiObj.loadingProcess}%)`);
       hexiObj.loadingBar();  // TODO: Keep?
@@ -83,6 +86,10 @@
 
       zombieGrowlMap['Sounds/ZombieGrowl1.mp3'] = hexiObj.sound('Sounds/ZombieGrowl1.mp3');
       zombieGrowlMap['Sounds/ZombieGrowl2.mp3'] = hexiObj.sound('Sounds/ZombieGrowl2.mp3');
+
+      playerHealthSprite = hexiObj.text("HEALTH: ", "32px sans", "white", 10, 10);
+      playerHealthSprite.alpha = 0.5;
+      playerHealthSprite.layer = 1000;  // Foremost
 
       hexiObj.state = gameLoop;
     }
@@ -148,13 +155,6 @@
     var KEY_SPACE = 32;
     var KEY_E = 69;
     var KEY_R = 82;
-    var KEY_G = 71;
-    var KEY_T = 84;
-    var KEY_B = 66;
-    var KEY_V = 86;
-    var KEY_N = 78;
-    var KEY_C = 67;
-    var KEY_J = 74;
     
     // Keep a copy of the last PlayerControlInfo message sent, so we don't send
     // a new message if there has been no change since the last one.
@@ -230,7 +230,7 @@
         if (!playerDatas.hasOwnProperty(player.id)) {
           playerData = {
             id: player.id,
-            sprite: createNewPlayerSprite()
+            sprite: createNewPlayerSprite(),
           };
 
           playerDatas[player.id] = playerData;
@@ -248,7 +248,7 @@
           if (!myPlayerData.markedForBetterViewing) {
             var highlightCircle = hexiObj.circle(diameter = 64);
             highlightCircle.alpha = 0.3;
-            highlightCircle.pivot.x =16;
+            highlightCircle.pivot.x = 16;
             highlightCircle.pivot.y = 16;
             myPlayerData.sprite.addChild(highlightCircle);
             myPlayerData.markedForBetterViewing = true;
@@ -258,10 +258,17 @@
         // Update the sprite with current world information.
         playerData.sprite.x = player.currentPosition.x;
         playerData.sprite.y = player.currentPosition.y;
-        playerData.sprite.scale.x = player.scale;
-        playerData.sprite.scale.y = player.scale;
-        playerData.sprite.alpha = player.alpha;
         playerData.sprite.rotation = player.rotation;
+        playerData.lastHealth = playerData.health;
+        playerData.health = player.health;
+        if (player.dead && !playerData.dead) {
+          // TODO: leave a sound.
+          playerData.dead = true;
+        }
+      }
+
+      if (myPlayerData.health != myPlayerData.lastHealth) {
+        playerHealthSprite.content = "HEALTH: " + myPlayerData.health;
       }
 
       // Find any playerDatas that were not touched this round and remove -
@@ -332,10 +339,7 @@
       if (keyPressed[KEY_W]) { controlInfo.forwardPressed = true; }
       if (keyPressed[KEY_S]) { controlInfo.backwardPressed = true; }
       if (keyPressed[KEY_A]) { controlInfo.rotationLeftPressed = true; }
-      if (keyPressed[KEY_SPACE]) { controlInfo.inflatePressed = true; }
-      if (keyPressed[KEY_G]) { controlInfo.ghostPressed = true; }
       if (keyPressed[KEY_D]) { controlInfo.rotationRightPressed = true; }
-      if (keyPressed[KEY_E]) { controlInfo.resetPressed = true; }
       
       // Send the control update to the game server if it's different from the last update.
       // TODO: This should be handled asynchronously instead of in the game
@@ -363,8 +367,6 @@
 
       sprite.fps = 2;
       sprite.playAnimation();
-      sprite.scale.x = 1.0;
-      sprite.scale.y = 1.0;
       sprite.pivot.x = 15;
       sprite.pivot.y = 22;
       sprite.layer = 100;  // Frontmost
