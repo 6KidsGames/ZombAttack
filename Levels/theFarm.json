@@ -27,7 +27,21 @@
          "spacing":0,
          "tilecount":49,
          "tileheight":64,
-         "tilewidth":64
+         "tilewidth":64,
+         "tileproperties":
+            {
+             "19":
+                {
+                 "Placeholder":"Ignore. Need a property on any tile to avoid bug in Hexi.js"
+                }
+            },
+         "tilepropertytypes":
+            {
+             "19":
+                {
+                 "Placeholder":"string"
+                }
+            }
         }],
  "tilewidth":64,
  "version":1,
