@@ -1,5 +1,8 @@
 // Utility methods.
 
+const fs = require("fs");
+const path = require("path");
+
 // Returns a random integer between min (included) and max (excluded)
 // Using Math.round() will give you a non-uniform distribution!
 function getRandomInt(min, max) {
@@ -61,9 +64,21 @@ function clamp(val, min, max) {
   return Math.max(min, Math.min(max, val));
 }
 
+// Gets the fully qualified files in the specified directory and pattern, without
+// recursion. Returns a (possibly empty) array of strings.
+// Example: let filePAths = getFilesInDirectory("c:\\data", "*");
+// http://nodeexamples.com/2012/09/28/getting-a-directory-listing-using-the-fs-module-in-node-js/
+function getFilesInDirectory(dir) {
+  let dirEntries = fs.readdirSync(dir);
+  let full = dirEntries.map(dirEntry => path.join(dir, dirEntry));
+  let files = full.filter(fullyQualifiedDirEntry => fs.statSync(fullyQualifiedDirEntry).isFile());
+  return files;
+}
+
 
 // --------------------------------------------------------------------
 // Exports
 module.exports.getRandomInt = getRandomInt;
 module.exports.objectsEqual = objectsEqual;
 module.exports.clamp = clamp;
+module.exports.getFilesInDirectory = getFilesInDirectory;

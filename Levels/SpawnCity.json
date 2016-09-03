@@ -17,15 +17,15 @@
  "tileheight":64,
  "tilesets":[
         {
-         "columns":26,
+         "columns":49,
          "firstgid":1,
          "image":"..\/out\/site\/images\/ZombieDefenseTileset.png",
          "imageheight":64,
-         "imagewidth":1664,
+         "imagewidth":3136,
          "margin":0,
          "name":"ZombieDefenseTileset",
          "spacing":0,
-         "tilecount":26,
+         "tilecount":49,
          "tileheight":64,
          "tileproperties":
             {
