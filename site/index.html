@@ -58,9 +58,10 @@
       'images/ZombieDefenseSpritesheet.json',
       'images/ZombieDefenseTileset.png',
 
-      // Game maps definitions in Tiled Editor (http://mapeditor.org) comma-separated value (CSV)
+      // Game map definitions in Tiled Editor (http://mapeditor.org) comma-separated value (CSV) JSON
       // format, suitable for use with Hexi's GameUtilities.
       'Levels/SpawnCity.json',
+      'Levels/theFarm.json',
     ];
     
     // Hexi.js (and Pixi.js) setup. Pixi will autodetect the browser's capabilities and
@@ -212,6 +213,7 @@
       // Create tile world object if we have never updated a level before, or if we changed levels.
       // Must come early in loop logic since we need to add and update sprites as children of the level object.
       if (currentLevelName !== currentWorld.levelName) {
+        console.log(`Loading level ${currentWorld.levelName}`);
         currentLevelName = currentWorld.levelName;
         levelWorldObj = hexiObj.makeTiledWorld("Levels/" + currentWorld.levelName + ".json", 'images/ZombieDefenseTileset.png');
         levelWorldObj.layer = 0;  // Rearmost.
