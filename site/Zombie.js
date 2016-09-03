@@ -1,5 +1,6 @@
 // Zombie-related code.
 
+const Physics = require('./Physics');
 const Util = require('./Util');
 
 // Zombie information by type, including attributes like speed and costume.
@@ -42,6 +43,9 @@ function spawnZombie(level) {
   let zombieID = "z" + nextZombieNumber;
   nextZombieNumber++;
 
+  let x = Util.getRandomInt(32, level.widthPx - 32);
+  let y = Util.getRandomInt(32, level.heightPx - 32);
+
   let randomZombieNumber = Util.getRandomInt(0, totalZombieProbability);
   let zombieType = zombieProbabilityMap[randomZombieNumber];
 
@@ -52,9 +56,10 @@ function spawnZombie(level) {
     // TODO: Account for the contents of the underlying tile - only place zombies into locations that
     // make sense, or at map-specific spawn points.
     currentPosition: {
-      x: Util.getRandomInt(32, level.widthPx - 32),
-      y: Util.getRandomInt(32, level.widthPx - 32)
+      x: x,
+      y: y
     },
+    modelCircle: Physics.circle(x + 16, y + 16, 16),
     rotation: 0.0,  // TODO: Start in random direction
     health: zombieType.hitPoints,
     type: zombieType.type,
