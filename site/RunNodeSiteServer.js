@@ -7,14 +7,8 @@ const Weapon = require('./Weapon');
 const Level = require('./Level'); 
 const Util = require('./Util');
 const Physics = require('./Physics');
+const Log = require('./Log');
 const datetimeObj = new Date();
-
-// Start time of the server so we can show milliseconds relative to start in log output.
-var startTime = datetimeObj.getTime();
-function log() {
-  var timeSinceStart = (new Date()).getTime() - startTime;
-  console.log.apply(console, [timeSinceStart + 'ms:'].concat(Array.prototype.slice.call(arguments)));
-}
 
 // We use Express (http://expressjs.com/) for serving web pages and content.
 var express = require('express');
@@ -87,7 +81,7 @@ function spawnPlayer(sparkID) {
 
 // Listen for WebSockets connections and echo the events sent.
 primusServer.on('connection', spark => {
-  log(spark.id, 'Connected to spark from', spark.address, '- sending first world update');
+  Log.info(spark.id, 'Connected to spark from', spark.address, '- sending first world update');
   spark.write(prevWorldUpdate);
 
   currentPlayers[spark.id] = {
@@ -97,7 +91,7 @@ primusServer.on('connection', spark => {
   };
 
   spark.on('data', function received(data) {
-    log(spark.id, 'received message:', data);
+    Log.debug(spark.id, 'received message:', data);
     if (data.type === 'text') {
       // Broadcast player text messages to all players. 
       forEachPlayer(p => p.spark.write(data));
@@ -109,20 +103,20 @@ primusServer.on('connection', spark => {
       currentPlayers[spark.id].latestControlInfo = data;
     }
     else {
-      log("Received unknown message type " + data.type)
+      Log.error("Received unknown message type " + data.type)
     }
   });
 });
 
 primusServer.on('disconnection', spark => {
-  log(spark.id, 'Spark disconnected from', spark.address);
+  Log.debug(spark.id, 'Spark disconnected from', spark.address);
   currentPlayers[spark.id] = undefined;
 });
 
 network.DisplayLocalIPAddresses();
 
 httpServer.listen(8080, function() {
-  log('Open http://localhost:8080 in your browser');
+  Log.info('Open http://localhost:8080 in your browser');
 });
 
 // Augment Array prototype to remove object from array, removes first matching object only.
@@ -188,10 +182,10 @@ function worldUpdateLoop() {
     
     currentZombies.forEach(zombie => {
       if (Physics.hitTestCircles(playerInfo.modelCircle, zombie.modelCircle)) {
-        log(`hitTestZombie: ${zombie.modelCircle.centerX}, ${zombie.modelCircle.centerY} vs. player ${playerInfo.modelCircle.centerX}, ${playerInfo.modelCircle.centerY}`)
+        Log.debug(`hitTestZombie: ${zombie.modelCircle.centerX}, ${zombie.modelCircle.centerY} vs. player ${playerInfo.modelCircle.centerX}, ${playerInfo.modelCircle.centerY}`)
         // Player got hit by zombie 
         playerInfo.health -= 1;
-        log(`hit! ${playerInfo.health} health remaining`);
+        Log.debug(`hit! ${playerInfo.health} health remaining`);
         // TODO: player should make a sound.
         if (playerInfo.health <= 0) {
 
@@ -211,7 +205,7 @@ function worldUpdateLoop() {
   // Send world update to all clients, as long as the world has changed
   // from the last time we sent.
   if (!Util.objectsEqual(prevWorldUpdate, worldUpdateMessage)) {
-    log("Sending world update");
+    Log.debug("Sending world update");
     forEachPlayer(player => player.spark.write(worldUpdateMessage));
 
     // Deep clone the original message so we can get new player objects created
@@ -221,7 +215,7 @@ function worldUpdateLoop() {
 
   var processingTimeMsec = datetimeObj.getTime() - currentTime;
   if (processingTimeMsec > 50) {
-    console.log("Excessive loop processing time: ${processingTimeMsec} ms");
+    Log.warning("Excessive loop processing time: ${processingTimeMsec} ms");
   }
 }
 
