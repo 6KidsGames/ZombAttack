@@ -171,7 +171,7 @@ gulp.task('convert-scripts-es6-to-es5-minify-sourcemap', ['copy-site-content'], 
 });
 
 gulp.task('assemble-tileset', [ 'clean'], function() {
-  return runTexturePacker('ZombieDefenseTileset', Paths.TilesRoot);
+  return runTexturePacker('ZombieDefenseTileset', Paths.TilesRoot, 64);
 });
 
 gulp.task('assemble-spritesheet', ['clean'], function() {
@@ -187,16 +187,23 @@ gulp.task('run-unit-tests', [], function() {
 // Use Texture Packer basic mode to create a spritesheet from all sprite files under the sprite root folder.
 // Based on: http://www.nonostante.io/devblog/2015-12-02-automate-sprite-management-with-texture-packer.html
 // With: https://www.codeandweb.com/texturepacker/documentation
-function runTexturePacker(baseFileName, sourceDirectoryOrFiles) {
+function runTexturePacker(baseFileName, sourceDirectoryOrFiles, height = 0) {
     var texturePackerCmd = '"C:\\Program Files\\CodeAndWeb\\TexturePacker\\bin\\TexturePacker.exe"';
     var outputSpritesheetImageFile = path.join(Paths.SiteImagesOutput, baseFileName + ".png");
     var outputSpritesheetDataFile = path.join(Paths.SiteImagesOutput, baseFileName + ".json");
 
     console.log("Building in current working folder:", __dirname);
 
+    var heightParam = "";
+    if (height > 0) {
+        heightParam = " --height " + height;
+    }
+
     var command = texturePackerCmd +
         " --data " + outputSpritesheetDataFile +
         " --sheet " + outputSpritesheetImageFile +
+        heightParam +
+        " --max-width 16384" +
         " --trim-sprite-names" +  // Removes .png extensions so you can refer to sprites by their base names (e.g. flower instead of flower.png)
         " --format json" +  // Create a JSON-hash output format that Pixi/Hexi likes.
         " --algorithm Basic" +  // Anything more means buying a TexturePacker pro license per student.
