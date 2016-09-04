@@ -38,7 +38,7 @@
 
     var datetimeObj = new Date();
 
-    // Track the latest world updates from the server's worldUpdate messages.
+    // Track the latest world updates from the server's world update messages.
     // We start with an empty world until the server can get a first message
     // back to us.
     var currentWorld = createEmptyWorldUpdate();
@@ -55,12 +55,13 @@
       'Sounds/ZombieGrowl2.mp3',
       
       // Spritesheet and tileset JSON metadata files and related PNGs.
-      'images/ZombieDefenseSpritesheet.json',
-      'images/ZombieDefenseTileset.png',
+      'images/ZombAttackSpritesheet.json',
+      'images/ZombAttackTileset.png',
 
-      // Game maps definitions in Tiled Editor (http://mapeditor.org) comma-separated value (CSV)
+      // Game map definitions in Tiled Editor (http://mapeditor.org) comma-separated value (CSV) JSON
       // format, suitable for use with Hexi's GameUtilities.
       'Levels/SpawnCity.json',
+      'Levels/theFarm.json',
     ];
     
     // Hexi.js (and Pixi.js) setup. Pixi will autodetect the browser's capabilities and
@@ -71,7 +72,7 @@
     hexiObj.scaleToWindow();
     hexiObj.start();
 
-    var zombieGrowlMap = { };  // Path to Hexi Sound.js object.
+    var zombieGrowls = [];
 
     // User interface spites.
     var playerHealthSprite = undefined;
@@ -84,10 +85,11 @@
     function hexiSetupCompleted() {
       console.log("Hexi setup complete");
 
-      zombieGrowlMap['Sounds/ZombieGrowl1.mp3'] = hexiObj.sound('Sounds/ZombieGrowl1.mp3');
-      zombieGrowlMap['Sounds/ZombieGrowl2.mp3'] = hexiObj.sound('Sounds/ZombieGrowl2.mp3');
+      // CODESYNC: The number of sounds here is set in Zombie.js numGrowlSounds
+      zombieGrowls[0] = hexiObj.sound('Sounds/ZombieGrowl1.mp3');
+      zombieGrowls[1] = hexiObj.sound('Sounds/ZombieGrowl2.mp3');
 
-      playerHealthSprite = hexiObj.text("HEALTH: ", "32px sans", "white", 10, 10);
+      playerHealthSprite = hexiObj.text("HEALTH: ", "28px", "white", 10, 10);
       playerHealthSprite.alpha = 0.5;
       playerHealthSprite.layer = 1000;  // Foremost
 
@@ -119,7 +121,7 @@
         output.value += nameOrUnknown(data.player) + ': ' + data.message + '\n';
         output.scrollTop = output.scrollHeight;  // Follow messages at bottom of text area.
       }
-      else if (data.type == 'worldUpdate') {
+      else if (data.type == 'update') {
         // console.log("Received world update:", data);
         currentWorld = data;
       }
@@ -205,25 +207,26 @@
       // Create a new, empty PlayerControlInfo message to send to the server
       // with our current control status.
       var controlInfo = {
-        type: 'PlayerControlInfo',
+        type: 'ctrl',
         name: playerName.value  // Current player name as typed into the web page. Can change any time.
       };
 
       // Create tile world object if we have never updated a level before, or if we changed levels.
       // Must come early in loop logic since we need to add and update sprites as children of the level object.
-      if (currentLevelName !== currentWorld.levelName) {
-        currentLevelName = currentWorld.levelName;
-        levelWorldObj = hexiObj.makeTiledWorld("Levels/" + currentWorld.levelName + ".json", 'images/ZombieDefenseTileset.png');
+      if (currentLevelName !== currentWorld.lvl) {
+        console.log(`Loading level ${currentWorld.lvl}`);
+        currentLevelName = currentWorld.lvl;
+        levelWorldObj = hexiObj.makeTiledWorld("Levels/" + currentWorld.lvl + ".json", 'images/ZombAttackTileset.png');
         levelWorldObj.layer = 0;  // Rearmost.
       }
 
       // Mark all players we are tracking as touched=false to detect removed players.
       forEachPlayerData(function(playerData) { playerData.touched = false; });
 
-      // Make changes to sprites from the current world state sent by the server.
+      // Make changes to player sprites from the current world state sent by the server.
       var myPlayerData  = null;
-      for (var i = 0; i < currentWorld.players.length; i++) {
-        var player = currentWorld.players[i];
+      for (var i = 0; i < currentWorld.p.length; i++) {
+        var player = currentWorld.p[i];
 
         // Player might be new. If so, create a new sprite.
         var playerData = null;
@@ -256,13 +259,13 @@
         }
 
         // Update the sprite with current world information.
-        playerData.sprite.x = player.currentPosition.x;
-        playerData.sprite.y = player.currentPosition.y;
-        playerData.sprite.rotation = player.rotation;
+        playerData.sprite.x = player.x;
+        playerData.sprite.y = player.y;
+        playerData.sprite.rotation = player.dir;
         playerData.lastHealth = playerData.health;
-        playerData.health = player.health;
+        playerData.health = player.hl;
         if (player.dead && !playerData.dead) {
-          // TODO: leave a sound.
+          // TODO: Make a sound.
           playerData.dead = true;
         }
       }
@@ -286,8 +289,8 @@
       forEachZombieData(function(zombieData) { zombieData.touched = false; });
 
       // Process zombie changes sent by the server.
-      for (var i = 0; i < currentWorld.zombies.length; i++) {
-        var zombie = currentWorld.zombies[i];
+      for (var i = 0; i < currentWorld.z.length; i++) {
+        var zombie = currentWorld.z[i];
 
         // If new, create a new sprite.
         var zombieData = null;
@@ -296,7 +299,7 @@
             id: zombie.id,
             sprite: createNewZombieSprite(zombie),
             serverZombieInfo: zombie,
-            lastGrowlCount: zombie.growlCount,  // On reconnect, we don't want a ton of growls, so use the current server count and play the next ones sent.
+            lastGrowlCount: zombie.growlC,  // On reconnect, we don't want a ton of growls, so use the current server count and play the next ones sent.
           };
           zombieDatas[zombie.id] = zombieData;
         }
@@ -306,16 +309,16 @@
         zombieData.touched = true;
 
         // See if the growlCount is newer than our last known update, and if so, start a growl sound.
-        if (zombie.growlCount > zombieData.lastGrowlCount) {
-          zombieData.lastGrowlCount = zombie.growlCount;
-          console.log("Playing growl", zombie.growlSound)
-          zombieGrowlMap[zombie.growlSound].play();
+        if (zombie.growlC > zombieData.lastGrowlCount) {
+          zombieData.lastGrowlCount = zombie.growlC;
+          console.log(`Z${zombie.id} playing growl ${zombie.growl}`);
+          zombieGrowls[zombie.growl].play();
         }
 
         // Update the sprite with current world information.
-        zombieData.sprite.x = zombie.currentPosition.x;
-        zombieData.sprite.y = zombie.currentPosition.y;
-        zombieData.sprite.rotation = zombie.rotation;
+        zombieData.sprite.x = zombie.x;
+        zombieData.sprite.y = zombie.y;
+        zombieData.sprite.rotation = zombie.dir;
       }
 
       // Find any zombieDatas that were not touched this round and remove -
@@ -330,16 +333,16 @@
       });
 
       if (scrollingTileCamera === null) {
-        scrollingTileCamera = hexiObj.worldCamera(levelWorldObj, currentWorld.size.width, currentWorld.size.height);
+        scrollingTileCamera = hexiObj.worldCamera(levelWorldObj, currentWorld.lvlW, currentWorld.lvlH);
         scrollingTileCamera.centerOver(myPlayerData.sprite);
       }
 
       // Control keys don't change anything locally, we send to the server and it
       // determines what happens.
-      if (keyPressed[KEY_W]) { controlInfo.forwardPressed = true; }
-      if (keyPressed[KEY_S]) { controlInfo.backwardPressed = true; }
-      if (keyPressed[KEY_A]) { controlInfo.rotationLeftPressed = true; }
-      if (keyPressed[KEY_D]) { controlInfo.rotationRightPressed = true; }
+      if (keyPressed[KEY_W]) { controlInfo.fwd = true; }
+      if (keyPressed[KEY_S]) { controlInfo.back = true; }
+      if (keyPressed[KEY_A]) { controlInfo.turnLeft = true; }
+      if (keyPressed[KEY_D]) { controlInfo.turnRight = true; }
       
       // Send the control update to the game server if it's different from the last update.
       // TODO: This should be handled asynchronously instead of in the game
@@ -374,18 +377,28 @@
       return sprite;
     }
   
+    // Map from zombie costume numbers into texture names.
+    // CODESYNC: Numeric keys are mapped in Zombie.js.
+    var ZombieCostumeIDMap = {
+      0: "crawler_",
+      1: "vcrawlerzombie",
+      2: "czombie_",
+      3: "vnormalzombie",
+    }; 
+
     function createNewZombieSprite(serverZombieInfo) {
-      console.log("Creating " + serverZombieInfo.type + " zombie (ID=" + serverZombieInfo.id +
-          ") with costume " + serverZombieInfo.costume +
-          " at (" + serverZombieInfo.currentPosition.x + "," + serverZombieInfo.currentPosition.y + ")");
-      var sprite = hexiObj.sprite(hexiObj.spriteUtilities.frameSeries(0, 1, serverZombieInfo.costume), 0, 0);
+      var costumeName = ZombieCostumeIDMap[serverZombieInfo.cstm];
+      console.log("Creating zombie Z" + serverZombieInfo.id + ") with costume " + costumeName +
+          " at (" + serverZombieInfo.x + "," + serverZombieInfo.y + ")");
+      var sprite = hexiObj.sprite(hexiObj.spriteUtilities.frameSeries(0, 1, costumeName), 0, 0);
 
       // Add to the tile world so its position remains relative to that world.
       levelWorldObj.addChild(sprite);
 
       sprite.fps = 2;
       sprite.playAnimation();
-      sprite.position = serverZombieInfo.currentPosition;
+      sprite.position.x = serverZombieInfo.x;
+      sprite.position.y = serverZombieInfo.y;
       sprite.pivot.x = 15;
       sprite.pivot.y = 22;
       sprite.layer = 10;  // Behind player.
@@ -395,8 +408,9 @@
 
     function createEmptyWorldUpdate() {
       return {
-        players: [],
-        zombies: [],
+        p: [],
+        z: [],
+        wpns: [],
       };
     }
 
@@ -454,25 +468,6 @@
       min = Math.ceil(min);
       max = Math.floor(max);
       return Math.floor(Math.random() * (max - min)) + min;
-    }
-
-    var playerTints = [
-      0xFFFF00,
-      0xFF00FF,
-      0x00FFFF,
-      0xFF0000,
-      0x00FF00,
-      0x0000FF,
-      0x808080,
-      0xFFFF80,
-      0xFF80FF,
-      0x80FFFF,
-      0xFF8080,
-      0x80FF80,
-      0x8080FF,
-    ];
-    function createPlayerTint() {
-      return playerTints[getRandomInt(0, playerTints.length)];
     }
   </script>
 </body>
