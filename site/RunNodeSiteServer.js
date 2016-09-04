@@ -32,8 +32,9 @@ var primusOptions = {
   
   // For speed - makes smaller messages over the wire (or wireless), meaning lower latency
   // and better server scalability.
-  // Change to 'JSON' for debugging using WireShark.
-  parser: 'binary',  
+  // Set to 'binary' for smaller and faster messages, which makes for a more scalable server.
+  // Set to 'JSON' for debugging using Chrome (F12, Network tab, click the Primus websocket entry, click Frames, and click on any frame).
+  parser: 'JSON', //binary',  
 };
 var primusServer = new primus(httpServer, primusOptions);
 
@@ -102,7 +103,7 @@ primusServer.on('connection', spark => {
       // Broadcast player text messages to all players. 
       forEachPlayer(p => p.spark.write(data));
     }
-    else if (data.type === 'PlayerControlInfo') {
+    else if (data.type === 'ctrl') {
       // Update our current view of what the player is doing.
       // Our world update loop will use this info to update all players with
       // each other's info.

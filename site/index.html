@@ -72,7 +72,7 @@
     hexiObj.scaleToWindow();
     hexiObj.start();
 
-    var zombieGrowlMap = { };  // Path to Hexi Sound.js object.
+    var zombieGrowls = [];
 
     // User interface spites.
     var playerHealthSprite = undefined;
@@ -85,10 +85,11 @@
     function hexiSetupCompleted() {
       console.log("Hexi setup complete");
 
-      zombieGrowlMap['Sounds/ZombieGrowl1.mp3'] = hexiObj.sound('Sounds/ZombieGrowl1.mp3');
-      zombieGrowlMap['Sounds/ZombieGrowl2.mp3'] = hexiObj.sound('Sounds/ZombieGrowl2.mp3');
+      // CODESYNC: The number of sounds here is set in Zombie.js numGrowlSounds
+      zombieGrowls[0] = hexiObj.sound('Sounds/ZombieGrowl1.mp3');
+      zombieGrowls[1] = hexiObj.sound('Sounds/ZombieGrowl2.mp3');
 
-      playerHealthSprite = hexiObj.text("HEALTH: ", "32px sans", "white", 10, 10);
+      playerHealthSprite = hexiObj.text("HEALTH: ", "28px", "white", 10, 10);
       playerHealthSprite.alpha = 0.5;
       playerHealthSprite.layer = 1000;  // Foremost
 
@@ -206,7 +207,7 @@
       // Create a new, empty PlayerControlInfo message to send to the server
       // with our current control status.
       var controlInfo = {
-        type: 'PlayerControlInfo',
+        type: 'ctrl',
         name: playerName.value  // Current player name as typed into the web page. Can change any time.
       };
 
@@ -310,8 +311,8 @@
         // See if the growlCount is newer than our last known update, and if so, start a growl sound.
         if (zombie.growlCount > zombieData.lastGrowlCount) {
           zombieData.lastGrowlCount = zombie.growlCount;
-          console.log(`${zombie.id} playing growl ${zombie.growlSound}`);
-          zombieGrowlMap["Sounds/" + zombie.growlSound + ".mp3"].play();
+          console.log(`${zombie.id} playing growl ${zombie.growl}`);
+          zombieGrowls[zombie.growl].play();
         }
 
         // Update the sprite with current world information.
