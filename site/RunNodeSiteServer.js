@@ -37,44 +37,55 @@ var primusOptions = {
 };
 var primusServer = new primus(httpServer, primusOptions);
 
-var currentPlayers = { };  // Maps from spark ID (string) to player state.
+var currentPlayers = { };  // Maps from spark ID (string) to PlayerInfo server data structure..
 function forEachPlayer(func) {
-  var sparkIDs = Object.keys(currentPlayers);
-  for (var i = 0; i < sparkIDs.length; i++) {
-    var sparkID = sparkIDs[i];
+  let sparkIDs = Object.keys(currentPlayers);
+  for (let i = 0; i < sparkIDs.length; i++) {
+    let sparkID = sparkIDs[i];
     if (currentPlayers.hasOwnProperty(sparkID)) {
-      var player = currentPlayers[sparkID]; 
-      if (player) {
-        func(player);
+      let playerInfo = currentPlayers[sparkID]; 
+      if (playerInfo) {
+        func(playerInfo);
       }
     }
   }
 }
 
+// Stores server-side ZombieInfo objects.
 var currentZombies = [ ];
+
 var currentLevel = Level.chooseLevel();
 
 // Returns a PlayerInfo object. Called at connection of the client, before
 // we have any identifying information.
-function spawnPlayer(sparkID) {
+// This data structure is the full server-side view of the player.
+// The 'player' object is the information that is shared with clients.
+function spawnPlayer(spark) {
   let x = Util.getRandomInt(32, currentLevel.widthPx - 32);
   let y = Util.getRandomInt(32, currentLevel.heightPx - 32);
-  return {
-    id: sparkID,  // Used by clients to self-identify
-    name: '',
 
-    // Place the player in a random location on the map.
-    // TODO: Account for the contents of the underlying tile - only place users into locations that
-    // make sense, or at map-specific spawn points.
-    currentPosition: {
-      x: x,
-      y: y
-    },
+  return {
+    spark: spark,
+
+    latestControlInfo: { },
+
+    // The abstract representation of the player for hit detection purposes.
     modelCircle: Physics.circle(x + 16, y + 16, 16),
-    rotation: 0.0,
-    backpack: [],
-    currentWeapon: 'Dagger',
-    health: 5,
+    
+    player: {
+      id: spark.id,  // Used by clients to self-identify
+      name: '',
+
+      // Place the player in a random location on the map.
+      // TODO: Account for the contents of the underlying tile - only place users into locations that
+      // make sense, or at map-specific spawn points.
+      x: x,
+      y: y,
+      dir: 0.0,
+      backpack: [],
+      weapon: 'Dagger',
+      health: 5,
+    }
   };
 }
 
@@ -83,11 +94,7 @@ primusServer.on('connection', spark => {
   Log.info(spark.id, 'Connected to spark from', spark.address, '- sending first world update');
   spark.write(prevWorldUpdate);
 
-  currentPlayers[spark.id] = {
-    spark: spark,
-    latestControlInfo: { },
-    playerInfo: spawnPlayer(spark.id)
-  };
+  currentPlayers[spark.id] = spawnPlayer(spark);
 
   spark.on('data', function received(data) {
     Log.debug(spark.id, 'received message:', data);
@@ -137,71 +144,67 @@ var prevWorldUpdate = createEmptyWorldUpdateMessage();
 // World update loop, runs 25 times a second.
 setInterval(worldUpdateLoop, 40 /*msec*/);
 function worldUpdateLoop() {
-  var currentTime = (new Date()).getTime();
-  var worldUpdateMessage = createEmptyWorldUpdateMessage();
+  let currentTime = (new Date()).getTime();
+  let worldUpdateMessage = createEmptyWorldUpdateMessage();
 
   if (Util.getRandomInt(0, 250) == 0) {  // About once in 10 seconds
     // TODO: Don't spawn within easy reach of players' current positions.
     currentZombies.push(Zombie.spawnZombie(currentLevel, currentTime));
   }
 
-  currentZombies.forEach(zombie => {
-    Zombie.updateZombie(zombie, currentTime);
-    worldUpdateMessage.zombies.push(zombie);
+  currentZombies.forEach(zombieInfo => {
+    Zombie.updateZombie(zombieInfo, currentTime);
+    worldUpdateMessage.zombies.push(zombieInfo.zombie);  // Send only the client-side data structure.
   });
 
-  forEachPlayer(player => {
-    let playerInfo = player.playerInfo;
-    let controlInfo = player.latestControlInfo;
+  forEachPlayer(playerInfo => {
+    let player = playerInfo.player;
+    let controlInfo = playerInfo.latestControlInfo;
 
-    if (controlInfo.rotationRightPressed) {
-      playerInfo.rotation += 0.2;
+    if (controlInfo.turnRight) {
+      player.dir += 0.2;
     }
-    if (controlInfo.rotationLeftPressed) {
-      playerInfo.rotation -= 0.2;
+    if (controlInfo.turnLeft) {
+      player.dir -= 0.2;
     }
-    if (controlInfo.forwardPressed) {
-      let dx = playerSpeedPxPerFrame * Math.sin(playerInfo.rotation);
-      let dy = playerSpeedPxPerFrame * Math.cos(playerInfo.rotation);
-      playerInfo.currentPosition.x += dx;
-      playerInfo.currentPosition.y -= dy;
-      playerInfo.modelCircle.centerX += dx;
-      playerInfo.modelCircle.centerY -= dy;
-      clampPositionToLevel(playerInfo.currentPosition);
+    if (controlInfo.fwd) {
+      player.x += playerSpeedPxPerFrame * Math.sin(player.dir);
+      player.y -= playerSpeedPxPerFrame * Math.cos(player.dir);
+      clampPositionToLevel(player);
+      playerInfo.modelCircle.centerX = player.x + 16;
+      playerInfo.modelCircle.centerY = player.y + 16;
     }
-    if (controlInfo.backwardPressed) {
-      let dx = playerSpeedPxPerFrame * Math.sin(playerInfo.rotation);
-      let dy = playerSpeedPxPerFrame * Math.cos(playerInfo.rotation);
-      playerInfo.currentPosition.x -= dx;
-      playerInfo.currentPosition.y += dy;
-      playerInfo.modelCircle.centerX -= dx;
-      playerInfo.modelCircle.centerY += dy;
-      clampPositionToLevel(playerInfo.currentPosition);
+    if (controlInfo.back) {
+      player.x -= playerSpeedPxPerFrame * Math.sin(player.dir);
+      player.y += playerSpeedPxPerFrame * Math.cos(player.dir);
+      clampPositionToLevel(player);
+      playerInfo.modelCircle.centerX = player.x + 16;
+      playerInfo.modelCircle.centerY = player.y + 16;
     }
     
     currentZombies.forEach(zombie => {
       if (Zombie.isBiting(zombie, playerInfo, currentTime)) {
         // Player got hit by zombie 
-        playerInfo.health -= 1;
+        player.health -= 1;
         // TODO: player should make a sound.
-        if (playerInfo.health <= 0) {
+        if (player.health <= 0) {
 
-          playerInfo.dead = true;
+          player.dead = true;
         }
       }
     });
 
-    // Never push the 'players' object to this array - Primus sparks
-    // are not comparable and should not be sent over the wire.
-    // We send only the information in player.playerInfo.
-    worldUpdateMessage.players.push(playerInfo);
+    // Never push the playerInfo object to this array, to minimize
+    // wire traffic, and Primus sparks are not comparable and should not be sent over the wire.
+    // We send only the information in playerInfo.player.
+    worldUpdateMessage.players.push(player);
   });
 
   // Send world update to all clients, as long as the world has changed
   // from the last time we sent.
   if (!Util.objectsEqual(prevWorldUpdate, worldUpdateMessage)) {
     Log.debug("Sending world update");
-    forEachPlayer(player => player.spark.write(worldUpdateMessage));
+    forEachPlayer(playerInfo => playerInfo.spark.write(worldUpdateMessage));
 
     // Deep clone the original message so we can get new player objects created
     // in order to get a valid comparison in object_equals().
@@ -214,7 +217,7 @@ function worldUpdateLoop() {
   }
 }
 
-// Accepts a position and keeps its value within an acceptable reach of the edges.
+// Accepts an object containing 'x' and 'y' and keeps its location within an acceptable reach of the edges.
 function clampPositionToLevel(pos) {
   pos.x = Util.clamp(pos.x, 32, currentLevel.widthPx - 32);
   pos.y = Util.clamp(pos.y, 32, currentLevel.heightPx - 32);
@@ -222,9 +225,10 @@ function clampPositionToLevel(pos) {
 
 function createEmptyWorldUpdateMessage() {
   return {
-    type: 'worldUpdate',
-    levelName: currentLevel.name,
-    size: { width: currentLevel.widthPx, height: currentLevel.heightPx },
+    type: 'update',
+    lvl: currentLevel.name,
+    lvlW: currentLevel.widthPx,
+    lvlH: currentLevel.heightPx,
     players: [],
     zombies: [],
     weapons: []

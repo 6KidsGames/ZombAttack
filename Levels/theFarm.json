@@ -19,11 +19,11 @@
         {
          "columns":49,
          "firstgid":1,
-         "image":"..\/out\/site\/images\/ZombieDefenseTileset.png",
+         "image":"..\/out\/site\/images\/ZombAttackTileset.png",
          "imageheight":64,
          "imagewidth":3136,
          "margin":0,
-         "name":"ZombieDefenseTileset",
+         "name":"ZombAttackTileset",
          "spacing":0,
          "tilecount":49,
          "tileheight":64,

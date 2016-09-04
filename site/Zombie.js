@@ -15,8 +15,8 @@ const ZombieTypes = [
 // Sound files for growls.
 // CODESYNC: index.html keeps this list in 2 places.
 const growlSounds = [
-  'Sounds/ZombieGrowl1.mp3',
-  'Sounds/ZombieGrowl2.mp3',
+  'ZombieGrowl1',
+  'ZombieGrowl2',
 ];
 
 // Creates a map from a number in the range of 0..totalZombieProbability to the zombie type
@@ -50,51 +50,56 @@ function spawnZombie(level, currentTime) {
   let randomZombieNumber = Util.getRandomInt(0, totalZombieProbability);
   let zombieType = zombieProbabilityMap[randomZombieNumber];
 
-  let zombie = {
-    id: zombieID,
-
-    // Place the player in a random location on the map.
-    // TODO: Account for the contents of the underlying tile - only place zombies into locations that
-    // make sense, or at map-specific spawn points.
-    currentPosition: {
-      x: x,
-      y: y
-    },
+  // A ZombieInfo is the server-side data structure containing all needed server tracking information.
+  // Only a subset of this information is passed to the clients, to minimize wire traffic.
+  let zombieInfo = {
     modelCircle: Physics.circle(x + 16, y + 16, 16),
-    rotation: 0.0,  // TODO: Start in random direction
-    health: zombieType.hitPoints,
-    type: zombieType.type,
-    costume: zombieType.costumes[Util.getRandomInt(0, zombieType.costumes.length)],
-    lastGrowlTime: 0,  // Jan 1, 1970, meaning overdue to growl.
-    growlCount: 0,  // Incremented whenever the zombie growls. Used by the client to know when to growl.
-    growlSound: '',  // When growlCount is increased, this is the growl sound name to play.
+    lastGrowlTime: currentTime,
     lastBiteTime: currentTime,
+
+    // The portion of the data structure we send to the clients.
+    zombie: {
+      id: zombieID,
+
+      // Place the player in a random location on the map.
+      // TODO: Account for the contents of the underlying tile - only place zombies into locations that
+      // make sense, or at map-specific spawn points.
+      x: x,
+      y: y,
+      dir: 0.0,  // TODO: Start in random direction
+      health: zombieType.hitPoints,
+      type: zombieType.type,
+      costume: zombieType.costumes[Util.getRandomInt(0, zombieType.costumes.length)],
+      growlCount: 0,  // Incremented whenever the zombie growls. Used by the client to know when to growl.
+      growlSound: '',  // When growlCount is increased, this is the growl sound name to play.
+    }
   };
 
-  return zombie;
+  return zombieInfo;
 }
 
 // Called on the world update loop.
 // currentTime is the current Unix epoch time (milliseconds since Jan 1, 1970).
-function updateZombie(zombie, currentTime) {
+function updateZombie(zombieInfo, currentTime) {
   // Occasional growls. We tell all the clients to use the same growl sound.
-  let msecSinceLastGrowl = currentTime - zombie.lastGrowlTime; 
+  let msecSinceLastGrowl = currentTime - zombieInfo.lastGrowlTime; 
   if (msecSinceLastGrowl > zombieMinTimeMsecBetweenGrowls) {
     let growlProbabilityInMsec = msecSinceLastGrowl * zombieGrowlProbabilityPerSec;
     if (Util.getRandomInt(0, msecSinceLastGrowl) < growlProbabilityInMsec) {
+      let zombie = zombieInfo.zombie;
       zombie.growlSound = growlSounds[Util.getRandomInt(0, growlSounds.length)];
       zombie.growlCount++;
-      zombie.lastGrowlTime = currentTime; 
+      zombieInfo.lastGrowlTime = currentTime; 
     }
   }
 }
 
-function isBiting(zombie, playerInfo, currentTime) {
-  let msecSinceLastBite = currentTime - zombie.lastBiteTime;
+function isBiting(zombieInfo, playerInfo, currentTime) {
+  let msecSinceLastBite = currentTime - zombieInfo.lastBiteTime;
   if (msecSinceLastBite >= 1000) {
-    if (Physics.hitTestCircles(playerInfo.modelCircle, zombie.modelCircle)) {
-      Log.debug(`${zombie.id}: Biting ${playerInfo.id}`);
-      zombie.lastBiteTime = currentTime;
+    if (Physics.hitTestCircles(playerInfo.modelCircle, zombieInfo.modelCircle)) {
+      Log.debug(`${zombieInfo.zombie.id}: Biting ${playerInfo.player.id}`);
+      zombieInfo.lastBiteTime = currentTime;
       return true;
     }
   }
