@@ -223,10 +223,10 @@
       // Mark all players we are tracking as touched=false to detect removed players.
       forEachPlayerData(function(playerData) { playerData.touched = false; });
 
-      // Make changes to sprites from the current world state sent by the server.
+      // Make changes to player sprites from the current world state sent by the server.
       var myPlayerData  = null;
-      for (var i = 0; i < currentWorld.players.length; i++) {
-        var player = currentWorld.players[i];
+      for (var i = 0; i < currentWorld.p.length; i++) {
+        var player = currentWorld.p[i];
 
         // Player might be new. If so, create a new sprite.
         var playerData = null;
@@ -263,9 +263,9 @@
         playerData.sprite.y = player.y;
         playerData.sprite.rotation = player.dir;
         playerData.lastHealth = playerData.health;
-        playerData.health = player.health;
+        playerData.health = player.hl;
         if (player.dead && !playerData.dead) {
-          // TODO: leave a sound.
+          // TODO: Make a sound.
           playerData.dead = true;
         }
       }
@@ -289,8 +289,8 @@
       forEachZombieData(function(zombieData) { zombieData.touched = false; });
 
       // Process zombie changes sent by the server.
-      for (var i = 0; i < currentWorld.zombies.length; i++) {
-        var zombie = currentWorld.zombies[i];
+      for (var i = 0; i < currentWorld.z.length; i++) {
+        var zombie = currentWorld.z[i];
 
         // If new, create a new sprite.
         var zombieData = null;
@@ -299,7 +299,7 @@
             id: zombie.id,
             sprite: createNewZombieSprite(zombie),
             serverZombieInfo: zombie,
-            lastGrowlCount: zombie.growlCount,  // On reconnect, we don't want a ton of growls, so use the current server count and play the next ones sent.
+            lastGrowlCount: zombie.growlC,  // On reconnect, we don't want a ton of growls, so use the current server count and play the next ones sent.
           };
           zombieDatas[zombie.id] = zombieData;
         }
@@ -309,9 +309,9 @@
         zombieData.touched = true;
 
         // See if the growlCount is newer than our last known update, and if so, start a growl sound.
-        if (zombie.growlCount > zombieData.lastGrowlCount) {
-          zombieData.lastGrowlCount = zombie.growlCount;
-          console.log(`${zombie.id} playing growl ${zombie.growl}`);
+        if (zombie.growlC > zombieData.lastGrowlCount) {
+          zombieData.lastGrowlCount = zombie.growlC;
+          console.log(`Z${zombie.id} playing growl ${zombie.growl}`);
           zombieGrowls[zombie.growl].play();
         }
 
@@ -377,11 +377,20 @@
       return sprite;
     }
   
+    // Map from zombie costume numbers into texture names.
+    // CODESYNC: Numeric keys are mapped in Zombie.js.
+    var ZombieCostumeIDMap = {
+      0: "crawler_",
+      1: "vcrawlerzombie",
+      2: "czombie_",
+      3: "vnormalzombie",
+    }; 
+
     function createNewZombieSprite(serverZombieInfo) {
-      console.log("Creating " + serverZombieInfo.type + " zombie (ID=" + serverZombieInfo.id +
-          ") with costume " + serverZombieInfo.costume +
+      var costumeName = ZombieCostumeIDMap[serverZombieInfo.cstm];
+      console.log("Creating zombie Z" + serverZombieInfo.id + ") with costume " + costumeName +
           " at (" + serverZombieInfo.x + "," + serverZombieInfo.y + ")");
-      var sprite = hexiObj.sprite(hexiObj.spriteUtilities.frameSeries(0, 1, serverZombieInfo.costume), 0, 0);
+      var sprite = hexiObj.sprite(hexiObj.spriteUtilities.frameSeries(0, 1, costumeName), 0, 0);
 
       // Add to the tile world so its position remains relative to that world.
       levelWorldObj.addChild(sprite);
@@ -399,9 +408,9 @@
 
     function createEmptyWorldUpdate() {
       return {
-        players: [],
-        zombies: [],
-        weaponse: [],
+        p: [],
+        p: [],
+        wpns: [],
       };
     }
 

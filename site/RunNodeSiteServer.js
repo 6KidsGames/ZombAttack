@@ -34,7 +34,18 @@ var primusOptions = {
   // and better server scalability.
   // Set to 'binary' for smaller and faster messages, which makes for a more scalable server.
   // Set to 'JSON' for debugging using Chrome (F12, Network tab, click the Primus websocket entry, click Frames, and click on any frame).
-  parser: 'JSON', //binary',  
+  //
+  // Message size info gathered 9/3/2016 (after message size optimizations added):
+  // JSON:
+  // - First world msg 83
+  // - 1 zombie 166
+  // - ~70 bytes per additional zombie
+  //
+  // Binary:
+  // - First world msg: 55
+  // - 1 zombie 108
+  // - ~45 bytes per additional zombie
+  parser: 'binary',  // 'JSON',  
 };
 var primusServer = new primus(httpServer, primusOptions);
 
@@ -61,6 +72,7 @@ var currentLevel = Level.chooseLevel();
 // we have any identifying information.
 // This data structure is the full server-side view of the player.
 // The 'player' object is the information that is shared with clients.
+// Property names are deliberately kept short to reduce space over the network.
 function spawnPlayer(spark) {
   let x = Util.getRandomInt(32, currentLevel.widthPx - 32);
   let y = Util.getRandomInt(32, currentLevel.heightPx - 32);
@@ -83,9 +95,9 @@ function spawnPlayer(spark) {
       x: x,
       y: y,
       dir: 0.0,
-      backpack: [],
-      weapon: 'Dagger',
-      health: 5,
+      inv: [],  // Inventory
+      wpn: 'Dagger',  // Weapon
+      hl: 5,  // health
     }
   };
 }
@@ -155,7 +167,7 @@ function worldUpdateLoop() {
 
   currentZombies.forEach(zombieInfo => {
     Zombie.updateZombie(zombieInfo, currentTime);
-    worldUpdateMessage.zombies.push(zombieInfo.zombie);  // Send only the client-side data structure.
+    worldUpdateMessage.z.push(zombieInfo.zombie);  // Send only the client-side data structure.
   });
 
   forEachPlayer(playerInfo => {
@@ -185,10 +197,10 @@ function worldUpdateLoop() {
     
     currentZombies.forEach(zombie => {
       if (Zombie.isBiting(zombie, playerInfo, currentTime)) {
-        // Player got hit by zombie 
-        player.health -= 1;
+        // Player got hit by zombie, reduce health.
+        player.hl -= 1;
         // TODO: player should make a sound.
-        if (player.health <= 0) {
+        if (player.hl <= 0) {
 
           player.dead = true;
         }
@@ -198,7 +210,7 @@ function worldUpdateLoop() {
     // Never push the playerInfo object to this array, to minimize
     // wire traffic, and Primus sparks are not comparable and should not be sent over the wire.
     // We send only the information in playerInfo.player.
-    worldUpdateMessage.players.push(player);
+    worldUpdateMessage.p.push(player);
   });
 
   // Send world update to all clients, as long as the world has changed
@@ -225,13 +237,14 @@ function clampPositionToLevel(pos) {
 }
 
 function createEmptyWorldUpdateMessage() {
+  // Property names deliberately kept short to reduce space on the network.
   return {
     type: 'update',
     lvl: currentLevel.name,
     lvlW: currentLevel.widthPx,
     lvlH: currentLevel.heightPx,
-    players: [],
-    zombies: [],
-    weapons: []
+    p: [],  // Players
+    z: [],  // Zombies
+    wpns: []  // Weapons
   };
 }

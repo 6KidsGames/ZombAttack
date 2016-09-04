@@ -4,6 +4,15 @@ const Physics = require('./Physics');
 const Util = require('./Util');
 const Log = require('./Log');
 
+// Reduce transmission sizes by sending only integers over the wire, mapped to costume names.
+// CODESYNC: Numeric values are mapped in index.html back to costume names.
+const ZombieCostumeIDs = {
+  "crawler_": 0,
+  "vcrawlerzombie": 1,
+  "czombie_": 2,
+  "vnormalzombie": 3,
+};
+
 // Zombie information by type, including attributes like speed and costume.
 const ZombieTypes = [
   { type: "Crawler", probability: 2, hitPoints: 3, speedPxSec: 2, costumes: [ "crawler_", "vcrawlerzombie" ] },
@@ -41,7 +50,7 @@ let previousGrowlTimes = createInitialGrowlTimes();
 let nextZombieNumber = 0;
 
 function spawnZombie(level, currentTime) {
-  let zombieID = "z" + nextZombieNumber;
+  let zombieID = nextZombieNumber;
   nextZombieNumber++;
 
   let x = Util.getRandomInt(32, level.widthPx - 32);
@@ -56,6 +65,7 @@ function spawnZombie(level, currentTime) {
     modelCircle: Physics.circle(x + 16, y + 16, 16),
     lastGrowlTime: currentTime,
     lastBiteTime: currentTime,
+    type: zombieType.type,
 
     // The portion of the data structure we send to the clients.
     zombie: {
@@ -67,11 +77,10 @@ function spawnZombie(level, currentTime) {
       x: x,
       y: y,
       dir: 0.0,  // TODO: Start in random direction
-      health: zombieType.hitPoints,
-      type: zombieType.type,
-      costume: zombieType.costumes[Util.getRandomInt(0, zombieType.costumes.length)],
-      growl: 0,  // When growlCount is increased, this is the growl sound index to play.
-      growlCount: 0,  // Incremented whenever the zombie growls. Used by the client to know when to growl.
+      hl: zombieType.hitPoints,
+      cstm: ZombieCostumeIDs[zombieType.costumes[Util.getRandomInt(0, zombieType.costumes.length)]],
+      growl: 0,  // When growlC (growlCount) is increased, this is the growl sound index to play.
+      growlC: 0,  // Incremented whenever the zombie growls. Used by the client to know when to growl.
     }
   };
 
@@ -92,7 +101,7 @@ function updateZombie(zombieInfo, currentTime) {
       if (registerGrowl(currentTime)) {
         let zombie = zombieInfo.zombie;
         zombie.growl = Util.getRandomInt(0, numGrowlSounds);
-        zombie.growlCount++;
+        zombie.growlC++;
         zombieInfo.lastGrowlTime = currentTime;
       } 
     }
@@ -115,7 +124,7 @@ function isBiting(zombieInfo, playerInfo, currentTime) {
   let msecSinceLastBite = currentTime - zombieInfo.lastBiteTime;
   if (msecSinceLastBite >= 1000) {
     if (Physics.hitTestCircles(playerInfo.modelCircle, zombieInfo.modelCircle)) {
-      Log.debug(`${zombieInfo.zombie.id}: Biting ${playerInfo.player.id}`);
+      Log.debug(`Z${zombieInfo.zombie.id}: Biting ${playerInfo.player.id}`);
       zombieInfo.lastBiteTime = currentTime;
       return true;
     }
