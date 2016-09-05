@@ -69,6 +69,7 @@
 
     // User interface spites.
     var playerHealthSprite = undefined;
+    var playerWeaponSprite = undefined;
 
     function hexiLoading() {
       console.log(`Loading: ${hexiObj.loadingFile} (${hexiObj.loadingProcess}%)`);
@@ -146,6 +147,10 @@
       playerHealthSprite = hexiObj.text("HEALTH: ", "32px sans-serif", "white", 10, 10);
       playerHealthSprite.alpha = 0.5;
       playerHealthSprite.layer = 1000;  // Foremost
+
+      playerWeaponSprite = hexiObj.text("Weapon: ", "32px sans-serif", "white", 10, 45);
+      playerWeaponSprite.alpha = 0.5;
+      playerWeaponSprite.layer = 1000;  // Foremost
       
       hexiObj.state = gameLoop;
     }
@@ -316,14 +321,20 @@
         playerData.sprite.rotation = player.dir;
         playerData.lastHealth = playerData.health;
         playerData.health = player.hl;
+        playerData.lastWeapon = playerData.weapon;
+        playerData.weapon = player.wpn;
         if (player.dead && !playerData.dead) {
           // TODO: Make a sound.
           playerData.dead = true;
         }
       }
 
-      if (myPlayerData.health != myPlayerData.lastHealth) {
+      if (myPlayerData.health !== myPlayerData.lastHealth) {
         playerHealthSprite.content = "HEALTH: " + myPlayerData.health;
+      }
+
+      if (myPlayerData.weapon !== myPlayerData.lastWeapon) {
+        playerWeaponSprite.content = "WEAPON: " + myPlayerData.weapon;
       }
 
       // Find any playerDatas that were not touched this round and remove -
