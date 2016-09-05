@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>ScratchPlus Summer 2016 Project</title>
+  <title>Zomb Attack</title>
   <link rel="stylesheet" href="//cdn.jsdelivr.net/normalize/3.0.1/normalize.min.css">
   <script src="/primus/primus.js"></script>
   <script src="/scripts/hexi.min.js"></script>
@@ -16,11 +16,6 @@
   </style>
 </head>
 <body>
-  <input placeholder="Player name" id="playerName"></input>
-  <p>
-    Use A,S,D,W to move.
-  </p>
-  <div id="gameArea"></div>
   <form id="chatForm">
     <input placeholder="Write message to other players" id="textMessage" />
     <button type="submit">Send</button>
@@ -33,10 +28,7 @@
     var output = document.getElementById('output');
     output.value = '';
     var textMessage = document.getElementById('textMessage');
-    var playerName = document.getElementById('playerName');
     var gameArea = document.getElementById('gameArea');
-
-    var datetimeObj = new Date();
 
     // Track the latest world updates from the server's world update messages.
     // We start with an empty world until the server can get a first message
@@ -49,6 +41,8 @@
     // Sound and graphics files we want to load via Hexi.js.
     var thingsToLoadIntoHexi = [
       // Sound files.
+
+      "Sounds/CreepyBackgroundMusic.mp3",
 
       // CODESYNC: Zombie.js keeps this list as well.
       'Sounds/ZombieGrowl1.mp3',
@@ -89,10 +83,69 @@
       zombieGrowls[0] = hexiObj.sound('Sounds/ZombieGrowl1.mp3');
       zombieGrowls[1] = hexiObj.sound('Sounds/ZombieGrowl2.mp3');
 
-      playerHealthSprite = hexiObj.text("HEALTH: ", "28px", "white", 10, 10);
+      logo1Setup();
+    }
+
+    var logo1Sprite = undefined;
+    var logo1Start;
+    function logo1Setup() {
+      logo1Start = (new Date()).getTime();
+      logo1Sprite = hexiObj.sprite("6KidsLogo");
+      logo1Sprite.alpha = 0;
+      hexiObj.stage.putCenter(logo1Sprite);
+      hexiObj.state = logo1Loop;
+    }
+    function logo1Loop() {
+      var now = (new Date()).getTime();
+      var dt = now - logo1Start;
+      if (dt < 1000) {
+        logo1Sprite.alpha = (dt / 1000) * (dt / 1000);
+      } else if (dt < 2000) {
+        logo1Sprite.alpha = 1;
+      } else if (dt < 3000) {
+        logo1Sprite.alpha = (1000 - (dt - 2000)) / 1000;
+      } else {
+        hexiObj.remove(logo1Sprite);
+        logo2Setup();
+      }
+    }
+
+    var logo2Sprite = undefined;
+    var logo2Start;
+    function logo2Setup() {
+      logo2Start = (new Date()).getTime();
+      logo2Sprite = hexiObj.sprite("ZombAttackLogo1");
+      logo2Sprite.alpha = 0;
+      hexiObj.stage.putCenter(logo2Sprite);
+      hexiObj.state = logo2Loop;
+
+      // Start creepy music at the start of the ZombAttack logo.
+      var music = hexiObj.sound("Sounds/CreepyBackgroundMusic.mp3");
+      music.loop = true;
+      music.fadeIn(1);
+      music.volume = 0.5;
+      music.play();
+    }
+    function logo2Loop() {
+      var now = (new Date()).getTime();
+      var dt = now - logo2Start;
+      if (dt < 1000) {
+        logo2Sprite.alpha = (dt / 1000) * (dt / 1000);
+      } else if (dt < 2000) {
+        logo2Sprite.alpha = 1;
+      } else if (dt < 3000) {
+        logo2Sprite.alpha = (1000 - (dt - 2000)) / 1000;
+      } else {
+        hexiObj.remove(logo2Sprite);
+        gameLoopSetup();
+      }
+    }
+
+    function gameLoopSetup() {
+      playerHealthSprite = hexiObj.text("HEALTH: ", "32px sans-serif", "white", 10, 10);
       playerHealthSprite.alpha = 0.5;
       playerHealthSprite.layer = 1000;  // Foremost
-
+      
       hexiObj.state = gameLoop;
     }
 
@@ -137,7 +190,6 @@
       }
       primus.write({
         type: 'text',
-        player: playerName.value,
         message: textMessage.value
       });
       textMessage.value = '';
@@ -202,13 +254,12 @@
 
     // Called 30 times per second by the Hexi main loop.
     function gameLoop() {
-      var startTime = datetimeObj.getTime();
+      var startTime = (new Date()).getTime();
 
       // Create a new, empty PlayerControlInfo message to send to the server
       // with our current control status.
       var controlInfo = {
         type: 'ctrl',
-        name: playerName.value  // Current player name as typed into the web page. Can change any time.
       };
 
       // Create tile world object if we have never updated a level before, or if we changed levels.
@@ -355,9 +406,9 @@
       // Keep the local player's sprite centered on the screen, and move the level map around the player.
       scrollingTileCamera.follow(myPlayerData.sprite);
 
-      var processingTimeMsec = datetimeObj.getTime() - startTime;
+      var processingTimeMsec = (new Date()).getTime() - startTime;
       if (processingTimeMsec > 50) {
-        console.log("Excessive loop processing time: ${processingTimeMsec} ms");
+        console.log(`Excessive loop processing time: ${processingTimeMsec} ms`);
       }
     }
 
@@ -388,7 +439,7 @@
 
     function createNewZombieSprite(serverZombieInfo) {
       var costumeName = ZombieCostumeIDMap[serverZombieInfo.cstm];
-      console.log("Creating zombie Z" + serverZombieInfo.id + ") with costume " + costumeName +
+      console.log("Creating zombie Z" + serverZombieInfo.id + " with costume " + costumeName +
           " at (" + serverZombieInfo.x + "," + serverZombieInfo.y + ")");
       var sprite = hexiObj.sprite(hexiObj.spriteUtilities.frameSeries(0, 1, costumeName), 0, 0);
 
