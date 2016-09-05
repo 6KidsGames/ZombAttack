@@ -43,6 +43,8 @@
     var thingsToLoadIntoHexi = [
       // Sound files.
 
+      "Sounds/CreepyBackgroundMusic.mp3",
+
       // CODESYNC: Zombie.js keeps this list as well.
       'Sounds/ZombieGrowl1.mp3',
       'Sounds/ZombieGrowl2.mp3',
@@ -115,6 +117,13 @@
       logo2Sprite = hexiObj.sprite("ZombAttackLogo2");
       hexiObj.stage.putCenter(logo2Sprite);
       hexiObj.state = logo2Loop;
+
+      // Start creepy music at the start of the ZombAttack logo.
+      var music = hexiObj.sound("Sounds/CreepyBackgroundMusic.mp3");
+      music.loop = true;
+      music.fadeIn(1);
+      music.volume = 0.5;
+      music.play();
     }
     function logo2Loop() {
       var now = (new Date()).getTime();
@@ -138,7 +147,6 @@
       
       hexiObj.state = gameLoop;
     }
-
 
     // Tell Primus to create a new WebSockets connection to the current domain/port/protocol.
     // Get the primus connection spark ID when we connect - we need it for knowing which player
@@ -432,7 +440,7 @@
 
     function createNewZombieSprite(serverZombieInfo) {
       var costumeName = ZombieCostumeIDMap[serverZombieInfo.cstm];
-      console.log("Creating zombie Z" + serverZombieInfo.id + ") with costume " + costumeName +
+      console.log("Creating zombie Z" + serverZombieInfo.id + " with costume " + costumeName +
           " at (" + serverZombieInfo.x + "," + serverZombieInfo.y + ")");
       var sprite = hexiObj.sprite(hexiObj.spriteUtilities.frameSeries(0, 1, costumeName), 0, 0);
 
