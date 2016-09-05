@@ -28,7 +28,6 @@
     var output = document.getElementById('output');
     output.value = '';
     var textMessage = document.getElementById('textMessage');
-    var gameArea = document.getElementById('gameArea');
 
     // Track the latest world updates from the server's world update messages.
     // We start with an empty world until the server can get a first message
@@ -92,6 +91,7 @@
       logo1Start = (new Date()).getTime();
       logo1Sprite = hexiObj.sprite("6KidsLogo");
       logo1Sprite.alpha = 0;
+      logo1Sprite.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
       hexiObj.stage.putCenter(logo1Sprite);
       hexiObj.state = logo1Loop;
     }
@@ -116,6 +116,7 @@
       logo2Start = (new Date()).getTime();
       logo2Sprite = hexiObj.sprite("ZombAttackLogo1");
       logo2Sprite.alpha = 0;
+      logo2Sprite.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
       hexiObj.stage.putCenter(logo2Sprite);
       hexiObj.state = logo2Loop;
 

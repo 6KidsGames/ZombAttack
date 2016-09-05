@@ -3,6 +3,7 @@
 const Physics = require('./Physics');
 const Util = require('./Util');
 const Log = require('./Log');
+const Level = require('./Level');
 
 // Reduce transmission sizes by sending only integers over the wire, mapped to costume names.
 // CODESYNC: Numeric values are mapped in index.html back to costume names.
@@ -15,15 +16,17 @@ const ZombieCostumeIDs = {
 
 // Zombie information by type, including attributes like speed and costume.
 const ZombieTypes = [
-  { type: "Crawler", probability: 2, hitPoints: 3, speedPxSec: 2, costumes: [ "crawler_", "vcrawlerzombie" ] },
-  { type: "Shambler", probability: 10,  hitPoints: 5, speedPxSec: 10, costumes: [ "czombie_", "vnormalzombie" ] },
-  { type: "Walker", probability: 10, hitPoints: 5, speedPxSec: 25, costumes: [ "czombie_", "vnormalzombie" ] },
-  { type: "Runner", probability: 1, hitPoints: 10, speedPxSec: 65, costumes: [ "czombie_", "vnormalzombie" ] },
+  { type: "Crawler", probability: 10, hitPoints: 3, speedPxFrame: 1, costumes: [ "crawler_", "vcrawlerzombie" ] },
+  { type: "Shambler", probability: 10,  hitPoints: 5, speedPxFrame: 3, costumes: [ "czombie_", "vnormalzombie" ] },
+  { type: "Walker", probability: 10, hitPoints: 5, speedPxFrame: 5, costumes: [ "czombie_", "vnormalzombie" ] },
+  { type: "Runner", probability: 10, hitPoints: 10, speedPxFrame: 10, costumes: [ "czombie_", "vnormalzombie" ] },
 ];
 
 // Sound file references for growls.
 // CODESYNC: index.html keeps the opposing list in 2 places.
 const numGrowlSounds = 2;
+
+const zombieMaxTurnPerFrameRadians = 0.4;
 
 // Creates a map from a number in the range of 0..totalZombieProbability to the zombie type
 // to use if that number is chosen randomly.
@@ -65,18 +68,18 @@ function spawnZombie(level, currentTime) {
     modelCircle: Physics.circle(x + 16, y + 16, 16),
     lastGrowlTime: currentTime,
     lastBiteTime: currentTime,
-    type: zombieType.type,
+    type: zombieType,
 
     // The portion of the data structure we send to the clients.
     zombie: {
       id: zombieID,
 
-      // Place the player in a random location on the map.
+      // Place the zombie in a random location on the map.
       // TODO: Account for the contents of the underlying tile - only place zombies into locations that
       // make sense, or at map-specific spawn points.
       x: x,
       y: y,
-      dir: 0.0,  // TODO: Start in random direction
+      dir: Util.getRandomFloat(0, 2 * Math.PI),
       hl: zombieType.hitPoints,
       cstm: ZombieCostumeIDs[zombieType.costumes[Util.getRandomInt(0, zombieType.costumes.length)]],
       growl: 0,  // When growlC (growlCount) is increased, this is the growl sound index to play.
@@ -89,11 +92,25 @@ function spawnZombie(level, currentTime) {
 
 // Called on the world update loop.
 // currentTime is the current Unix epoch time (milliseconds since Jan 1, 1970).
-function updateZombie(zombieInfo, currentTime) {
+function updateZombie(zombieInfo, currentTime, level) {
+  let zombie = zombieInfo.zombie;
+
+  // AI: Random walk. Turn some amount each frame, and go that way to the maximum possible distance allowed
+  // (based on the zombie's speed).
+  let angleChange = Util.getRandomFloat(-zombieMaxTurnPerFrameRadians, zombieMaxTurnPerFrameRadians);
+  zombie.dir += angleChange;
+
+  let speedPxPerFrame = zombieInfo.type.speedPxFrame;
+  zombie.x -= speedPxPerFrame * Math.sin(zombie.dir);
+  zombie.y += speedPxPerFrame * Math.cos(zombie.dir);
+  Level.clampPositionToLevel(level, zombie);
+  zombieInfo.modelCircle.centerX = zombie.x + 16;
+  zombieInfo.modelCircle.centerY = zombie.y + 16;
+
   // Occasional growls. We tell all the clients to use the same growl sound to get a nice
   // echo effect if people are playing in the same room.
   // We also limit to at most a couple of growls started in a sliding time window, to
-  // avoid speaker and CPU overload at the client. 
+  // avoid speaker and CPU overload at the client, and excessive updates across the network. 
   let msecSinceLastGrowl = currentTime - zombieInfo.lastGrowlTime; 
   if (msecSinceLastGrowl > zombieMinTimeMsecBetweenGrowls) {
     let growlProbabilityInMsec = msecSinceLastGrowl * zombieGrowlProbabilityPerSec;
