@@ -28,7 +28,6 @@
     var output = document.getElementById('output');
     output.value = '';
     var textMessage = document.getElementById('textMessage');
-    var playerName = document.getElementById('playerName');
     var gameArea = document.getElementById('gameArea');
 
     // Track the latest world updates from the server's world update messages.
@@ -92,6 +91,7 @@
     function logo1Setup() {
       logo1Start = (new Date()).getTime();
       logo1Sprite = hexiObj.sprite("6KidsLogo");
+      logo1Sprite.alpha = 0;
       hexiObj.stage.putCenter(logo1Sprite);
       hexiObj.state = logo1Loop;
     }
@@ -114,7 +114,8 @@
     var logo2Start;
     function logo2Setup() {
       logo2Start = (new Date()).getTime();
-      logo2Sprite = hexiObj.sprite("ZombAttackLogo2");
+      logo2Sprite = hexiObj.sprite("ZombAttackLogo1");
+      logo2Sprite.alpha = 0;
       hexiObj.stage.putCenter(logo2Sprite);
       hexiObj.state = logo2Loop;
 
@@ -129,7 +130,7 @@
       var now = (new Date()).getTime();
       var dt = now - logo2Start;
       if (dt < 1000) {
-        logo2Sprite.alpha = 1;//(dt / 1000) * (dt / 1000);
+        logo2Sprite.alpha = (dt / 1000) * (dt / 1000);
       } else if (dt < 2000) {
         logo2Sprite.alpha = 1;
       } else if (dt < 3000) {
@@ -189,7 +190,6 @@
       }
       primus.write({
         type: 'text',
-        player: playerName.value,
         message: textMessage.value
       });
       textMessage.value = '';
@@ -260,7 +260,6 @@
       // with our current control status.
       var controlInfo = {
         type: 'ctrl',
-        name: playerName.value  // Current player name as typed into the web page. Can change any time.
       };
 
       // Create tile world object if we have never updated a level before, or if we changed levels.
