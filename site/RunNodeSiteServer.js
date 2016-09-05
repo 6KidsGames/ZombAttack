@@ -102,7 +102,7 @@ function spawnPlayer(spark) {
   };
 }
 
-const playerMaxTurnPerFRrameRadians = 0.3;
+const playerMaxTurnPerFrameRadians = 0.3;
 
 // Listen for WebSockets connections and echo the events sent.
 primusServer.on('connection', spark => {
@@ -177,10 +177,10 @@ function worldUpdateLoop() {
     let controlInfo = playerInfo.latestControlInfo;
 
     if (controlInfo.turnRight) {
-      player.dir += playerMaxTurnPerFRrameRadians;
+      player.dir += playerMaxTurnPerFrameRadians;
     }
     if (controlInfo.turnLeft) {
-      player.dir -= playerMaxTurnPerFRrameRadians;
+      player.dir -= playerMaxTurnPerFrameRadians;
     }
     if (controlInfo.fwd) {
       player.x += playerSpeedPxPerFrame * Math.sin(player.dir);
