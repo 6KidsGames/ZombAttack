@@ -46,7 +46,14 @@ function chooseLevel() {
   return levelInfo;
 }
 
+// Accepts an object containing 'x' and 'y' and keeps its location within an acceptable reach of the edges.
+function clampPositionToLevel(level, pos) {
+  pos.x = Util.clamp(pos.x, 32, level.widthPx - 32);
+  pos.y = Util.clamp(pos.y, 32, level.heightPx - 32);
+}
+
 
 // --------------------------------------------------------------------
 // Exports
 module.exports.chooseLevel = chooseLevel;
+module.exports.clampPositionToLevel = clampPositionToLevel;

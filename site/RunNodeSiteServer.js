@@ -102,6 +102,8 @@ function spawnPlayer(spark) {
   };
 }
 
+const playerMaxTurnPerFRrameRadians = 0.3;
+
 // Listen for WebSockets connections and echo the events sent.
 primusServer.on('connection', spark => {
   Log.info(spark.id, 'Connected to spark from', spark.address, '- sending first world update');
@@ -166,7 +168,7 @@ function worldUpdateLoop() {
   }
 
   currentZombies.forEach(zombieInfo => {
-    Zombie.updateZombie(zombieInfo, currentTime);
+    Zombie.updateZombie(zombieInfo, currentTime, currentLevel);
     worldUpdateMessage.z.push(zombieInfo.zombie);  // Send only the client-side data structure.
   });
 
@@ -175,22 +177,22 @@ function worldUpdateLoop() {
     let controlInfo = playerInfo.latestControlInfo;
 
     if (controlInfo.turnRight) {
-      player.dir += 0.2;
+      player.dir += playerMaxTurnPerFRrameRadians;
     }
     if (controlInfo.turnLeft) {
-      player.dir -= 0.2;
+      player.dir -= playerMaxTurnPerFRrameRadians;
     }
     if (controlInfo.fwd) {
       player.x += playerSpeedPxPerFrame * Math.sin(player.dir);
       player.y -= playerSpeedPxPerFrame * Math.cos(player.dir);
-      clampPositionToLevel(player);
+      Level.clampPositionToLevel(currentLevel, player);
       playerInfo.modelCircle.centerX = player.x + 16;
       playerInfo.modelCircle.centerY = player.y + 16;
     }
     if (controlInfo.back) {
       player.x -= playerSpeedPxPerFrame * Math.sin(player.dir);
       player.y += playerSpeedPxPerFrame * Math.cos(player.dir);
-      clampPositionToLevel(player);
+      Level.clampPositionToLevel(currentLevel, player);
       playerInfo.modelCircle.centerX = player.x + 16;
       playerInfo.modelCircle.centerY = player.y + 16;
     }
@@ -228,12 +230,6 @@ function worldUpdateLoop() {
   if (processingTimeMsec > 50) {
     Log.warning(`Excessive loop processing time: ${processingTimeMsec} ms`);
   }
-}
-
-// Accepts an object containing 'x' and 'y' and keeps its location within an acceptable reach of the edges.
-function clampPositionToLevel(pos) {
-  pos.x = Util.clamp(pos.x, 32, currentLevel.widthPx - 32);
-  pos.y = Util.clamp(pos.y, 32, currentLevel.heightPx - 32);
 }
 
 function createEmptyWorldUpdateMessage() {

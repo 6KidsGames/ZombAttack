@@ -11,6 +11,12 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
+// Returns a random integer between min (included) and max (excluded)
+// Using Math.round() will give you a non-uniform distribution!
+function getRandomFloat(min, max) {
+  return min + Math.random() * (max - min);
+}
+
 // Modified from article below, augmented with array validation.
 // http://stackoverflow.com/questions/1068834/object-comparison-in-javascript#1144249
 function objectsEqual(x, y) {
@@ -79,6 +85,7 @@ function getFilesInDirectory(dir) {
 // --------------------------------------------------------------------
 // Exports
 module.exports.getRandomInt = getRandomInt;
+module.exports.getRandomFloat = getRandomFloat;
 module.exports.objectsEqual = objectsEqual;
 module.exports.clamp = clamp;
 module.exports.getFilesInDirectory = getFilesInDirectory;
