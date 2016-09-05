@@ -50,6 +50,8 @@
     var thingsToLoadIntoHexi = [
       // Sound files.
 
+      "Sounds/CreepyBackgroundMusic.mp3",
+
       // CODESYNC: Zombie.js keeps this list as well.
       'Sounds/ZombieGrowl1.mp3',
       'Sounds/ZombieGrowl2.mp3',
@@ -89,7 +91,13 @@
       zombieGrowls[0] = hexiObj.sound('Sounds/ZombieGrowl1.mp3');
       zombieGrowls[1] = hexiObj.sound('Sounds/ZombieGrowl2.mp3');
 
-      playerHealthSprite = hexiObj.text("HEALTH: ", "28px", "white", 10, 10);
+      var music = hexiObj.sound("Sounds/CreepyBackgroundMusic.mp3");
+      music.loop = true;
+      music.fadeIn(2);
+      music.volume = 0.5;
+      music.play();
+
+      playerHealthSprite = hexiObj.text("HEALTH: ", "32px", "white", 10, 10);
       playerHealthSprite.alpha = 0.5;
       playerHealthSprite.layer = 1000;  // Foremost
 
@@ -388,7 +396,7 @@
 
     function createNewZombieSprite(serverZombieInfo) {
       var costumeName = ZombieCostumeIDMap[serverZombieInfo.cstm];
-      console.log("Creating zombie Z" + serverZombieInfo.id + ") with costume " + costumeName +
+      console.log("Creating zombie Z" + serverZombieInfo.id + " with costume " + costumeName +
           " at (" + serverZombieInfo.x + "," + serverZombieInfo.y + ")");
       var sprite = hexiObj.sprite(hexiObj.spriteUtilities.frameSeries(0, 1, costumeName), 0, 0);
 
