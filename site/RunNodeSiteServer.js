@@ -77,6 +77,8 @@ function spawnPlayer(spark) {
   let x = Util.getRandomInt(32, currentLevel.widthPx - 32);
   let y = Util.getRandomInt(32, currentLevel.heightPx - 32);
 
+  const defaultWeapon = 'Dagger';
+
   return {
     spark: spark,
 
@@ -84,6 +86,9 @@ function spawnPlayer(spark) {
 
     // The abstract representation of the player for hit detection purposes.
     modelCircle: Physics.circle(x + 16, y + 16, 16),
+
+    currentWeapon: Weapon.WeaponsMap[defaultWeapon],
+    lastWeaponUse: 0,  // allow to use weapon immediately
     
     player: {
       id: spark.id,  // Used by clients to self-identify
@@ -96,13 +101,13 @@ function spawnPlayer(spark) {
       y: y,
       dir: 0.0,
       inv: [],  // Inventory
-      wpn: 'Dagger',  // Weapon
+      wpn: defaultWeapon,  // Weapon
       hl: 5,  // health
     }
   };
 }
 
-const playerMaxTurnPerFRrameRadians = 0.3;
+const playerMaxTurnPerFrameRadians = 0.3;
 
 // Listen for WebSockets connections and echo the events sent.
 primusServer.on('connection', spark => {
@@ -112,7 +117,7 @@ primusServer.on('connection', spark => {
   currentPlayers[spark.id] = spawnPlayer(spark);
 
   spark.on('data', function received(data) {
-    Log.debug(spark.id, 'received message:', data);
+    //Log.debug(spark.id, 'received message:', data);
     if (data.type === 'text') {
       // Broadcast player text messages to all players. 
       forEachPlayer(p => p.spark.write(data));
@@ -167,20 +172,27 @@ function worldUpdateLoop() {
     currentZombies.push(Zombie.spawnZombie(currentLevel, currentTime));
   }
 
+  let zombiesToRemove = [];
   currentZombies.forEach(zombieInfo => {
-    Zombie.updateZombie(zombieInfo, currentTime, currentLevel);
-    worldUpdateMessage.z.push(zombieInfo.zombie);  // Send only the client-side data structure.
+    if (Zombie.updateZombie(zombieInfo, currentTime, currentLevel)) {
+      zombiesToRemove.push(zombieInfo);
+    }
+    else {
+      worldUpdateMessage.z.push(zombieInfo.zombie);  // Send only the client-side data structure.
+    }
   });
+
+  zombiesToRemove.forEach(deadZombieInfo => currentZombies.remove(deadZombieInfo));
 
   forEachPlayer(playerInfo => {
     let player = playerInfo.player;
     let controlInfo = playerInfo.latestControlInfo;
 
     if (controlInfo.turnRight) {
-      player.dir += playerMaxTurnPerFRrameRadians;
+      player.dir += playerMaxTurnPerFrameRadians;
     }
     if (controlInfo.turnLeft) {
-      player.dir -= playerMaxTurnPerFRrameRadians;
+      player.dir -= playerMaxTurnPerFrameRadians;
     }
     if (controlInfo.fwd) {
       player.x += playerSpeedPxPerFrame * Math.sin(player.dir);
@@ -196,7 +208,37 @@ function worldUpdateLoop() {
       playerInfo.modelCircle.centerX = player.x + 16;
       playerInfo.modelCircle.centerY = player.y + 16;
     }
-    
+
+    let zombieDistances = [];
+    currentZombies.forEach(zombieInfo => {
+      zombieDistances.push({ zombieInfo: zombieInfo, sqrDist: Physics.sqrDistanceCircles(zombieInfo.modelCircle, playerInfo.modelCircle) });
+    });
+    if (zombieDistances.length > 0) {
+      if (controlInfo.useWeapon) {
+        let weaponStats = playerInfo.currentWeapon;
+        if ((currentTime - playerInfo.lastWeaponUse) >= weaponStats.rechargeMsec) {
+          playerInfo.lastWeaponUse = currentTime;
+          if (weaponStats.type === "Melee") {
+            // Melee weapons different from ranged weapons - strikes nearest zombie if close enough.
+            zombieDistances.sort((a, b) => a.sqrDist - b.sqrDist);
+            let closestZombie = zombieDistances[0];
+            let sqrWeaponRange = weaponStats.rangePx * weaponStats.rangePx;
+            Log.debug(`closest zombie ${closestZombie.sqrDist}, we can hit out to ${sqrWeaponRange}`);
+            if (closestZombie.sqrDist <= sqrWeaponRange) {
+              // TODO - add in logic to only hit in front of player instead of in any direction.
+              //let angle = Math.atan2(closestZombie.zombie.modelCircle.y - playerInfo.modelCircle.y,
+              //  closestZombie.zombie.modelCircle.x - playerInfo.modelCircle.x);
+              //const halfFrontalArc = Math.PI / 3;
+              //if (angle >= -halfFrontalArc && angle <= halfFrontalArc) {
+                Zombie.hitByPlayer(closestZombie.zombieInfo, weaponStats, currentTime);
+                Log.debug(`zombie ${closestZombie.zombieInfo.zombie.id} hit, remainingHealth ${closestZombie.zombieInfo.zombie.hl}`);
+              //}
+            } 
+          }
+        }
+      }
+    }
+
     currentZombies.forEach(zombie => {
       if (Zombie.isBiting(zombie, playerInfo, currentTime)) {
         // Player got hit by zombie, reduce health.
@@ -218,7 +260,7 @@ function worldUpdateLoop() {
   // Send world update to all clients, as long as the world has changed
   // from the last time we sent.
   if (!Util.objectsEqual(prevWorldUpdate, worldUpdateMessage)) {
-    Log.debug("Sending world update");
+    //Log.debug("Sending world update");
     forEachPlayer(playerInfo => playerInfo.spark.write(worldUpdateMessage));
 
     // Deep clone the original message so we can get new player objects created

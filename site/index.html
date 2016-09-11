@@ -46,6 +46,7 @@
       // CODESYNC: Zombie.js keeps this list as well.
       'Sounds/ZombieGrowl1.mp3',
       'Sounds/ZombieGrowl2.mp3',
+      'Sounds/zombieHurt0.mp3',
       
       // Spritesheet and tileset JSON metadata files and related PNGs.
       'images/ZombAttackSpritesheet.json',
@@ -66,9 +67,11 @@
     hexiObj.start();
 
     var zombieGrowls = [];
+    var zombieHurtSounds = [];
 
     // User interface spites.
     var playerHealthSprite = undefined;
+    var playerWeaponSprite = undefined;
 
     function hexiLoading() {
       console.log(`Loading: ${hexiObj.loadingFile} (${hexiObj.loadingProcess}%)`);
@@ -81,6 +84,9 @@
       // CODESYNC: The number of sounds here is set in Zombie.js numGrowlSounds
       zombieGrowls[0] = hexiObj.sound('Sounds/ZombieGrowl1.mp3');
       zombieGrowls[1] = hexiObj.sound('Sounds/ZombieGrowl2.mp3');
+
+      // CODESYNC: The number of sounds here is set in Zombie.js numHurtSounds
+      zombieHurtSounds[0] = hexiObj.sound('Sounds/zombieHurt0.mp3');
 
       logo1Setup();
     }
@@ -146,6 +152,10 @@
       playerHealthSprite = hexiObj.text("HEALTH: ", "32px sans-serif", "white", 10, 10);
       playerHealthSprite.alpha = 0.5;
       playerHealthSprite.layer = 1000;  // Foremost
+
+      playerWeaponSprite = hexiObj.text("Weapon: ", "32px sans-serif", "white", 10, 45);
+      playerWeaponSprite.alpha = 0.5;
+      playerWeaponSprite.layer = 1000;  // Foremost
       
       hexiObj.state = gameLoop;
     }
@@ -316,14 +326,20 @@
         playerData.sprite.rotation = player.dir;
         playerData.lastHealth = playerData.health;
         playerData.health = player.hl;
+        playerData.lastWeapon = playerData.weapon;
+        playerData.weapon = player.wpn;
         if (player.dead && !playerData.dead) {
           // TODO: Make a sound.
           playerData.dead = true;
         }
       }
 
-      if (myPlayerData.health != myPlayerData.lastHealth) {
+      if (myPlayerData.health !== myPlayerData.lastHealth) {
         playerHealthSprite.content = "HEALTH: " + myPlayerData.health;
+      }
+
+      if (myPlayerData.weapon !== myPlayerData.lastWeapon) {
+        playerWeaponSprite.content = "WEAPON: " + myPlayerData.weapon;
       }
 
       // Find any playerDatas that were not touched this round and remove -
@@ -352,6 +368,8 @@
             sprite: createNewZombieSprite(zombie),
             serverZombieInfo: zombie,
             lastGrowlCount: zombie.growlC,  // On reconnect, we don't want a ton of growls, so use the current server count and play the next ones sent.
+            lastHurtCount: zombie.hurtC,
+            lastHealth: zombie.hl,
           };
           zombieDatas[zombie.id] = zombieData;
         }
@@ -367,6 +385,12 @@
           zombieGrowls[zombie.growl].play();
         }
 
+        if (zombie.hurtC > zombieData.lastHurtCount) {
+          zombieData.lastHurtCount = zombie.hurtC;
+          console.log(`Z${zombie.id} playing hurt sound ${zombie.hurt}`);
+          zombieHurtSounds[zombie.hurt].play();
+        }
+        
         // Update the sprite with current world information.
         zombieData.sprite.x = zombie.x;
         zombieData.sprite.y = zombie.y;
@@ -395,7 +419,8 @@
       if (keyPressed[KEY_S]) { controlInfo.back = true; }
       if (keyPressed[KEY_A]) { controlInfo.turnLeft = true; }
       if (keyPressed[KEY_D]) { controlInfo.turnRight = true; }
-      
+      if (keyPressed[KEY_SPACE]) { controlInfo.useWeapon = true; }
+
       // Send the control update to the game server if it's different from the last update.
       // TODO: This should be handled asynchronously instead of in the game
       // loop to avoid slowing down local animation.
@@ -451,9 +476,9 @@
       sprite.playAnimation();
       sprite.position.x = serverZombieInfo.x;
       sprite.position.y = serverZombieInfo.y;
-      sprite.pivot.x = 15;
-      sprite.pivot.y = 22;
-      sprite.layer = 10;  // Behind player.
+      sprite.pivot.x = 16;
+      sprite.pivot.y = 16;
+      sprite.layer = 10;  // Behind player but in front of map tiles.
 
       return sprite;
     }
