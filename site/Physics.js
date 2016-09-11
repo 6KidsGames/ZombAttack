@@ -36,7 +36,7 @@ function circle(x, y, radius) {
 }
 
 // Determines if two circles are touching.
-function hitTestCircles(c1, c2) {
+function sqrDistanceCircles(c1, c2) {
     //Calculate the vector between the circles’ center points
     let vx = c2.centerX + c2.radius - (c1.centerX + c1.radius);
     let vy = c2.centerY + c2.radius - (c1.centerY + c1.radius);
@@ -44,8 +44,13 @@ function hitTestCircles(c1, c2) {
     //Find the square of the distance between the circles by calculating
     //the sqquare of the vector's magnitude (how long the vector is).
     // We calculate using squares to avoid a Math.sqrt() when not needed.
-    let magnitudeSqr = vx * vx + vy * vy;
+    return magnitudeSqr = vx * vx + vy * vy;
+} 
 
+// Determines if two circles are touching.
+function hitTestCircles(c1, c2) {
+    let sqrDist = sqrDistanceCircles(c1, c2);
+    
     //Add together the squares of the circles' total radii
     let combinedRadiiSqr = c1.radiusSqr + c2.radiusSqr;
 
@@ -161,3 +166,4 @@ module.exports.square = square;
 module.exports.circle = circle;
 module.exports.hitTestCircles = hitTestCircles;
 module.exports.circleRectangleCollision = circleRectangleCollision;
+module.exports.sqrDistanceCircles = sqrDistanceCircles;

@@ -27,6 +27,7 @@ const ZombieTypes = [
 const numGrowlSounds = 2;
 
 const zombieMaxTurnPerFrameRadians = 0.4;
+const zombieHurtPauseMsec = 500;
 
 // Creates a map from a number in the range of 0..totalZombieProbability to the zombie type
 // to use if that number is chosen randomly.
@@ -68,6 +69,7 @@ function spawnZombie(level, currentTime) {
     modelCircle: Physics.circle(x + 16, y + 16, 16),
     lastGrowlTime: currentTime,
     lastBiteTime: currentTime,
+    lastHurtTime: 0,
     type: zombieType,
 
     // The portion of the data structure we send to the clients.
@@ -93,6 +95,10 @@ function spawnZombie(level, currentTime) {
 // Called on the world update loop.
 // currentTime is the current Unix epoch time (milliseconds since Jan 1, 1970).
 function updateZombie(zombieInfo, currentTime, level) {
+  if ((currentTime - zombieInfo.lastHurtTime) < zombieHurtPauseMsec) {
+    return;
+  }
+
   let zombie = zombieInfo.zombie;
 
   // AI: Random walk. Turn some amount each frame, and go that way to the maximum possible distance allowed
