@@ -46,6 +46,7 @@
       // CODESYNC: Zombie.js keeps this list as well.
       'Sounds/ZombieGrowl1.mp3',
       'Sounds/ZombieGrowl2.mp3',
+      'Sounds/zombieHurt0.mp3',
       
       // Spritesheet and tileset JSON metadata files and related PNGs.
       'images/ZombAttackSpritesheet.json',
@@ -66,6 +67,7 @@
     hexiObj.start();
 
     var zombieGrowls = [];
+    var zombieHurtSounds = [];
 
     // User interface spites.
     var playerHealthSprite = undefined;
@@ -82,6 +84,9 @@
       // CODESYNC: The number of sounds here is set in Zombie.js numGrowlSounds
       zombieGrowls[0] = hexiObj.sound('Sounds/ZombieGrowl1.mp3');
       zombieGrowls[1] = hexiObj.sound('Sounds/ZombieGrowl2.mp3');
+
+      // CODESYNC: The number of sounds here is set in Zombie.js numHurtSounds
+      zombieHurtSounds[0] = hexiObj.sound('Sounds/zombieHurt0.mp3');
 
       logo1Setup();
     }
@@ -363,6 +368,7 @@
             sprite: createNewZombieSprite(zombie),
             serverZombieInfo: zombie,
             lastGrowlCount: zombie.growlC,  // On reconnect, we don't want a ton of growls, so use the current server count and play the next ones sent.
+            lastHurtCount: zombie.hurtC,
             lastHealth: zombie.hl,
           };
           zombieDatas[zombie.id] = zombieData;
@@ -379,11 +385,12 @@
           zombieGrowls[zombie.growl].play();
         }
 
-        if (zombieData.lastHealth > zombie.hl) {
-          zombieData.lastHealth = zombie.hl;
-          zombieGrowls[0].play();
+        if (zombie.hurtC > zombieData.lastHurtCount) {
+          zombieData.lastHurtCount = zombie.hurtC;
+          console.log(`Z${zombie.id} playing hurt sound ${zombie.hurt}`);
+          zombieHurtSounds[zombie.hurt].play();
         }
-
+        
         // Update the sprite with current world information.
         zombieData.sprite.x = zombie.x;
         zombieData.sprite.y = zombie.y;
@@ -469,9 +476,9 @@
       sprite.playAnimation();
       sprite.position.x = serverZombieInfo.x;
       sprite.position.y = serverZombieInfo.y;
-      sprite.pivot.x = 15;
-      sprite.pivot.y = 22;
-      sprite.layer = 10;  // Behind player.
+      sprite.pivot.x = 16;
+      sprite.pivot.y = 16;
+      sprite.layer = 10;  // Behind player but in front of map tiles.
 
       return sprite;
     }
