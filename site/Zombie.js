@@ -25,9 +25,11 @@ const ZombieTypes = [
 // Sound file references for growls.
 // CODESYNC: index.html keeps the opposing list in 2 places.
 const numGrowlSounds = 2;
+const numHurtSounds = 1;
 
 const zombieMaxTurnPerFrameRadians = 0.4;
 const zombieHurtPauseMsec = 500;
+const zombieDeadLingerMsec = 300;
 
 // Creates a map from a number in the range of 0..totalZombieProbability to the zombie type
 // to use if that number is chosen randomly.
@@ -70,6 +72,8 @@ function spawnZombie(level, currentTime) {
     lastGrowlTime: currentTime,
     lastBiteTime: currentTime,
     lastHurtTime: 0,
+    dead : false,
+    deadAt: 0,
     type: zombieType,
 
     // The portion of the data structure we send to the clients.
@@ -86,6 +90,8 @@ function spawnZombie(level, currentTime) {
       cstm: ZombieCostumeIDs[zombieType.costumes[Util.getRandomInt(0, zombieType.costumes.length)]],
       growl: 0,  // When growlC (growlCount) is increased, this is the growl sound index to play.
       growlC: 0,  // Incremented whenever the zombie growls. Used by the client to know when to growl.
+      hurt: 0,  // When huttC (hurtCount) is increased, this is the hurt sound index to play.
+      hurtC: 0,  // Incremented whenever the zombie is hurt. Used by the client to know when to play the hurt sound.
     }
   };
 
@@ -94,9 +100,19 @@ function spawnZombie(level, currentTime) {
 
 // Called on the world update loop.
 // currentTime is the current Unix epoch time (milliseconds since Jan 1, 1970).
+// Returns false if the zombie remains in the world, or true if the zombie is dead
+// and should be removed.
 function updateZombie(zombieInfo, currentTime, level) {
+  if (zombieInfo.dead) {
+    if (currentTime - zombieInfo.deadAt >= zombieDeadLingerMsec) {
+      return true;
+    }
+    return false;
+  }
+  
   if ((currentTime - zombieInfo.lastHurtTime) < zombieHurtPauseMsec) {
-    return;
+    // Zombie paused for a moment since it got hurt. It does not move or growl for a little while.
+    return false;
   }
 
   let zombie = zombieInfo.zombie;
@@ -128,6 +144,25 @@ function updateZombie(zombieInfo, currentTime, level) {
         zombieInfo.lastGrowlTime = currentTime;
       } 
     }
+  }
+
+  return false;
+}
+
+function hitByPlayer(zombieInfo, weaponStats, currentTime) {
+  let zombie = zombieInfo.zombie;
+  zombie.hl -= weaponStats.damage;
+  
+  if (zombie.hl <= 0) {
+    // TODO: Zombie is dead, what animation and sound to send to the client, and what state machine for death (e.g. blood puddle, spurt particles, ...)
+    zombieInfo.dead = true;
+    zombieInfo.deadAt = currentTime;
+  } else {
+    zombieInfo.lastHurtTime = currentTime;
+    
+    // Pick a hurt sound to play.
+    zombie.hurt = Util.getRandomInt(0, numHurtSounds);
+    zombie.hurtC++;
   }
 }
 
@@ -169,3 +204,4 @@ function createInitialGrowlTimes() {
 module.exports.spawnZombie = spawnZombie;
 module.exports.updateZombie = updateZombie;
 module.exports.isBiting = isBiting;
+module.exports.hitByPlayer = hitByPlayer;
