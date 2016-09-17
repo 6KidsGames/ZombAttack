@@ -248,6 +248,24 @@
       }
     }
 
+    // Keep a record of all weapons we know about right now. Each time
+    // through gameLoop() the latest world update might include different
+    // or new or removed weapons. This is also our record for keeping track
+    // of all the things the game engine needs (e.g. sprites).
+    var weaponDatas = { };
+    function forEachWeaponData(func) {
+      var ids = Object.keys(weaponDatas);
+      for (var i = 0; i < ids.length; i++) {
+        var id = ids[i];
+        if (weaponDatas.hasOwnProperty(id)) {
+          var weaponData = weaponDatas[id]; 
+          if (weaponData) {
+            func(weaponData);
+          }
+        }
+      }
+    }
+
     // Keep a record of all zombies in play right now.
     var zombieDatas = { };
     function forEachZombieData(func) {
@@ -350,6 +368,40 @@
           playerData.sprite.visible = false;
           hexiObj.remove(playerData.sprite);
           playerDatas[playerData.id] = undefined;
+        }
+      });
+
+      // Mark all weapons we are tracking as touched=false to detect removed weapons.
+      forEachWeaponData(function(weaponData) { weaponData.touched = false; });
+
+      // Make changes to weapon sprites from the current world state sent by the server.
+      for (var i = 0; i < currentWorld.w.length; i++) {
+        var weapon = currentWorld.w[i];
+
+        // Weapon might be new. If so, create a new sprite.
+        var weaponData = null;
+        if (!weaponDatas.hasOwnProperty(weapon.id)) {
+          weaponData = {
+            id: weapon.id,
+            sprite: createNewWeaponSprite(weapon),
+          };
+
+          weaponDatas[weapon.id] = weaponData;
+        }
+        else {
+          weaponData = weaponDatas[weapon.id];
+        }
+        weaponData.touched = true;
+      }
+    
+      // Find any weaponDatas that were not touched this round and remove -
+      // they are gone from the world.
+      forEachWeaponData(function(weaponData) {
+        if (!weaponData.touched) {
+          console.log("Removing weapon", weapon.id, "from the world");
+          weaponData.sprite.visible = false;
+          hexiObj.remove(weaponData.sprite);
+          weaponDatas[weaponData.id] = undefined;
         }
       });
 
@@ -483,11 +535,40 @@
       return sprite;
     }
 
+    // Map from weapon numbers into texture names.
+    // CODESYNC: Numeric keys are mapped in Weapon.js.
+    var WeaponNumberMap = {
+      0: "vdagger",
+      1: "vHalligan",
+      2: "vsword",
+      3: "vchainsaw",
+      4: "vpistol",
+      5: "vrifle",
+      6: "vmachinegun",
+      7: "vminigun",
+    }; 
+
+    function createNewWeaponSprite(serverWeaponInfo) {
+      var costumeName = WeaponNumberMap[serverWeaponInfo.n];
+      console.log("Creating weapon W" + serverWeaponInfo.id + " with costume " + costumeName +
+          " at (" + serverWeaponInfo.x + "," + serverWeaponInfo.y + ")");
+      var sprite = hexiObj.sprite(costumeName, 0, 0);
+
+      // Add to the tile world so its position remains relative to that world.
+      levelWorldObj.addChild(sprite);
+
+      sprite.position.x = serverWeaponInfo.x;
+      sprite.position.y = serverWeaponInfo.y;
+      sprite.layer = 5;  // Behind player and zombies but in front of map tiles.
+
+      return sprite;
+    }
+
     function createEmptyWorldUpdate() {
       return {
         p: [],
         z: [],
-        wpns: [],
+        w: [],
       };
     }
 

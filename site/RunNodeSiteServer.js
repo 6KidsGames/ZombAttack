@@ -63,8 +63,9 @@ function forEachPlayer(func) {
   }
 }
 
-// Stores server-side ZombieInfo objects.
+// Stores server-side objects
 var currentZombies = [ ];
+var currentWeapons = [ ];
 
 var currentLevel = Level.chooseLevel();
 
@@ -77,7 +78,7 @@ function spawnPlayer(spark) {
   let x = Util.getRandomInt(32, currentLevel.widthPx - 32);
   let y = Util.getRandomInt(32, currentLevel.heightPx - 32);
 
-  const defaultWeapon = 'Dagger';
+  const defaultWeaponIndex = 0;
 
   return {
     spark: spark,
@@ -87,7 +88,7 @@ function spawnPlayer(spark) {
     // The abstract representation of the player for hit detection purposes.
     modelCircle: Physics.circle(x + 16, y + 16, 16),
 
-    currentWeapon: Weapon.WeaponsMap[defaultWeapon],
+    currentWeapon: Weapon.WeaponTypes[defaultWeaponIndex],
     lastWeaponUse: 0,  // allow to use weapon immediately
     
     player: {
@@ -101,7 +102,7 @@ function spawnPlayer(spark) {
       y: y,
       dir: 0.0,
       inv: [],  // Inventory
-      wpn: defaultWeapon,  // Weapon
+      w: defaultWeaponIndex,  // Weapon
       hl: 5,  // health
     }
   };
@@ -167,7 +168,16 @@ function worldUpdateLoop() {
   let currentTime = (new Date()).getTime();
   let worldUpdateMessage = createEmptyWorldUpdateMessage();
 
-  if (Util.getRandomInt(0, 250) == 0) {  // About once in 10 seconds
+  if (Util.getRandomInt(0, 25) === 0) {  // About once in 100 seconds
+    currentWeapons.push(Weapon.spawnWeapon(currentLevel, currentTime));
+  }
+
+  let weaponsToRemove = [];  // TODO: andle weapons being picked up and disappearing from world.
+  currentWeapons.forEach(weaponInfo => {
+    worldUpdateMessage.w.push(weaponInfo.weapon);  // Send only the client-side data structure.
+  });
+
+  if (Util.getRandomInt(0, 250) === 0) {  // About once in 10 seconds
     // TODO: Don't spawn within easy reach of players' current positions.
     currentZombies.push(Zombie.spawnZombie(currentLevel, currentTime));
   }
@@ -283,6 +293,6 @@ function createEmptyWorldUpdateMessage() {
     lvlH: currentLevel.heightPx,
     p: [],  // Players
     z: [],  // Zombies
-    wpns: []  // Weapons
+    w: []  // Weapons
   };
 }
