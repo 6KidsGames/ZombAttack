@@ -42,6 +42,10 @@
       // Sound files.
 
       "Sounds/CreepyBackgroundMusic.mp3",
+      "Sounds/character1(girl)_hurt_0.mp3",
+      "Sounds/character1(girl)_hurt_1.mp3",
+      "Sounds/character2(boy)_hurt_0.mp3",
+      "Sounds/character2(boy)_hurt_1.mp3",
 
       // CODESYNC: Zombie.js keeps this list as well.
       'Sounds/ZombieGrowl1.mp3',
@@ -68,6 +72,7 @@
 
     var zombieGrowls = [];
     var zombieHurtSounds = [];
+    var characterHurtSounds = [];
 
     // User interface spites.
     var playerHealthSprite = undefined;
@@ -87,6 +92,16 @@
 
       // CODESYNC: The number of sounds here is set in Zombie.js numHurtSounds
       zombieHurtSounds[0] = hexiObj.sound('Sounds/zombieHurt0.mp3');
+
+      // CODESYNC: The number of sounds here is set in RunNodeSiteServer.js numPlayerHurtSounds
+      characterHurtSounds[0] = [
+        hexiObj.sound('Sounds/character1(girl)_hurt_0.mp3'),
+        hexiObj.sound('Sounds/character1(girl)_hurt_1.mp3'),
+      ];
+      characterHurtSounds[1] = [
+        hexiObj.sound('Sounds/character2(boy)_hurt_0.mp3'),
+        hexiObj.sound('Sounds/character2(boy)_hurt_1.mp3'),
+      ];
 
       logo1Setup();
     }
@@ -295,6 +310,7 @@
         if (!playerDatas.hasOwnProperty(player.id)) {
           playerData = {
             id: player.id,
+            lastSoundCount: player.sndC,  // On reconnect, we don't want a ton of sounds, so use the current server count and play the next ones sent.
             sprite: createNewPlayerSprite(),
           };
 
@@ -331,6 +347,11 @@
         if (player.dead && !playerData.dead) {
           // TODO: Make a sound.
           playerData.dead = true;
+        }
+
+        if (player.sndC > playerData.lastSoundCount) {
+          playerData.lastSoundCount = player.sndC;
+          characterHurtSounds[0][player.snd].play();
         }
       }
 
