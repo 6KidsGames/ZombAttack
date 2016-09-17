@@ -103,6 +103,8 @@ function spawnPlayer(spark) {
       inv: [],  // Inventory
       wpn: defaultWeapon,  // Weapon
       hl: 5,  // health
+      snd: 0,  // sound number
+      sndC: 0,  // sound state machine
     }
   };
 }
@@ -243,7 +245,8 @@ function worldUpdateLoop() {
       if (Zombie.isBiting(zombie, playerInfo, currentTime)) {
         // Player got hit by zombie, reduce health.
         player.hl -= 1;
-        // TODO: player should make a sound.
+        player.snd = Util.getRandomInt(0, 2);
+        player.sndC++;
         if (player.hl <= 0) {
 
           player.dead = true;
