@@ -15,7 +15,7 @@
     button { border-radius: 5px; border: 0; background: #444; color: #FFF; padding: 6px }
   </style>
 </head>
-<body>
+<body>  
   <form id="chatForm">
     <input placeholder="Write message to other players" id="textMessage" />
     <button type="submit">Send</button>
@@ -195,17 +195,17 @@
     
     // Listen for incoming messages from the server.
     primus.on('data', function received(data) {
-      if (data.type === 'text') {
+      if (data.t === 't') {  // Text
         // Place text messages in our textarea element.
-        output.value += nameOrUnknown(data.player) + ': ' + data.message + '\n';
+        output.value += nameOrUnknown(data.player) + ': ' + data.m + '\n';
         output.scrollTop = output.scrollHeight;  // Follow messages at bottom of text area.
       }
-      else if (data.type == 'update') {
+      else if (data.t === 'u') {  // World update
         // console.log("Received world update:", data);
         currentWorld = data;
       }
       else {
-        console.log("Received unknown message type " + data.type)
+        console.log("Received unknown message type " + data.t)
       }
     });
 
@@ -215,8 +215,8 @@
         e.preventDefault();
       }
       primus.write({
-        type: 'text',
-        message: textMessage.value
+        t: 't',
+        m: textMessage.value
       });
       textMessage.value = '';
     };
@@ -303,15 +303,15 @@
       // Create a new, empty PlayerControlInfo message to send to the server
       // with our current control status.
       var controlInfo = {
-        type: 'ctrl',
+        t: 'c',
       };
 
       // Create tile world object if we have never updated a level before, or if we changed levels.
       // Must come early in loop logic since we need to add and update sprites as children of the level object.
-      if (currentLevelName !== currentWorld.lvl) {
-        console.log(`Loading level ${currentWorld.lvl}`);
-        currentLevelName = currentWorld.lvl;
-        levelWorldObj = hexiObj.makeTiledWorld("Levels/" + currentWorld.lvl + ".json", 'images/ZombAttackTileset.png');
+      if (currentLevelName !== currentWorld.l) {
+        console.log(`Loading level ${currentWorld.l}`);
+        currentLevelName = currentWorld.l;
+        levelWorldObj = hexiObj.makeTiledWorld("Levels/" + currentWorld.l + ".json", 'images/ZombAttackTileset.png');
         levelWorldObj.layer = 0;  // Rearmost.
       }
 
@@ -482,7 +482,7 @@
       });
 
       if (scrollingTileCamera === null) {
-        scrollingTileCamera = hexiObj.worldCamera(levelWorldObj, currentWorld.lvlW, currentWorld.lvlH);
+        scrollingTileCamera = hexiObj.worldCamera(levelWorldObj, currentWorld.lW, currentWorld.lH);
         scrollingTileCamera.centerOver(myPlayerData.sprite);
       }
 
