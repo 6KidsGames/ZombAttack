@@ -44,7 +44,7 @@ function spawnPlayer(spark, currentLevel) {
       dir: 0.0,
       inv: [],  // Inventory
       w: defaultWeaponIndex,  // Weapon
-      hl: 5,  // health
+      hl: 10,  // health
       snd: 0,  // sound number
       sndC: 0,  // sound state machine
     }

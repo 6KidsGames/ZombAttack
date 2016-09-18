@@ -108,8 +108,9 @@ Array.prototype.remove = function (v) {
 // server when there have been no changes.
 var prevWorldUpdate = createEmptyWorldUpdateMessage();
 
-// World update loop, runs 25 times a second.
-setInterval(worldUpdateLoop, 40 /*msec*/);
+// World update loop.
+const worldUpdateHz = 20;
+setInterval(worldUpdateLoop, 1000 / worldUpdateHz /*msec*/);
 function worldUpdateLoop() {
   let currentTime = (new Date()).getTime();
   let worldUpdateMessage = createEmptyWorldUpdateMessage();
