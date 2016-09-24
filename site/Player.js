@@ -20,6 +20,12 @@ function spawnPlayer(spark, currentLevel) {
   let y = Util.getRandomInt(32, currentLevel.heightPx - 32);
 
   const defaultWeaponIndex = 0;
+  let defaultWeaponType = Weapon.WeaponTypes[defaultWeaponIndex]; 
+
+  let weaponTracker = {
+    weaponType: defaultWeaponType,
+    currentAmmo: defaultWeaponType.currentAmmo,
+  };
 
   return {
     spark: spark,
@@ -29,7 +35,7 @@ function spawnPlayer(spark, currentLevel) {
     // The abstract representation of the player for hit detection purposes.
     modelCircle: Physics.circle(x + 16, y + 16, 16),
 
-    currentWeapon: Weapon.WeaponTypes[defaultWeaponIndex],
+    currentWeapon: weaponTracker,
     lastWeaponUse: 0,  // allow to use weapon immediately
     
     player: {
@@ -42,7 +48,7 @@ function spawnPlayer(spark, currentLevel) {
       x: x,
       y: y,
       dir: 0.0,
-      inv: [],  // Inventory
+      inv: [ weaponTracker ],  // Inventory
       w: defaultWeaponIndex,  // Weapon
       hl: 10,  // health
       snd: 0,  // sound number
@@ -95,6 +101,31 @@ function hitByZombie(playerInfo, currentTime) {
   }
 }
 
+// Called when a player runs over a weapon.
+// Returns true if the player really picked up the weapon (player might not need it if already in inventory).
+function pickedUpWeapon(playerInfo, weaponInfo, currentTime) {
+  let newWeaponType = weaponInfo.type;
+  let existingWeaponTracker = playerInfo.player.inv.find(t => t.weaponType === newWeaponType); 
+  if (existingWeaponTracker) {
+    if (newWeaponType.type === "Melee") {
+      return false;
+    }
+    existingWeaponTracker.ammo += newWeaponType.ammo;
+    return true;
+  }
+
+  let weaponTracker = {
+    weaponType: newWeaponType,
+    currentAmmo: newWeaponType.ammo
+  }
+  playerInfo.player.inv.push(weaponTracker);
+
+  if (playerInfo.currentWeapon.weaponType.awesomeness < newWeaponType.awesomeness) {
+    playerInfo.currentWeapon = weaponTracker;
+  }
+  return true;
+}
+
 
 // --------------------------------------------------------------------
 // Exports
@@ -102,3 +133,4 @@ module.exports.spawnPlayer = spawnPlayer;
 module.exports.updatePlayer = updatePlayer;
 module.exports.updatePlayerFromClientControls = updatePlayerFromClientControls;
 module.exports.hitByZombie = hitByZombie;
+module.exports.pickedUpWeapon = pickedUpWeapon;

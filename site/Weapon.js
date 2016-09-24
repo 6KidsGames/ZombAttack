@@ -13,16 +13,16 @@ const minMeleeStrikeDistance = 16 + 16;
 // Ammo value -1 means infinite, anything less means after ammo reaches zero the player drops the empty weapon.
 const WeaponTypes = [
   // Melee weapons
-  { name: "Dagger", number: 0, probability: 0, type: "Melee", damage: 1, rechargeMsec: 1000, rangePx: minMeleeStrikeDistance + 8, ammo: -1 },
-  { name: "HalliganTool", number: 1, probability: 10, type: "Melee", damage: 3, rechargeMsec: 2000, rangePx: minMeleeStrikeDistance + 16, ammo: -1 },
-  { name: "Sword", number: 2, probability: 5, type: "Melee", damage: 5, rechargeMsec: 1500, rangePx: minMeleeStrikeDistance + 16, ammo: -1 },
-  { name: "Chainsaw", number: 3, probability: 8, type: "Melee", damage: 1, rechargeMsec: 25, rangePx: minMeleeStrikeDistance + 8, ammo: -1 },
+  { name: "Dagger", number: 0, awesomeness: 0, probability: 0, type: "Melee", damage: 1, rechargeMsec: 1000, rangePx: minMeleeStrikeDistance + 8, ammo: -1 },
+  { name: "HalliganTool", number: 1, awesomeness: 10, probability: 10, type: "Melee", damage: 3, rechargeMsec: 2000, rangePx: minMeleeStrikeDistance + 16, ammo: -1 },
+  { name: "Sword", number: 2, awesomeness: 20, probability: 5, type: "Melee", damage: 5, rechargeMsec: 1500, rangePx: minMeleeStrikeDistance + 16, ammo: -1 },
+  { name: "Chainsaw", number: 3, awesomeness: 30, probability: 8, type: "Melee", damage: 1, rechargeMsec: 25, rangePx: minMeleeStrikeDistance + 8, ammo: -1 },
 
   // Ranged weapons
-  { name: "Pistol", number: 4, probability: 15, type: "Range", damage: 2, rechargeMsec: 500, accuracyConeRad: 0.4, rangePx: 128, ammo: -1 },
-  { name: "Rifle", number: 5, probability: 8, type: "Range", damage: 12, rechargeMsec: 800, accuracyConeRad: 0.2, rangePx: 384, ammo: 12 },
-  { name: "MachineGun", number: 6, probability: 2, type: "Range", damage: 12, rechargeMsec: 100, accuracyConeRad: 0.3, rangePx: 318, ammo: 30 },
-  { name: "Minigun", number: 7, probability: 1, type: "Range", damage: 20, rechargeMsec: 10, accuracyConeRad: 0.3, rangePx: 256, ammo: 2000 },
+  { name: "Pistol", number: 4, awesomeness: 50, probability: 15, type: "Range", damage: 2, rechargeMsec: 500, accuracyConeRad: 0.4, rangePx: 128, ammo: 15 },
+  { name: "Rifle", number: 5, awesomeness: 60, probability: 8, type: "Range", damage: 12, rechargeMsec: 800, accuracyConeRad: 0.2, rangePx: 384, ammo: 12 },
+  { name: "MachineGun", number: 6, awesomeness: 70, probability: 2, type: "Range", damage: 12, rechargeMsec: 100, accuracyConeRad: 0.3, rangePx: 318, ammo: 30 },
+  { name: "Minigun", number: 7, awesomeness: 80, probability: 1, type: "Range", damage: 20, rechargeMsec: 10, accuracyConeRad: 0.3, rangePx: 256, ammo: 2000 },
 ];
 
 // Creates a map from a number in the range of 0..totalZombieProbability to the zombie type
@@ -56,10 +56,10 @@ function spawnWeapon(level, currentTime) {
 
   Log.debug(`Creating weapon ${weaponType.name}, number ${weaponType.number}`);
 
-  // A ZombieInfo is the server-side data structure containing all needed server tracking information.
+  // A WeaponInfo is the server-side data structure containing all needed server tracking information.
   // Only a subset of this information is passed to the clients, to minimize wire traffic.
   let weaponInfo = {
-    modelCircle: Physics.circle(x + 16, y + 16, 16),
+    modelCircle: Physics.circle(x + 16, y + 16, 24),
     
     type: weaponType,
 
@@ -79,8 +79,17 @@ function spawnWeapon(level, currentTime) {
   return weaponInfo;
 }
 
+function isPickedUp(weaponInfo, playerInfo) {
+  if (Physics.hitTestCircles(playerInfo.modelCircle, weaponInfo.modelCircle)) {
+    Log.debug(`W${weaponInfo.weapon.id}: Picked up by ${playerInfo.player.id}`);
+    return true;
+  }
+  return false;
+}
+
 
 // --------------------------------------------------------------------
 // Exports
 module.exports.WeaponTypes = WeaponTypes;
 module.exports.spawnWeapon = spawnWeapon;
+module.exports.isPickedUp = isPickedUp;

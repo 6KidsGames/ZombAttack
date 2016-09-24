@@ -115,14 +115,9 @@ function worldUpdateLoop() {
   let currentTime = (new Date()).getTime();
   let worldUpdateMessage = createEmptyWorldUpdateMessage();
 
-  if (Util.getRandomInt(0, 25) === 0) {  // About once in 100 seconds
+  if (Util.getRandomInt(0, 200) === 0) {  // About once in 100 seconds
     currentWeapons.push(Weapon.spawnWeapon(currentLevel, currentTime));
   }
-
-  let weaponsToRemove = [];  // TODO: Handle weapons being picked up and disappearing from world.
-  currentWeapons.forEach(weaponInfo => {
-    worldUpdateMessage.w.push(weaponInfo.weapon);  // Send only the client-side data structure.
-  });
 
   if (Util.getRandomInt(0, 250) === 0) {  // About once in 10 seconds
     // TODO: Don't spawn within easy reach of players' current positions.
@@ -152,7 +147,8 @@ function worldUpdateLoop() {
     });
     if (zombieDistances.length > 0) {
       if (controlInfo.useWeapon) {
-        let weaponStats = playerInfo.currentWeapon;
+        let weaponTracker = playerInfo.currentWeapon;
+        let weaponStats = weaponTracker.weaponType;
         if ((currentTime - playerInfo.lastWeaponUse) >= weaponStats.rechargeMsec) {
           playerInfo.lastWeaponUse = currentTime;
           if (weaponStats.type === "Melee") {
@@ -174,12 +170,29 @@ function worldUpdateLoop() {
           }
         }
       }
+
+      let weaponsToRemove = [];
+      currentWeapons.forEach(weaponInfo => {
+        if (Weapon.isPickedUp(weaponInfo, playerInfo)) {
+          Log.debug(`Player ${playerInfo.player.id} touching weapon ${weaponInfo.type.name} id ${weaponInfo.weapon.id}`);
+          if (Player.pickedUpWeapon(playerInfo, weaponInfo, currentTime)) {
+            weaponsToRemove.push(weaponInfo);
+          } else {
+            Log.debug(`Player ${playerInfo.player.id} did not pick up weapon ${weaponInfo.weapon.id}`);
+          }
+        }
+      });
+      weaponsToRemove.forEach(w => currentWeapons.remove(w));
     }
 
     currentZombies.forEach(zombieInfo => {
       if (Zombie.isBiting(zombieInfo, playerInfo, currentTime)) {
         Player.hitByZombie(playerInfo, currentTime);
       }
+    });
+
+    currentWeapons.forEach(weaponInfo => {
+      worldUpdateMessage.w.push(weaponInfo.weapon);  // Send only the client-side data structure.
     });
 
     worldUpdateMessage.p.push(player);  // Player object, never playerInfo.

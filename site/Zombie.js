@@ -182,7 +182,7 @@ function isBiting(zombieInfo, playerInfo, currentTime) {
   let msecSinceLastBite = currentTime - zombieInfo.lastBiteTime;
   if (msecSinceLastBite >= 1000) {
     if (Physics.hitTestCircles(playerInfo.modelCircle, zombieInfo.modelCircle)) {
-      Log.debug(`Z${zombieInfo.zombie.id}: Biting ${playerInfo.player.id}`);
+      // Log.debug(`Z${zombieInfo.zombie.id}: Biting ${playerInfo.player.id}`);
       zombieInfo.lastBiteTime = currentTime;
       return true;
     }
