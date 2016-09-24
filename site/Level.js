@@ -39,9 +39,6 @@ function loadLevels() {
 
 // Returns a level chosen from amongst those available.
 function chooseLevel() {
-  if (LevelsFromDisk.length == 0) {
-  }
-
   let levelInfo = LevelsFromDisk[Util.getRandomInt(0, LevelsFromDisk.length)];
   return levelInfo;
 }

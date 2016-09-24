@@ -3,6 +3,20 @@
 const fs = require("fs");
 const path = require("path");
 
+// Foreach method for maps. Executes 'func' against each value.
+function forEachInMap(map, func) {
+  let keys = Object.keys(map);
+  for (let i = 0; i < keys.length; i++) {
+    let key = keys[i];
+    if (map.hasOwnProperty(key)) {
+      let val = map[key]; 
+      if (val) {
+        func(val);
+      }
+    }
+  }
+}
+
 // Returns a random integer between min (included) and max (excluded)
 // Using Math.round() will give you a non-uniform distribution!
 function getRandomInt(min, max) {
@@ -89,3 +103,4 @@ module.exports.getRandomFloat = getRandomFloat;
 module.exports.objectsEqual = objectsEqual;
 module.exports.clamp = clamp;
 module.exports.getFilesInDirectory = getFilesInDirectory;
+module.exports.forEachInMap = forEachInMap;
