@@ -152,7 +152,7 @@ function worldUpdateLoop() {
       worldUpdateMessage.b.push(bulletInfo.bullet);  // Send only the client-side data structure.
     }
   });
-  bulletsToRemove.forEach(deadBulletInfo => currentBullet.remove(deadBulletInfo));
+  bulletsToRemove.forEach(deadBulletInfo => currentBullets.remove(deadBulletInfo));
 
   forEachPlayer(playerInfo => {
     let player = playerInfo.player;
