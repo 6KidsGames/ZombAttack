@@ -25,6 +25,10 @@ const WeaponTypes = [
   { name: "Minigun", number: 7, awesomeness: 80, probability: 1, type: "Range", damage: 20, rechargeMsec: 10, accuracyConeRad: 0.3, rangePx: 256, ammo: 2000 },
 ];
 
+function getWeaponStats(weaponName) {
+  return WeaponTypes.find(w => w.name === weaponName);
+}
+
 // Creates a map from a number in the range of 0..totalZombieProbability to the zombie type
 // to use if that number is chosen randomly.
 let totalWeaponProbability = 0;
@@ -93,3 +97,4 @@ function isPickedUp(weaponInfo, playerInfo) {
 module.exports.WeaponTypes = WeaponTypes;
 module.exports.spawnWeapon = spawnWeapon;
 module.exports.isPickedUp = isPickedUp;
+module.exports.getWeaponStats = getWeaponStats;

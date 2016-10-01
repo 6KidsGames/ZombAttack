@@ -2,13 +2,12 @@
 
 'use strict';
 
-const Level = require('./Level'); 
-const Log = require('./Log');
-const Physics = require('./Physics');
-const Player = require('./Player');
-const Util = require('./Util');
-const Weapon = require('./Weapon');
 const Zombie = require('./Zombie');
+const Weapon = require('./Weapon');
+const Level = require('./Level'); 
+const Util = require('./Util');
+const Physics = require('./Physics');
+const Log = require('./Log');
 const Bullet = require('./Bullet');
 
 // We use Express (http://expressjs.com/) for serving web pages and content.
@@ -23,7 +22,7 @@ var network = require('./Network.js');
 webApp.use('/scripts', express.static(__dirname + '/scripts', { maxAge: '1m' }));
 webApp.use('/css', express.static(__dirname + '/css', { maxAge: '1d' }));
 webApp.use('/images', express.static(__dirname + '/images', { maxAge: '1h' }));
-webApp.use(express.static(__dirname, { maxAge: '10m' }));
+webApp.use(express.static(__dirname, { maxAge: '1h' }));
 
 // Attach Primus to the HTTP server. We included uws and ws WebSockets
 // frameworks in Setup.cmd.
@@ -32,8 +31,7 @@ var primusOptions = {
   // websockets is not the fastest but it Just Works. UWS would be nice but not supported on Windows.
   transformer: 'websockets',
   
-  // Wire transport setting - JSON text vs. binary.
-  // Binary is used for speed - makes smaller messages over the wire (or wireless), meaning lower latency
+  // For speed - makes smaller messages over the wire (or wireless), meaning lower latency
   // and better server scalability.
   // Set to 'binary' for smaller and faster messages, which makes for a more scalable server.
   // Set to 'JSON' for debugging using Chrome (F12, Network tab, click the Primus websocket entry, click Frames, and click on any frame).
@@ -52,35 +50,90 @@ var primusOptions = {
 };
 var primusServer = new primus(httpServer, primusOptions);
 
-// Server-side object tracking.
 var currentPlayers = { };  // Maps from spark ID (string) to PlayerInfo server data structure..
-function forEachPlayer(func) { Util.forEachInMap(currentPlayers, func); }
+function forEachPlayer(func) {
+  let sparkIDs = Object.keys(currentPlayers);
+  for (let i = 0; i < sparkIDs.length; i++) {
+    let sparkID = sparkIDs[i];
+    if (currentPlayers.hasOwnProperty(sparkID)) {
+      let playerInfo = currentPlayers[sparkID]; 
+      if (playerInfo) {
+        func(playerInfo);
+      }
+    }
+  }
+}
+
+// Stores server-side ZombieInfo objects.
 var currentZombies = [ ];
-var currentWeapons = [ ];
-let currentBullets = [ ];
+
+// Stores server-side BulletInfo objects.
+let currentBullets = [];
+
 var currentLevel = Level.chooseLevel();
+
+// Returns a PlayerInfo object. Called at connection of the client, before
+// we have any identifying information.
+// This data structure is the full server-side view of the player.
+// The 'player' object is the information that is shared with clients.
+// Property names are deliberately kept short to reduce space over the network.
+function spawnPlayer(spark) {
+  let x = Util.getRandomInt(32, currentLevel.widthPx - 32);
+  let y = Util.getRandomInt(32, currentLevel.heightPx - 32);
+
+  const defaultWeapon = 'Dagger';
+
+  return {
+    spark: spark,
+
+    latestControlInfo: { },
+
+    // The abstract representation of the player for hit detection purposes.
+    modelCircle: Physics.circle(x + 16, y + 16, 16),
+
+    currentWeapon: Weapon.getWeaponStats(defaultWeapon),
+    lastWeaponUse: 0,  // allow to use weapon immediately
+    
+    player: {
+      id: spark.id,  // Used by clients to self-identify
+      name: '',
+
+      // Place the player in a random location on the map.
+      // TODO: Account for the contents of the underlying tile - only place users into locations that
+      // make sense, or at map-specific spawn points.
+      x: x,
+      y: y,
+      dir: 0.0,
+      inv: [],  // Inventory
+      wpn: defaultWeapon,  // Weapon
+      hl: 5,  // health
+    }
+  };
+}
+
+const playerMaxTurnPerFrameRadians = 0.3;
 
 // Listen for WebSockets connections and echo the events sent.
 primusServer.on('connection', spark => {
   Log.info(spark.id, 'Connected to spark from', spark.address, '- sending first world update');
   spark.write(prevWorldUpdate);
 
-  currentPlayers[spark.id] = Player.spawnPlayer(spark, currentLevel);
+  currentPlayers[spark.id] = spawnPlayer(spark);
 
   spark.on('data', function received(data) {
     //Log.debug(spark.id, 'received message:', data);
-    if (data.t === 't') { // t == text
+    if (data.type === 'text') {
       // Broadcast player text messages to all players. 
       forEachPlayer(p => p.spark.write(data));
     }
-    else if (data.t === 'c') {  // c == control
+    else if (data.type === 'ctrl') {
       // Update our current view of what the player is doing.
       // Our world update loop will use this info to update all players with
       // each other's info.
       currentPlayers[spark.id].latestControlInfo = data;
     }
     else {
-      Log.error("Received unknown message type " + data.t)
+      Log.error("Received unknown message type " + data.type)
     }
   });
 });
@@ -106,22 +159,19 @@ Array.prototype.remove = function (v) {
   return false;
 }
 
+const playerSpeedPxPerFrame = 10;
+
 // We keep the last world update message sent, to reduce updates from the
 // server when there have been no changes.
 var prevWorldUpdate = createEmptyWorldUpdateMessage();
 
-// World update loop.
-const worldUpdateHz = 20;
-setInterval(worldUpdateLoop, 1000 / worldUpdateHz /*msec*/);
+// World update loop, runs 25 times a second.
+setInterval(worldUpdateLoop, 40 /*msec*/);
 function worldUpdateLoop() {
   let currentTime = (new Date()).getTime();
   let worldUpdateMessage = createEmptyWorldUpdateMessage();
 
-  if (Util.getRandomInt(0, 200) === 0) {  // About once in 100 seconds
-    currentWeapons.push(Weapon.spawnWeapon(currentLevel, currentTime));
-  }
-
-  if (Util.getRandomInt(0, 250) === 0) {  // About once in 10 seconds
+  if (Util.getRandomInt(0, 250) == 0) {  // About once in 10 seconds
     // TODO: Don't spawn within easy reach of players' current positions.
     currentZombies.push(Zombie.spawnZombie(currentLevel, currentTime));
   }
@@ -143,7 +193,7 @@ function worldUpdateLoop() {
     
     let bulletHitAZombie = currentZombies.some(zombieInfo => {
       if (Zombie.checkBulletHit(zombieInfo, bulletInfo, currentTime, currentLevel)) {
-        bulletsToRemove.push(bulletInfo);
+        bulletToRemove.push(bulletInfo);
         return true;
       }
       return false;
@@ -158,7 +208,26 @@ function worldUpdateLoop() {
     let player = playerInfo.player;
     let controlInfo = playerInfo.latestControlInfo;
 
-    Player.updatePlayerFromClientControls(playerInfo, currentLevel);
+    if (controlInfo.turnRight) {
+      player.dir += playerMaxTurnPerFrameRadians;
+    }
+    if (controlInfo.turnLeft) {
+      player.dir -= playerMaxTurnPerFrameRadians;
+    }
+    if (controlInfo.fwd) {
+      player.x += playerSpeedPxPerFrame * Math.sin(player.dir);
+      player.y -= playerSpeedPxPerFrame * Math.cos(player.dir);
+      Level.clampPositionToLevel(currentLevel, player);
+      playerInfo.modelCircle.centerX = player.x + 16;
+      playerInfo.modelCircle.centerY = player.y + 16;
+    }
+    if (controlInfo.back) {
+      player.x -= playerSpeedPxPerFrame * Math.sin(player.dir);
+      player.y += playerSpeedPxPerFrame * Math.cos(player.dir);
+      Level.clampPositionToLevel(currentLevel, player);
+      playerInfo.modelCircle.centerX = player.x + 16;
+      playerInfo.modelCircle.centerY = player.y + 16;
+    }
 
     let zombieDistances = [];
     currentZombies.forEach(zombieInfo => {
@@ -166,8 +235,7 @@ function worldUpdateLoop() {
     });
     if (zombieDistances.length > 0) {
       if (controlInfo.useWeapon) {
-        let weaponTracker = playerInfo.currentWeapon;
-        let weaponStats = weaponTracker.weaponType;
+        let weaponStats = playerInfo.currentWeapon;
         if ((currentTime - playerInfo.lastWeaponUse) >= weaponStats.rechargeMsec) {
           playerInfo.lastWeaponUse = currentTime;
           if (weaponStats.type === "Melee") {
@@ -184,40 +252,32 @@ function worldUpdateLoop() {
               //if (angle >= -halfFrontalArc && angle <= halfFrontalArc) {
                 Zombie.hitByPlayer(closestZombie.zombieInfo, weaponStats, currentTime);
                 Log.debug(`zombie ${closestZombie.zombieInfo.zombie.id} hit, remainingHealth ${closestZombie.zombieInfo.zombie.hl}`);
-              //}
-            } 
-          } else {
-            // Ranged weapon
-            currentBullets.push(Bullet.spawnBullet(player.x, player.y, player.dir, weaponStats));
+              //}s
+            } else {
+              // ranged weapon
+
+            }
           }
         }
       }
-
-      let weaponsToRemove = [];
-      currentWeapons.forEach(weaponInfo => {
-        if (Weapon.isPickedUp(weaponInfo, playerInfo)) {
-          Log.debug(`Player ${playerInfo.player.id} touching weapon ${weaponInfo.type.name} id ${weaponInfo.weapon.id}`);
-          if (Player.pickedUpWeapon(playerInfo, weaponInfo, currentTime)) {
-            weaponsToRemove.push(weaponInfo);
-          } else {
-            Log.debug(`Player ${playerInfo.player.id} did not pick up weapon ${weaponInfo.weapon.id}`);
-          }
-        }
-      });
-      weaponsToRemove.forEach(w => currentWeapons.remove(w));
     }
 
-    currentZombies.forEach(zombieInfo => {
-      if (Zombie.isBiting(zombieInfo, playerInfo, currentTime)) {
-        Player.hitByZombie(playerInfo, currentTime);
+    currentZombies.forEach(zombie => {
+      if (Zombie.isBiting(zombie, playerInfo, currentTime)) {
+        // Player got hit by zombie, reduce health.
+        player.hl -= 1;
+        // TODO: player should make a sound.
+        if (player.hl <= 0) {
+
+          player.dead = true;
+        }
       }
     });
 
-    currentWeapons.forEach(weaponInfo => {
-      worldUpdateMessage.w.push(weaponInfo.weapon);  // Send only the client-side data structure.
-    });
-
-    worldUpdateMessage.p.push(player);  // Player object, never playerInfo.
+    // Never push the playerInfo object to this array, to minimize
+    // wire traffic, and Primus sparks are not comparable and should not be sent over the wire.
+    // We send only the information in playerInfo.player.
+    worldUpdateMessage.p.push(player);
   });
 
   // Send world update to all clients, as long as the world has changed
@@ -240,13 +300,13 @@ function worldUpdateLoop() {
 function createEmptyWorldUpdateMessage() {
   // Property names deliberately kept short to reduce space on the network.
   return {
-    t: 'u',  // Message type
-    l: currentLevel.name,
-    lW: currentLevel.widthPx,
-    lH: currentLevel.heightPx,
+    type: 'update',
+    lvl: currentLevel.name,
+    lvlW: currentLevel.widthPx,
+    lvlH: currentLevel.heightPx,
     p: [],  // Players
     z: [],  // Zombies
-    w: [],  // Weapons
-    b: [],  // Bullets
+    wpns: [],  // Weapons
+    b: [],  // bullets
   };
 }
