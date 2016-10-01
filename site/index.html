@@ -19,11 +19,9 @@
   <form id="chatForm">
     <input placeholder="Write message to other players" id="textMessage" />
     <button type="submit">Send</button>
-  </form>
+  </form> 
   <textarea id="output" rows="3" cols="60" readonly></textarea>
-  <p>
-    Copyright &#169; 2016 6KidsGames.com
-  </p>
+  <
   <script>
     var output = document.getElementById('output');
     output.value = '';
@@ -172,6 +170,10 @@
       playerWeaponSprite.alpha = 0.5;
       playerWeaponSprite.layer = 1000;  // Foremost
       
+      copyrightSprite = hexiObj.text("Copyright 2016 6KidsGames.com", "16px sans-serif", "white", 10, 625);
+      copyrightSprite.alpha = 0.33;
+      copyrightSprite.layer = 1000;
+
       hexiObj.state = gameLoop;
     }
 
