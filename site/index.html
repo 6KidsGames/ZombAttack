@@ -296,6 +296,21 @@
       }
     }
 
+    // Keep a record of all bullets in play right now.
+    var bulletDatas = { };
+    function forEachBulletData(func) {
+      var ids = Object.keys(bulletDatas);
+      for (var i = 0; i < ids.length; i++) {
+        var id = ids[i];
+        if (bulletDatas.hasOwnProperty(id)) {
+          var bulletData = bulletDatas[id]; 
+          if (bulletData) {
+            func(bulletData);
+          }
+        }
+      }
+    }
+
     // Called 30 times per second by the Hexi main loop.
     function gameLoop() {
       var startTime = (new Date()).getTime();
@@ -303,7 +318,7 @@
       // Create a new, empty PlayerControlInfo message to send to the server
       // with our current control status.
       var controlInfo = {
-        t: 'c',
+        t: 'c',  // Control message type
       };
 
       // Create tile world object if we have never updated a level before, or if we changed levels.
@@ -316,9 +331,8 @@
       }
 
       // Mark all players we are tracking as touched=false to detect removed players.
-      forEachPlayerData(function(playerData) { playerData.touched = false; });
-
       // Make changes to player sprites from the current world state sent by the server.
+      forEachPlayerData(function(playerData) { playerData.touched = false; });
       var myPlayerData  = null;
       for (var i = 0; i < currentWorld.p.length; i++) {
         var player = currentWorld.p[i];
@@ -393,9 +407,8 @@
       });
 
       // Mark all weapons we are tracking as touched=false to detect removed weapons.
-      forEachWeaponData(function(weaponData) { weaponData.touched = false; });
-
       // Make changes to weapon sprites from the current world state sent by the server.
+      forEachWeaponData(function(weaponData) { weaponData.touched = false; });
       for (var i = 0; i < currentWorld.w.length; i++) {
         var weapon = currentWorld.w[i];
 
@@ -426,10 +439,47 @@
         }
       });
 
-      // Mark all zombies we are tracking as touched=false to detect removed zombies.
-      forEachZombieData(function(zombieData) { zombieData.touched = false; });
+      // Mark all bullets we are tracking as touched=false to detect removed ones.
+      // Process bullet changes sent by the server.
+      forEachBulletData(function(bulletData) { bulletData.touched = false; });
+      for (var i = 0; i < currentWorld.b.length; i++) {
+        var bullet = currentWorld.b[i];
 
+        // If new, create a new sprite.
+        var bulletData = null;
+        if (!bulletDatas.hasOwnProperty(bullet.id)) {
+          bulletData = {
+            id: bullet.id,
+            sprite: createNewBulletSprite(bullet),
+            serverBulletInfo: bullet,
+          };
+          bulletDatas[bullet.id] = bulletData;
+        }
+        else {
+          bulletData = bulletDatas[bullet.id];
+        }
+        bulletData.touched = true;
+
+        // Update the sprite with current world information.
+        bulletData.sprite.x = bullet.x;
+        bulletData.sprite.y = bullet.y;
+      }
+
+      // Find any zombieDatas that were not touched this round and remove -
+      // they are gone from the world.
+      forEachZombieData(function(zombieData) {
+        if (!zombieData.touched) {
+          console.log("Removing zombie", zombieData.id, "from the world");
+          zombieData.sprite.visible = false;
+          hexiObj.remove(zombieData.sprite);
+          zombieDatas[zombieData.id] = undefined;
+        }
+      });
+
+
+      // Mark all zombies we are tracking as touched=false to detect removed zombies.
       // Process zombie changes sent by the server.
+      forEachZombieData(function(zombieData) { zombieData.touched = false; });
       for (var i = 0; i < currentWorld.z.length; i++) {
         var zombie = currentWorld.z[i];
 
@@ -535,6 +585,21 @@
       2: "czombie_",
       3: "vnormalzombie",
     }; 
+
+    function createNewBulletSprite(serverBulletInfo) {
+      var sprite = hexiObj.sprite("Rdagger", 0, 0);  // TODO: Use bullet sprite
+
+      // Add to the tile world so its position remains relative to that world.
+      levelWorldObj.addChild(sprite);
+
+      sprite.position.x = serverBulletInfo.x;
+      sprite.position.y = serverBulletInfo.y;
+      sprite.pivot.x = 1;
+      sprite.pivot.y = 1;
+      sprite.layer = 7;  // Behind player and zombies but in front of map tiles and weapons.
+
+      return sprite;
+    }
 
     function createNewZombieSprite(serverZombieInfo) {
       var costumeName = ZombieCostumeIDMap[serverZombieInfo.cstm];

@@ -198,6 +198,17 @@ function createInitialGrowlTimes() {
   return a;
 }
 
+// Returns true if the bullet hit the zombie, indicating that the bullet
+// disappears from the world, the zombie takes damage, and a hit sound it played.
+function checkBulletHit(zombieInfo, bulletInfo, currentTime) {
+  if (Physics.hitTestCircles(bulletInfo.modelCircle, zombieInfo.modelCircle)) {
+    Log.debug(`B${bulletInfo.bullet.id}: Hit Z${zombieInfo.zombie.id}`);
+    hitByPlayer(zombieInfo, bulletInfo.weaponStats, currentTime);
+    return true;
+  }
+  return false;
+}
+
 
 // --------------------------------------------------------------------
 // Exports
@@ -205,3 +216,4 @@ module.exports.spawnZombie = spawnZombie;
 module.exports.updateZombie = updateZombie;
 module.exports.isBiting = isBiting;
 module.exports.hitByPlayer = hitByPlayer;
+module.exports.checkBulletHit = checkBulletHit;
