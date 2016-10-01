@@ -1,4 +1,4 @@
-// Zombie-related code.
+// Bullet-related code.
 
 const Physics = require('./Physics');
 const Util = require('./Util');
