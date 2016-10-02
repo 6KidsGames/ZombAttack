@@ -345,6 +345,21 @@
         if (player.sndC > playerData.lastSoundCount) {
           playerData.lastSoundCount = player.sndC;
           characterHurtSounds[0][player.snd].play();
+
+          // Create a blood spray using particles.
+          hexiObj.createParticles(
+            player.x, player.y,
+            () => hexiObj.circle(8, "red"),
+            levelWorldObj,
+            20,  // Num particles
+            0,  // Gravity
+            true,  // randomSpacing
+            0, 6.28,  // Min/max angle - allow whole circle
+            8, 24,  // Min/max size
+            0.2, 2,  // Min/max speed
+            0.01, 0.03,  // Min/max scale speed
+            0.01, 0.05,  // Min/max alpha speed
+            0, 0);  // Min/max rotation speed
         }
       }
 
@@ -469,10 +484,26 @@
           zombieGrowls[zombie.growl].play();
         }
 
-        if (zombie.hurtC > zombieData.lastHurtCount) {
+        if (zombie.hurtC > zombieData.lastHurtCount ||
+            zombie.hl <= 0) {
           zombieData.lastHurtCount = zombie.hurtC;
           console.log(`Z${zombie.id} playing hurt sound ${zombie.hurt}`);
           zombieHurtSounds[zombie.hurt].play();
+
+          // Create a blood spray using particles.
+          hexiObj.createParticles(
+            zombie.x, zombie.y,
+            () => hexiObj.circle(8, "black"),
+            levelWorldObj,
+            16,  // Num particles
+            0,  // Gravity
+            true,  // randomSpacing
+            0, 6.28,  // Min/max angle - allow whole circle
+            6, 20,  // Min/max size
+            0.5, 4,  // Min/max speed
+            0.01, 0.03,  // Min/max scale speed
+            0.02, 0.04,  // Min/max alpha speed
+            0, 0);  // Min/max rotation speed
         }
         
         // Update the sprite with current world information.
