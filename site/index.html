@@ -75,6 +75,7 @@
     // User interface spites.
     var playerHealthSprite = undefined;
     var playerWeaponSprite = undefined;
+    var playerWeaponNumber = -1;
 
     function hexiLoading() {
       console.log(`Loading: ${hexiObj.loadingFile} (${hexiObj.loadingProcess}%)`);
@@ -166,10 +167,6 @@
       playerHealthSprite.alpha = 0.5;
       playerHealthSprite.layer = 1000;  // Foremost
 
-      playerWeaponSprite = hexiObj.text("Weapon: ", "32px sans-serif", "white", 10, 45);
-      playerWeaponSprite.alpha = 0.5;
-      playerWeaponSprite.layer = 1000;  // Foremost
-      
       copyrightSprite = hexiObj.text("Copyright 2016 6KidsGames.com", "16px sans-serif", "white", 10, 625);
       copyrightSprite.alpha = 0.33;
       copyrightSprite.layer = 1000;
@@ -252,66 +249,22 @@
     // or new or removed players. This is also our record for keeping track
     // of all the things the game engine needs (e.g. sprites).
     var playerDatas = { };
-    function forEachPlayerData(func) {
-      var ids = Object.keys(playerDatas);
-      for (var i = 0; i < ids.length; i++) {
-        var id = ids[i];
-        if (playerDatas.hasOwnProperty(id)) {
-          var playerData = playerDatas[id]; 
-          if (playerData) {
-            func(playerData);
-          }
-        }
-      }
-    }
+    function forEachPlayerData(func) { forEachInMap(playerDatas, func); }
 
     // Keep a record of all weapons we know about right now. Each time
     // through gameLoop() the latest world update might include different
     // or new or removed weapons. This is also our record for keeping track
     // of all the things the game engine needs (e.g. sprites).
     var weaponDatas = { };
-    function forEachWeaponData(func) {
-      var ids = Object.keys(weaponDatas);
-      for (var i = 0; i < ids.length; i++) {
-        var id = ids[i];
-        if (weaponDatas.hasOwnProperty(id)) {
-          var weaponData = weaponDatas[id]; 
-          if (weaponData) {
-            func(weaponData);
-          }
-        }
-      }
-    }
+    function forEachWeaponData(func) { forEachInMap(weaponDatas, func); }
 
     // Keep a record of all zombies in play right now.
     var zombieDatas = { };
-    function forEachZombieData(func) {
-      var ids = Object.keys(zombieDatas);
-      for (var i = 0; i < ids.length; i++) {
-        var id = ids[i];
-        if (zombieDatas.hasOwnProperty(id)) {
-          var zombieData = zombieDatas[id]; 
-          if (zombieData) {
-            func(zombieData);
-          }
-        }
-      }
-    }
+    function forEachZombieData(func) { forEachInMap(zombieDatas, func); }
 
     // Keep a record of all bullets in play right now.
     var bulletDatas = { };
-    function forEachBulletData(func) {
-      var ids = Object.keys(bulletDatas);
-      for (var i = 0; i < ids.length; i++) {
-        var id = ids[i];
-        if (bulletDatas.hasOwnProperty(id)) {
-          var bulletData = bulletDatas[id]; 
-          if (bulletData) {
-            func(bulletData);
-          }
-        }
-      }
-    }
+    function forEachBulletData(func) { forEachInMap(bulletDatas, func); }
 
     // Called 30 times per second by the Hexi main loop.
     function gameLoop() {
@@ -334,7 +287,7 @@
 
       // Mark all players we are tracking as touched=false to detect removed players.
       // Make changes to player sprites from the current world state sent by the server.
-      forEachPlayerData(function(playerData) { playerData.touched = false; });
+      clearAllMapTouches(playerDatas);
       var myPlayerData  = null;
       for (var i = 0; i < currentWorld.p.length; i++) {
         var player = currentWorld.p[i];
@@ -346,6 +299,7 @@
             id: player.id,
             lastSoundCount: player.sndC,  // On reconnect, we don't want a ton of sounds, so use the current server count and play the next ones sent.
             sprite: createNewPlayerSprite(),
+            weapon: -1,
           };
 
           playerDatas[player.id] = playerData;
@@ -363,21 +317,20 @@
           if (!myPlayerData.markedForBetterViewing) {
             var highlightCircle = hexiObj.circle(diameter = 64);
             highlightCircle.alpha = 0.3;
-            highlightCircle.pivot.x = 16;
-            highlightCircle.pivot.y = 16;
+            highlightCircle.anchor.x = 0.5;
+            highlightCircle.anchor.y = 0.5;
             myPlayerData.sprite.addChild(highlightCircle);
             myPlayerData.markedForBetterViewing = true;
           }
         }
 
-        // Update the sprite with current world information.
+        // Update the sprite and playerData with current world information.
         playerData.sprite.x = player.x;
         playerData.sprite.y = player.y;
         playerData.sprite.rotation = player.dir;
         playerData.lastHealth = playerData.health;
         playerData.health = player.hl;
-        playerData.lastWeapon = playerData.weapon;
-        playerData.weapon = player.wpn;
+        playerData.weapon = player.w;
         if (player.dead && !playerData.dead) {
           // TODO: Make a sound.
           playerData.dead = true;
@@ -393,8 +346,11 @@
         playerHealthSprite.content = "HEALTH: " + myPlayerData.health;
       }
 
-      if (myPlayerData.weapon !== myPlayerData.lastWeapon) {
-        playerWeaponSprite.content = "WEAPON: " + myPlayerData.weapon;
+      console.log(`current weapon ${playerWeaponNumber} player ${myPlayerData.weapon}`);
+      if (myPlayerData.weapon !== playerWeaponNumber) {
+        console.log("Player weapon in UI changing from", playerWeaponNumber, "to", myPlayerData.weapon);
+        createPlayerWeaponSprite(myPlayerData.weapon);
+        playerWeaponNumber = myPlayerData.weapon;
       }
 
       // Find any playerDatas that were not touched this round and remove -
@@ -410,7 +366,7 @@
 
       // Mark all weapons we are tracking as touched=false to detect removed weapons.
       // Make changes to weapon sprites from the current world state sent by the server.
-      forEachWeaponData(function(weaponData) { weaponData.touched = false; });
+      clearAllMapTouches(weaponDatas);
       for (var i = 0; i < currentWorld.w.length; i++) {
         var weapon = currentWorld.w[i];
 
@@ -434,7 +390,7 @@
       // they are gone from the world.
       forEachWeaponData(function(weaponData) {
         if (!weaponData.touched) {
-          console.log("Removing weapon", weapon.id, "from the world");
+          console.log("Removing weapon", weaponData.id, "from the world");
           weaponData.sprite.visible = false;
           hexiObj.remove(weaponData.sprite);
           weaponDatas[weaponData.id] = undefined;
@@ -443,13 +399,12 @@
 
       // Mark all bullets we are tracking as touched=false to detect removed ones.
       // Process bullet changes sent by the server.
-      forEachBulletData(function(bulletData) { bulletData.touched = false; });
+      clearAllMapTouches(bulletDatas);
       for (var i = 0; i < currentWorld.b.length; i++) {
         var bullet = currentWorld.b[i];
-
-        // If new, create a new sprite.
         var bulletData = null;
         if (!bulletDatas.hasOwnProperty(bullet.id)) {
+          // New bullet
           bulletData = {
             id: bullet.id,
             sprite: createNewBulletSprite(bullet),
@@ -467,21 +422,19 @@
         bulletData.sprite.y = bullet.y;
       }
 
-      // Find any zombieDatas that were not touched this round and remove -
+      // Find any bulletDatas that were not touched this round and remove -
       // they are gone from the world.
-      forEachZombieData(function(zombieData) {
-        if (!zombieData.touched) {
-          console.log("Removing zombie", zombieData.id, "from the world");
-          zombieData.sprite.visible = false;
-          hexiObj.remove(zombieData.sprite);
-          zombieDatas[zombieData.id] = undefined;
+      forEachBulletData(function(bulletData) {
+        if (!bulletData.touched) {
+          bulletData.sprite.visible = false;
+          hexiObj.remove(bulletData.sprite);
+          bulletDatas[bulletData.id] = undefined;
         }
       });
 
-
       // Mark all zombies we are tracking as touched=false to detect removed zombies.
       // Process zombie changes sent by the server.
-      forEachZombieData(function(zombieData) { zombieData.touched = false; });
+      clearAllMapTouches(zombieDatas);
       for (var i = 0; i < currentWorld.z.length; i++) {
         var zombie = currentWorld.z[i];
 
@@ -563,6 +516,15 @@
       }
     }
 
+    function createPlayerWeaponSprite(weaponNumber) {
+      if (playerWeaponSprite) { hexiObj.remove(playerWeaponSprite); }
+      playerWeaponSprite = hexiObj.sprite(WeaponNumberMap[weaponNumber], 10, 45);
+      playerWeaponSprite.scale.x = 2;
+      playerWeaponSprite.scale.y = 2;
+      playerWeaponSprite.alpha = 0.4;
+      playerWeaponSprite.layer = 1000;  // Foremost
+    }
+
     function createNewPlayerSprite() {
       console.log("Creating player sprite");
       var sprite = hexiObj.sprite(hexiObj.spriteUtilities.frameSeries(0, 1, "vplayer"), 0, 0);
@@ -572,9 +534,9 @@
 
       sprite.fps = 2;
       sprite.playAnimation();
-      sprite.pivot.x = 15;
-      sprite.pivot.y = 22;
-      sprite.layer = 100;  // Frontmost
+      sprite.anchor.x = 0.5;
+      sprite.anchor.y = 0.5;
+      sprite.layer = 100;  // In front of the tile map, weapons, zombies, but behind user interface
 
       return sprite;
     }
@@ -589,15 +551,13 @@
     }; 
 
     function createNewBulletSprite(serverBulletInfo) {
-      var sprite = hexiObj.sprite("bullet", 0, 0);  // TODO: Use bullet sprite
+      var sprite = hexiObj.sprite("bullet", serverBulletInfo.x, serverBulletInfo.y);
 
       // Add to the tile world so its position remains relative to that world.
       levelWorldObj.addChild(sprite);
 
-      sprite.position.x = serverBulletInfo.x;
-      sprite.position.y = serverBulletInfo.y;
-      sprite.pivot.x = 1;
-      sprite.pivot.y = 1;
+      sprite.anchor.x = 0.5;
+      sprite.anchor.y = 0.5;
       sprite.layer = 7;  // Behind player and zombies but in front of map tiles and weapons.
 
       return sprite;
@@ -607,17 +567,15 @@
       var costumeName = ZombieCostumeIDMap[serverZombieInfo.cstm];
       console.log("Creating zombie Z" + serverZombieInfo.id + " with costume " + costumeName +
           " at (" + serverZombieInfo.x + "," + serverZombieInfo.y + ")");
-      var sprite = hexiObj.sprite(hexiObj.spriteUtilities.frameSeries(0, 1, costumeName), 0, 0);
+      var sprite = hexiObj.sprite(hexiObj.spriteUtilities.frameSeries(0, 1, costumeName), serverZombieInfo.x, serverZombieInfo.y);
 
       // Add to the tile world so its position remains relative to that world.
       levelWorldObj.addChild(sprite);
 
       sprite.fps = 2;
       sprite.playAnimation();
-      sprite.position.x = serverZombieInfo.x;
-      sprite.position.y = serverZombieInfo.y;
-      sprite.pivot.x = 16;
-      sprite.pivot.y = 16;
+      sprite.anchor.x = 0.5;
+      sprite.anchor.y = 0.5;
       sprite.layer = 10;  // Behind player but in front of map tiles.
 
       return sprite;
@@ -634,19 +592,17 @@
       5: "vrifle",
       6: "vmachinegun",
       7: "vminigun",
-    }; 
+    };
 
     function createNewWeaponSprite(serverWeaponInfo) {
       var costumeName = WeaponNumberMap[serverWeaponInfo.n];
       console.log("Creating weapon W" + serverWeaponInfo.id + " with costume " + costumeName +
           " at (" + serverWeaponInfo.x + "," + serverWeaponInfo.y + ")");
-      var sprite = hexiObj.sprite(costumeName, 0, 0);
+      var sprite = hexiObj.sprite(costumeName, serverWeaponInfo.x, serverWeaponInfo.y);
 
       // Add to the tile world so its position remains relative to that world.
       levelWorldObj.addChild(sprite);
 
-      sprite.position.x = serverWeaponInfo.x;
-      sprite.position.y = serverWeaponInfo.y;
       sprite.layer = 5;  // Behind player and zombies but in front of map tiles.
 
       return sprite;
@@ -657,7 +613,25 @@
         p: [],
         z: [],
         w: [],
+        b: [],
       };
+    }
+
+    function clearAllMapTouches(map) {
+      forEachInMap(map, function(val) { val.touched = false; });
+    }
+
+    function forEachInMap(map, func) {
+      var ids = Object.keys(map);
+      for (var i = 0; i < ids.length; i++) {
+        var id = ids[i];
+        if (map.hasOwnProperty(id)) {
+          var val = map[id]; 
+          if (val) {
+            func(val);
+          }
+        }
+      }
     }
 
     // Modified from article below, augmented with array validation.

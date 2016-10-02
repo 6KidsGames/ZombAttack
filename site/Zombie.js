@@ -68,7 +68,7 @@ function spawnZombie(level, currentTime) {
   // A ZombieInfo is the server-side data structure containing all needed server tracking information.
   // Only a subset of this information is passed to the clients, to minimize wire traffic.
   let zombieInfo = {
-    modelCircle: Physics.circle(x + 16, y + 16, 16),
+    modelCircle: Physics.circle(x + 16, y + 16, 20),
     lastGrowlTime: currentTime,
     lastBiteTime: currentTime,
     lastHurtTime: 0,
