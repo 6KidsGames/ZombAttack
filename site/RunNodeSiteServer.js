@@ -164,7 +164,9 @@ function worldUpdateLoop() {
 
     let zombieDistances = [];
     currentZombies.forEach(zombieInfo => {
-      zombieDistances.push({ zombieInfo: zombieInfo, sqrDist: Physics.sqrDistanceCircles(zombieInfo.modelCircle, playerInfo.modelCircle) });
+      if (!zombieInfo.dead) {
+        zombieDistances.push({ zombieInfo: zombieInfo, sqrDist: Physics.sqrDistanceCircles(zombieInfo.modelCircle, playerInfo.modelCircle) });
+      }
     });
     if (zombieDistances.length > 0) {
       if (controlInfo.useWeapon) {

@@ -179,6 +179,9 @@ function registerGrowl(currentTime) {
 }
 
 function isBiting(zombieInfo, playerInfo, currentTime) {
+  if (zombieInfo.dead) {
+    return false;
+  }
   let msecSinceLastBite = currentTime - zombieInfo.lastBiteTime;
   if (msecSinceLastBite >= 1000) {
     if (Physics.hitTestCircles(playerInfo.modelCircle, zombieInfo.modelCircle)) {
@@ -201,6 +204,9 @@ function createInitialGrowlTimes() {
 // Returns true if the bullet hit the zombie, indicating that the bullet
 // disappears from the world, the zombie takes damage, and a hit sound it played.
 function checkBulletHit(zombieInfo, bulletInfo, currentTime) {
+  if (zombieInfo.dead) {
+    return false;
+  }
   if (Physics.hitTestCircles(bulletInfo.modelCircle, zombieInfo.modelCircle)) {
     Log.debug(`B${bulletInfo.bullet.id}: Hit Z${zombieInfo.zombie.id}`);
     hitByPlayer(zombieInfo, bulletInfo.weaponStats, currentTime);

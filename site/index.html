@@ -44,6 +44,8 @@
       "Sounds/character1(girl)_hurt_1.mp3",
       "Sounds/character2(boy)_hurt_0.mp3",
       "Sounds/character2(boy)_hurt_1.mp3",
+      "Sounds/character3(boy)_hurt_0.mp3",
+      "Sounds/character3(boy)_hurt_1.mp3",
 
       // CODESYNC: Zombie.js keeps this list as well.
       'Sounds/ZombieGrowl1.mp3',
@@ -101,6 +103,10 @@
         hexiObj.sound('Sounds/character2(boy)_hurt_0.mp3'),
         hexiObj.sound('Sounds/character2(boy)_hurt_1.mp3'),
       ];
+      characterHurtSounds[2] = [
+        hexiObj.sound('Sounds/character3(boy)_hurt_0.mp3'),
+        hexiObj.sound('Sounds/character3(boy)_hurt_1.mp3'),
+      ];
 
       logo1Setup();
     }
@@ -118,12 +124,12 @@
     function logo1Loop() {
       var now = (new Date()).getTime();
       var dt = now - logo1Start;
-      if (dt < 1000) {
-        logo1Sprite.alpha = (dt / 1000) * (dt / 1000);
-      } else if (dt < 2000) {
+      if (dt < 800) {
+        logo1Sprite.alpha = (dt / 800) * (dt / 800);
+      } else if (dt < 1600) {
         logo1Sprite.alpha = 1;
-      } else if (dt < 3000) {
-        logo1Sprite.alpha = (1000 - (dt - 2000)) / 1000;
+      } else if (dt < 2400) {
+        logo1Sprite.alpha = (800 - (dt - 1600)) / 800;
       } else {
         hexiObj.remove(logo1Sprite);
         logo2Setup();
@@ -150,12 +156,12 @@
     function logo2Loop() {
       var now = (new Date()).getTime();
       var dt = now - logo2Start;
-      if (dt < 1000) {
-        logo2Sprite.alpha = (dt / 1000) * (dt / 1000);
-      } else if (dt < 2000) {
+      if (dt < 800) {
+        logo2Sprite.alpha = (dt / 800) * (dt / 800);
+      } else if (dt < 1600) {
         logo2Sprite.alpha = 1;
-      } else if (dt < 3000) {
-        logo2Sprite.alpha = (1000 - (dt - 2000)) / 1000;
+      } else if (dt < 2400) {
+        logo2Sprite.alpha = (800 - (dt - 1600)) / 800;
       } else {
         hexiObj.remove(logo2Sprite);
         gameLoopSetup();
@@ -349,7 +355,7 @@
       console.log(`current weapon ${playerWeaponNumber} player ${myPlayerData.weapon}`);
       if (myPlayerData.weapon !== playerWeaponNumber) {
         console.log("Player weapon in UI changing from", playerWeaponNumber, "to", myPlayerData.weapon);
-        createPlayerWeaponSprite(myPlayerData.weapon);
+        createPlayerWeaponUISprite(myPlayerData.weapon);
         playerWeaponNumber = myPlayerData.weapon;
       }
 
@@ -516,7 +522,7 @@
       }
     }
 
-    function createPlayerWeaponSprite(weaponNumber) {
+    function createPlayerWeaponUISprite(weaponNumber) {
       if (playerWeaponSprite) { hexiObj.remove(playerWeaponSprite); }
       playerWeaponSprite = hexiObj.sprite(WeaponNumberMap[weaponNumber], 10, 45);
       playerWeaponSprite.scale.x = 2;
