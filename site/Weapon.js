@@ -4,7 +4,7 @@ const Util = require('./Util');
 const Log = require('./Log');
 const Physics = require('./Physics');
 
-// If the zombie and the player model circles are just touching, the centers are  32 pixels distance
+// If the zombie and the player model circles are just touching, the centers are 32 pixels distance
 // from each other. So the bare-minimum distance for a melee weapon is this far,
 // then we add in any extra small range we want to allow based on the length of the weapon.
 const minMeleeStrikeDistance = 16 + 16;
@@ -13,10 +13,10 @@ const minMeleeStrikeDistance = 16 + 16;
 // Ammo value -1 means infinite, anything less means after ammo reaches zero the player drops the empty weapon.
 const WeaponTypes = [
   // Melee weapons
-  { name: "Dagger", number: 0, awesomeness: 0, probability: 0, type: "Melee", damage: 1, rechargeMsec: 1000, ddrangePx: minMeleeStrikeDistance + 8, ammo: -1 },
+  { name: "Dagger", number: 0, awesomeness: 0, probability: 0, type: "Melee", damage: 1, rechargeMsec: 500, rangePx: minMeleeStrikeDistance + 8, ammo: -1 },
   { name: "HalliganTool", number: 1, awesomeness: 10, probability: 10, type: "Melee", damage: 3, rechargeMsec: 2000, rangePx: minMeleeStrikeDistance + 16, ammo: -1 },
   { name: "Sword", number: 2, awesomeness: 20, probability: 5, type: "Melee", damage: 5, rechargeMsec: 1500, rangePx: minMeleeStrikeDistance + 16, ammo: -1 },
-  { name: "Chainsaw", number: 3, awesomeness: 30, probability: 8, type: "Melee", damage: 1, rechargeMsec: 25, rangePx: minMeleeStrikeDistance + 8, ammo: -1 },
+  { name: "Chainsaw", number: 3, awesomeness: 30, probability: 8, type: "Melee", damage: 1, rechargeMsec: 100, rangePx: minMeleeStrikeDistance + 8, ammo: -1 },
 
   // Ranged weapons
   { name: "Pistol", number: 4, awesomeness: 50, probability: 15, type: "Range", damage: 2, rechargeMsec: 500, accuracyConeRad: 0.4, rangePx: 192, ammo: 15 },
@@ -63,7 +63,7 @@ function spawnWeapon(level, currentTime) {
   // A WeaponInfo is the server-side data structure containing all needed server tracking information.
   // Only a subset of this information is passed to the clients, to minimize wire traffic.
   let weaponInfo = {
-    modelCircle: Physics.circle(x + 16, y + 16, 24),
+    modelCircle: Physics.circle(x, y, 24),
     
     type: weaponType,
 

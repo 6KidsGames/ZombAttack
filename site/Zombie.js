@@ -68,7 +68,7 @@ function spawnZombie(level, currentTime) {
   // A ZombieInfo is the server-side data structure containing all needed server tracking information.
   // Only a subset of this information is passed to the clients, to minimize wire traffic.
   let zombieInfo = {
-    modelCircle: Physics.circle(x + 16, y + 16, 20),
+    modelCircle: Physics.circle(x, y, 16),
     lastGrowlTime: currentTime,
     lastBiteTime: currentTime,
     lastHurtTime: 0,
@@ -126,8 +126,8 @@ function updateZombie(zombieInfo, currentTime, level) {
   zombie.x -= speedPxPerFrame * Math.sin(zombie.dir);
   zombie.y += speedPxPerFrame * Math.cos(zombie.dir);
   Level.clampPositionToLevel(level, zombie);
-  zombieInfo.modelCircle.centerX = zombie.x + 16;
-  zombieInfo.modelCircle.centerY = zombie.y + 16;
+  zombieInfo.modelCircle.centerX = zombie.x;
+  zombieInfo.modelCircle.centerY = zombie.y;
 
   // Occasional growls. We tell all the clients to use the same growl sound to get a nice
   // echo effect if people are playing in the same room.
@@ -152,7 +152,7 @@ function updateZombie(zombieInfo, currentTime, level) {
 function hitByPlayer(zombieInfo, weaponStats, currentTime) {
   let zombie = zombieInfo.zombie;
   zombie.hl -= weaponStats.damage;
-  
+  Log.debug(`Z${zombie.id} hit, ${weaponStats.damage} damage, ${zombie.hl} hp remaining`)
   if (zombie.hl <= 0) {
     // TODO: Zombie is dead, what animation and sound to send to the client, and what state machine for death (e.g. blood puddle, spurt particles, ...)
     zombieInfo.dead = true;
@@ -202,13 +202,13 @@ function createInitialGrowlTimes() {
 }
 
 // Returns true if the bullet hit the zombie, indicating that the bullet
-// disappears from the world, the zombie takes damage, and a hit sound it played.
+// disappears from the world, the zombie takes damage, and a hit sound is played.
 function checkBulletHit(zombieInfo, bulletInfo, currentTime) {
   if (zombieInfo.dead) {
     return false;
   }
   if (Physics.hitTestCircles(bulletInfo.modelCircle, zombieInfo.modelCircle)) {
-    Log.debug(`B${bulletInfo.bullet.id}: Hit Z${zombieInfo.zombie.id}`);
+    Log.debug(`B${bulletInfo.bullet.id} hit Z${zombieInfo.zombie.id}`);
     hitByPlayer(zombieInfo, bulletInfo.weaponStats, currentTime);
     return true;
   }

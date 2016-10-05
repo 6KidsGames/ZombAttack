@@ -142,14 +142,10 @@ function worldUpdateLoop() {
     if (!Bullet.updateBullet(bulletInfo, currentTime, currentLevel)) {
       bulletsToRemove.push(bulletInfo);
     } else {
-      let bulletHitAZombie = currentZombies.some(zombieInfo => {
-        if (Zombie.checkBulletHit(zombieInfo, bulletInfo, currentTime, currentLevel)) {
-          bulletsToRemove.push(bulletInfo);
-          return true;
-        } 
-        return false;
-      });
-      if (!bulletHitAZombie) {
+      let bulletHitAZombie = currentZombies.some(zombieInfo => Zombie.checkBulletHit(zombieInfo, bulletInfo, currentTime, currentLevel));
+      if (bulletHitAZombie) {
+        bulletsToRemove.push(bulletInfo);
+      } else {
         worldUpdateMessage.b.push(bulletInfo.bullet);  // Send only the client-side data structure.
       }
     }
@@ -174,12 +170,14 @@ function worldUpdateLoop() {
         let weaponStats = weaponTracker.weaponType;
         if ((currentTime - playerInfo.lastWeaponUse) >= weaponStats.rechargeMsec) {
           playerInfo.lastWeaponUse = currentTime;
+          player.wC++;  // Increment so client knows that current weapon is being used.
+ 
           if (weaponStats.type === "Melee") {
             // Melee weapons different from ranged weapons - strikes nearest zombie if close enough.
             zombieDistances.sort((a, b) => a.sqrDist - b.sqrDist);
             let closestZombie = zombieDistances[0];
             let sqrWeaponRange = weaponStats.rangePx * weaponStats.rangePx;
-            Log.debug(`closest zombie ${closestZombie.sqrDist}, we can hit out to ${sqrWeaponRange}`);
+            Log.debug(`Melee: Closest Z ${closestZombie.sqrDist}, we can hit out to ${sqrWeaponRange}`);
             if (closestZombie.sqrDist <= sqrWeaponRange) {
               // TODO - add in logic to only hit in front of player instead of in any direction.
               //let angle = Math.atan2(closestZombie.zombie.modelCircle.y - playerInfo.modelCircle.y,
@@ -187,7 +185,7 @@ function worldUpdateLoop() {
               //const halfFrontalArc = Math.PI / 3;
               //if (angle >= -halfFrontalArc && angle <= halfFrontalArc) {
                 Zombie.hitByPlayer(closestZombie.zombieInfo, weaponStats, currentTime);
-                Log.debug(`zombie ${closestZombie.zombieInfo.zombie.id} hit, remainingHealth ${closestZombie.zombieInfo.zombie.hl}`);
+                Log.debug(`Z${closestZombie.zombieInfo.zombie.id} hit, remainingHealth ${closestZombie.zombieInfo.zombie.hl}`);
               //}
             } 
           } else {

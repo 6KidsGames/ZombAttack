@@ -16,7 +16,7 @@ function spawnBullet(x, y, direction, weaponStats, currentTime) {
   // A BulletInfo is the server-side data structure containing all needed server tracking information.
   // Only a subset of this information is passed to the clients, to minimize wire traffic.
   let bulletInfo = {
-    modelCircle: Physics.circle(x + 1, y + 1, 3),  // Bullet radius is 1 but give some extra hit probabilty
+    modelCircle: Physics.circle(x, y, 3),  // Bullet radius is 1.5 but give some extra hit probabilty
     dir: direction,
     weaponStats: weaponStats,
     hasTraveledPx: 0,
@@ -53,8 +53,8 @@ function updateBullet(bulletInfo, currentTime, level) {
   if (Level.isOutsideLevel(level, bullet)) {
     return false;
   }
-  bulletInfo.modelCircle.centerX = bullet.x + 1;
-  bulletInfo.modelCircle.centerY = bullet.y + 1;
+  bulletInfo.modelCircle.centerX = bullet.x;
+  bulletInfo.modelCircle.centerY = bullet.y;
   return true;
 }
 

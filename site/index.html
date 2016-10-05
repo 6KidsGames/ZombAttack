@@ -85,7 +85,6 @@
     var playerWeaponNumber = -1;
 
     function hexiLoading() {
-      console.log(`Loading: ${hexiObj.loadingFile} (${hexiObj.loadingProcess}%)`);
       hexiObj.loadingBar();  // TODO: Keep?
     }
 
@@ -215,7 +214,7 @@
         currentWorld = data;
       }
       else {
-        console.log("Received unknown message type " + data.t)
+        console.log("ERROR: Received unknown message type " + data.t)
       }
     });
 
@@ -262,7 +261,7 @@
     var playerDatas = { };
     function forEachPlayerData(func) { forEachInMap(playerDatas, func); }
 
-    // Keep a record of all weapons we know about right now. Each time
+    // Keep a record of all un-picked-up weapons we know about right now. Each time
     // through gameLoop() the latest world update might include different
     // or new or removed weapons. This is also our record for keeping track
     // of all the things the game engine needs (e.g. sprites).
@@ -309,6 +308,7 @@
           playerData = {
             id: player.id,
             lastSoundCount: player.sndC,  // On reconnect, we don't want a ton of sounds, so use the current server count and play the next ones sent.
+            lastWeaponUseCount: player.wC,
             sprite: createNewPlayerSprite(),
             weapon: -1,
           };
@@ -356,15 +356,29 @@
             player.x, player.y,
             () => hexiObj.circle(8, "red"),
             levelWorldObj,
-            20,  // Num particles
+            10,  // Num particles
             0,  // Gravity
-            true,  // randomSpacing
+            false,  // randomSpacing
             0, 6.28,  // Min/max angle - allow whole circle
             8, 24,  // Min/max size
-            0.2, 2,  // Min/max speed
+            1.2, 2.4,  // Min/max speed
             0.01, 0.03,  // Min/max scale speed
-            0.01, 0.05,  // Min/max alpha speed
+            0.05, 0.15,  // Min/max alpha speed
             0, 0);  // Min/max rotation speed
+        }
+
+        if (player.wC > playerData.lastWeaponUseCount) {
+          playerData.lastWeaponUseCount = player.wC;
+
+          console.log(`P${player.id} using W${playerData.weapon}`);
+
+          // TODO: Animate melee weapons.
+
+          // Play the sound related to the weapon.
+          var weaponSound = WeaponNumberMap[playerData.weapon].attackSound;
+          if (weaponSound) {
+            hexiObj.sound(weaponSound).play();
+          }
         }
       }
 
@@ -372,9 +386,8 @@
         playerHealthSprite.content = "HEALTH: " + myPlayerData.health;
       }
 
-      console.log(`current weapon ${playerWeaponNumber} player ${myPlayerData.weapon}`);
       if (myPlayerData.weapon !== playerWeaponNumber) {
-        console.log("Player weapon in UI changing from", playerWeaponNumber, "to", myPlayerData.weapon);
+        // console.log("Player weapon in UI changing from", playerWeaponNumber, "to", myPlayerData.weapon);
         createPlayerWeaponUISprite(myPlayerData.weapon);
         playerWeaponNumber = myPlayerData.weapon;
       }
@@ -383,7 +396,7 @@
       // they are gone from the world.
       forEachPlayerData(function(playerData) {
         if (!playerData.touched) {
-          console.log("Removing player", playerData.id, playerData.name, "from the world");
+          console.log(`Removing P${playerData.id} from the world`);
           playerData.sprite.visible = false;
           hexiObj.remove(playerData.sprite);
           playerDatas[playerData.id] = undefined;
@@ -416,7 +429,7 @@
       // they are gone from the world.
       forEachWeaponData(function(weaponData) {
         if (!weaponData.touched) {
-          console.log("Removing weapon", weaponData.id, "from the world");
+          console.log("Removing W", weaponData.id, "from the world");
           weaponData.sprite.visible = false;
           hexiObj.remove(weaponData.sprite);
           weaponDatas[weaponData.id] = undefined;
@@ -489,25 +502,33 @@
           zombieGrowls[zombie.growl].play();
         }
 
-        if (zombie.hurtC > zombieData.lastHurtCount ||
-            zombie.hl <= 0) {
+        var bloodParticles = 0;
+        if (zombie.hl <= 0) {
+          if (!zombieData.dead) {
+            zombieData.dead = true;
+            console.log(`Z${zombie.id} dead`);
+            bloodParticles = 20;
+          }
+        } else if (zombie.hurtC > zombieData.lastHurtCount) {
           zombieData.lastHurtCount = zombie.hurtC;
           console.log(`Z${zombie.id} playing hurt sound ${zombie.hurt}`);
           zombieHurtSounds[zombie.hurt].play();
-
+          bloodParticles = 8; 
+        }
+        if (bloodParticles > 0) {
           // Create a blood spray using particles.
           hexiObj.createParticles(
             zombie.x, zombie.y,
             () => hexiObj.circle(8, "black"),
             levelWorldObj,
-            16,  // Num particles
+            bloodParticles,  // Num particles
             0,  // Gravity
-            true,  // randomSpacing
+            false,  // randomSpacing
             0, 6.28,  // Min/max angle - allow whole circle
-            6, 20,  // Min/max size
+            6, 16,  // Min/max size
             0.5, 4,  // Min/max speed
             0.01, 0.03,  // Min/max scale speed
-            0.02, 0.04,  // Min/max alpha speed
+            0.05, 0.14,  // Min/max alpha speed
             0, 0);  // Min/max rotation speed
         }
         
@@ -521,7 +542,7 @@
       // they are gone from the world.
       forEachZombieData(function(zombieData) {
         if (!zombieData.touched) {
-          console.log("Removing zombie", zombieData.id, "from the world");
+          console.log(`Removing Z${zombieData.id} from the world`);
           zombieData.sprite.visible = false;
           hexiObj.remove(zombieData.sprite);
           zombieDatas[zombieData.id] = undefined;
@@ -560,7 +581,7 @@
 
     function createPlayerWeaponUISprite(weaponNumber) {
       if (playerWeaponSprite) { hexiObj.remove(playerWeaponSprite); }
-      playerWeaponSprite = hexiObj.sprite(WeaponNumberMap[weaponNumber], 10, 45);
+      playerWeaponSprite = hexiObj.sprite(WeaponNumberMap[weaponNumber].sprite, 10, 45);
       playerWeaponSprite.scale.x = 2;
       playerWeaponSprite.scale.y = 2;
       playerWeaponSprite.alpha = 0.4;
@@ -568,7 +589,6 @@
     }
 
     function createNewPlayerSprite() {
-      console.log("Creating player sprite");
       var sprite = hexiObj.sprite(hexiObj.spriteUtilities.frameSeries(0, 1, "vplayer"), 0, 0);
 
       // Add to the tile world so its position remains relative to that world.
@@ -607,7 +627,7 @@
 
     function createNewZombieSprite(serverZombieInfo) {
       var costumeName = ZombieCostumeIDMap[serverZombieInfo.cstm];
-      console.log("Creating zombie Z" + serverZombieInfo.id + " with costume " + costumeName +
+      console.log("Creating Z" + serverZombieInfo.id + " with costume " + costumeName +
           " at (" + serverZombieInfo.x + "," + serverZombieInfo.y + ")");
       var sprite = hexiObj.sprite(hexiObj.spriteUtilities.frameSeries(0, 1, costumeName), serverZombieInfo.x, serverZombieInfo.y);
 
@@ -623,22 +643,22 @@
       return sprite;
     }
 
-    // Map from weapon numbers into texture names.
+    // Map from weapon numbers into texture names and sounds.
     // CODESYNC: Numeric keys are mapped in Weapon.js.
     var WeaponNumberMap = {
-      0: "vdagger",
-      1: "vHalligan",
-      2: "vsword",
-      3: "vchainsaw",
-      4: "vpistol",
-      5: "vrifle",
-      6: "vmachinegun",
-      7: "vminigun",
+      0: { sprite: "vdagger",     attackSound: "Sounds/swoosh.mp3" },
+      1: { sprite: "vHalligan",   attackSound: "Sounds/swoosh.mp3" },
+      2: { sprite: "vsword",      attackSound: "Sounds/swoosh.mp3" },
+      3: { sprite: "vchainsaw", },
+      4: { sprite: "vpistol", },
+      5: { sprite: "vrifle",      attackSound: "Sounds/rifle.mp3" }, 
+      6: { sprite: "vmachinegun", },
+      7: { sprite: "vminigun",    attackSound: "Sounds/miniGun.mp3" },  
     };
 
     function createNewWeaponSprite(serverWeaponInfo) {
-      var costumeName = WeaponNumberMap[serverWeaponInfo.n];
-      console.log("Creating weapon W" + serverWeaponInfo.id + " with costume " + costumeName +
+      var costumeName = WeaponNumberMap[serverWeaponInfo.n].sprite;
+      console.log("Creating W" + serverWeaponInfo.id + " with costume " + costumeName +
           " at (" + serverWeaponInfo.x + "," + serverWeaponInfo.y + ")");
       var sprite = hexiObj.sprite(costumeName, serverWeaponInfo.x, serverWeaponInfo.y);
 

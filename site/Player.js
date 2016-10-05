@@ -33,7 +33,7 @@ function spawnPlayer(spark, currentLevel) {
     latestControlInfo: { },
 
     // The abstract representation of the player for hit detection purposes.
-    modelCircle: Physics.circle(x + 16, y + 16, 16),
+    modelCircle: Physics.circle(x, y, 16),
 
     currentWeapon: weaponTracker,
     lastWeaponUse: 0,  // allow to use weapon immediately
@@ -53,6 +53,8 @@ function spawnPlayer(spark, currentLevel) {
       hl: 10,  // health
       snd: 0,  // sound number
       sndC: 0,  // sound state machine
+      wuse: 0,  // Weapon ID in use
+      wC: 0,  // Weapon use state machine - increments on actual weapon use. Used for triggering sounds and other actions.
     }
   };
 }
@@ -71,15 +73,15 @@ function updatePlayerFromClientControls(playerInfo, currentLevel) {
         player.x += playerSpeedPxPerFrame * Math.sin(player.dir);
         player.y -= playerSpeedPxPerFrame * Math.cos(player.dir);
         Level.clampPositionToLevel(currentLevel, player);
-        playerInfo.modelCircle.centerX = player.x + 16;
-        playerInfo.modelCircle.centerY = player.y + 16;
+        playerInfo.modelCircle.centerX = player.x;
+        playerInfo.modelCircle.centerY = player.y;
     }
     if (controlInfo.back) {
         player.x -= playerSpeedPxPerFrame * Math.sin(player.dir);
         player.y += playerSpeedPxPerFrame * Math.cos(player.dir);
         Level.clampPositionToLevel(currentLevel, player);
-        playerInfo.modelCircle.centerX = player.x + 16;
-        playerInfo.modelCircle.centerY = player.y + 16;
+        playerInfo.modelCircle.centerX = player.x;
+        playerInfo.modelCircle.centerY = player.y;
     }
 }
 
