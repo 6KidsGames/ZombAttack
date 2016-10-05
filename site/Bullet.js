@@ -5,23 +5,21 @@ const Util = require('./Util');
 const Log = require('./Log');
 const Level = require('./Level');
 
-
-// Sound file references for growls.
-// CODESYNC: index.html keeps the opposing list in 2 places.
-const numHitSounds = 1;
+const BulletSpeedPxPerFrame = 24;
 
 let nextBulletNumber = 0;
 
-function spawnBullet(x, y, direction, weaponStats) {
+function spawnBullet(x, y, direction, weaponStats, currentTime) {
   let bulletID = nextBulletNumber;
   nextBulletNumber++;
 
   // A BulletInfo is the server-side data structure containing all needed server tracking information.
   // Only a subset of this information is passed to the clients, to minimize wire traffic.
   let bulletInfo = {
-    modelCircle: Physics.circle(x + 1, y + 1, 2),
+    modelCircle: Physics.circle(x + 1, y + 1, 3),  // Bullet radius is 1 but give some extra hit probabilty
     dir: direction,
     weaponStats: weaponStats,
+    hasTraveledPx: 0,
 
     // The portion of the data structure we send to the clients.
     bullet: {
@@ -40,15 +38,24 @@ function spawnBullet(x, y, direction, weaponStats) {
 
 // Called on the world update loop.
 // currentTime is the current Unix epoch time (milliseconds since Jan 1, 1970).
+// Returns true if the bullet should remain in the world, false if it should be removed.
 function updateBullet(bulletInfo, currentTime, level) {
   let bullet = bulletInfo.bullet;
 
-  let speedPxPerFrame = 16;
-  bullet.x += speedPxPerFrame * Math.sin(bulletInfo.dir);
-  bullet.y -= speedPxPerFrame * Math.cos(bulletInfo.dir);
-  Level.clampPositionToLevel(level, bullet);
+  // Account for max range.
+  bulletInfo.hasTraveledPx += BulletSpeedPxPerFrame;
+  if (bulletInfo.hasTraveledPx > bulletInfo.weaponStats.rangePx) {
+    return false;
+  }
+
+  bullet.x += BulletSpeedPxPerFrame * Math.sin(bulletInfo.dir);
+  bullet.y -= BulletSpeedPxPerFrame * Math.cos(bulletInfo.dir);
+  if (Level.isOutsideLevel(level, bullet)) {
+    return false;
+  }
   bulletInfo.modelCircle.centerX = bullet.x + 1;
   bulletInfo.modelCircle.centerY = bullet.y + 1;
+  return true;
 }
 
 

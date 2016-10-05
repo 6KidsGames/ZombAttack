@@ -49,8 +49,17 @@ function clampPositionToLevel(level, pos) {
   pos.y = Util.clamp(pos.y, 32, level.heightPx - 32);
 }
 
+// Accepts an object containing 'x' and 'y' and keeps its location within an acceptable reach of the edges.
+function isOutsideLevel(level, pos) {
+  return (pos.x < 0 ||
+      pos.y < 0 ||
+      pos.x > level.widthPx ||
+      pos.y > level.heightPx);
+}
+
 
 // --------------------------------------------------------------------
 // Exports
 module.exports.chooseLevel = chooseLevel;
 module.exports.clampPositionToLevel = clampPositionToLevel;
+module.exports.isOutsideLevel = isOutsideLevel;

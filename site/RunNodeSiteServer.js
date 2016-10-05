@@ -139,17 +139,19 @@ function worldUpdateLoop() {
 
   let bulletsToRemove = [];
   currentBullets.forEach(bulletInfo => {
-    Bullet.updateBullet(bulletInfo, currentTime, currentLevel);
-    
-    let bulletHitAZombie = currentZombies.some(zombieInfo => {
-      if (Zombie.checkBulletHit(zombieInfo, bulletInfo, currentTime, currentLevel)) {
-        bulletsToRemove.push(bulletInfo);
-        return true;
+    if (!Bullet.updateBullet(bulletInfo, currentTime, currentLevel)) {
+      bulletsToRemove.push(bulletInfo);
+    } else {
+      let bulletHitAZombie = currentZombies.some(zombieInfo => {
+        if (Zombie.checkBulletHit(zombieInfo, bulletInfo, currentTime, currentLevel)) {
+          bulletsToRemove.push(bulletInfo);
+          return true;
+        } 
+        return false;
+      });
+      if (!bulletHitAZombie) {
+        worldUpdateMessage.b.push(bulletInfo.bullet);  // Send only the client-side data structure.
       }
-      return false;
-    });
-    if (!bulletHitAZombie) {
-      worldUpdateMessage.b.push(bulletInfo.bullet);  // Send only the client-side data structure.
     }
   });
   bulletsToRemove.forEach(deadBulletInfo => currentBullets.remove(deadBulletInfo));
@@ -162,7 +164,9 @@ function worldUpdateLoop() {
 
     let zombieDistances = [];
     currentZombies.forEach(zombieInfo => {
-      zombieDistances.push({ zombieInfo: zombieInfo, sqrDist: Physics.sqrDistanceCircles(zombieInfo.modelCircle, playerInfo.modelCircle) });
+      if (!zombieInfo.dead) {
+        zombieDistances.push({ zombieInfo: zombieInfo, sqrDist: Physics.sqrDistanceCircles(zombieInfo.modelCircle, playerInfo.modelCircle) });
+      }
     });
     if (zombieDistances.length > 0) {
       if (controlInfo.useWeapon) {

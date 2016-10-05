@@ -13,16 +13,16 @@ const minMeleeStrikeDistance = 16 + 16;
 // Ammo value -1 means infinite, anything less means after ammo reaches zero the player drops the empty weapon.
 const WeaponTypes = [
   // Melee weapons
-  { name: "Dagger", number: 0, awesomeness: 0, probability: 0, type: "Melee", damage: 1, rechargeMsec: 1000, rangePx: minMeleeStrikeDistance + 8, ammo: -1 },
+  { name: "Dagger", number: 0, awesomeness: 0, probability: 0, type: "Melee", damage: 1, rechargeMsec: 1000, ddrangePx: minMeleeStrikeDistance + 8, ammo: -1 },
   { name: "HalliganTool", number: 1, awesomeness: 10, probability: 10, type: "Melee", damage: 3, rechargeMsec: 2000, rangePx: minMeleeStrikeDistance + 16, ammo: -1 },
   { name: "Sword", number: 2, awesomeness: 20, probability: 5, type: "Melee", damage: 5, rechargeMsec: 1500, rangePx: minMeleeStrikeDistance + 16, ammo: -1 },
   { name: "Chainsaw", number: 3, awesomeness: 30, probability: 8, type: "Melee", damage: 1, rechargeMsec: 25, rangePx: minMeleeStrikeDistance + 8, ammo: -1 },
 
   // Ranged weapons
-  { name: "Pistol", number: 4, awesomeness: 50, probability: 15, type: "Range", damage: 2, rechargeMsec: 500, accuracyConeRad: 0.4, rangePx: 128, ammo: 15 },
-  { name: "Rifle", number: 5, awesomeness: 60, probability: 8, type: "Range", damage: 12, rechargeMsec: 800, accuracyConeRad: 0.2, rangePx: 384, ammo: 12 },
-  { name: "MachineGun", number: 6, awesomeness: 70, probability: 2, type: "Range", damage: 12, rechargeMsec: 100, accuracyConeRad: 0.3, rangePx: 318, ammo: 30 },
-  { name: "Minigun", number: 7, awesomeness: 80, probability: 1, type: "Range", damage: 20, rechargeMsec: 10, accuracyConeRad: 0.3, rangePx: 256, ammo: 2000 },
+  { name: "Pistol", number: 4, awesomeness: 50, probability: 15, type: "Range", damage: 2, rechargeMsec: 500, accuracyConeRad: 0.4, rangePx: 192, ammo: 15 },
+  { name: "Rifle", number: 5, awesomeness: 60, probability: 8, type: "Range", damage: 12, rechargeMsec: 800, accuracyConeRad: 0.2, rangePx: 512, ammo: 12 },
+  { name: "MachineGun", number: 6, awesomeness: 70, probability: 2, type: "Range", damage: 12, rechargeMsec: 100, accuracyConeRad: 0.3, rangePx: 384, ammo: 30 },
+  { name: "Minigun", number: 7, awesomeness: 80, probability: 1, type: "Range", damage: 20, rechargeMsec: 10, accuracyConeRad: 0.3, rangePx: 324, ammo: 2000 },
 ];
 
 function getWeaponStats(weaponName) {

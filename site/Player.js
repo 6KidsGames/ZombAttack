@@ -49,7 +49,7 @@ function spawnPlayer(spark, currentLevel) {
       y: y,
       dir: 0.0,
       inv: [ weaponTracker ],  // Inventory
-      w: defaultWeaponIndex,  // Weapon
+      w: defaultWeaponIndex,  // Weapon number
       hl: 10,  // health
       snd: 0,  // sound number
       sndC: 0,  // sound state machine
@@ -122,6 +122,7 @@ function pickedUpWeapon(playerInfo, weaponInfo, currentTime) {
 
   if (playerInfo.currentWeapon.weaponType.awesomeness < newWeaponType.awesomeness) {
     playerInfo.currentWeapon = weaponTracker;
+    playerInfo.player.w = newWeaponType.number;
   }
   return true;
 }
