@@ -16,10 +16,10 @@ const ZombieCostumeIDs = {
 
 // Zombie information by type, including attributes like speed and costume.
 const ZombieTypes = [
-  { type: "Crawler", probability: 10, hitPoints: 3, speedPxFrame: 1, costumes: [ "crawler_", "vcrawlerzombie" ] },
-  { type: "Shambler", probability: 10,  hitPoints: 5, speedPxFrame: 3, costumes: [ "czombie_", "vnormalzombie" ] },
-  { type: "Walker", probability: 10, hitPoints: 5, speedPxFrame: 5, costumes: [ "czombie_", "vnormalzombie" ] },
-  { type: "Runner", probability: 10, hitPoints: 10, speedPxFrame: 10, costumes: [ "czombie_", "vnormalzombie" ] },
+  { type: "Crawler", probability: 10, hitPoints: 5, speedPxFrame: 1, costumes: [ "crawler_", "vcrawlerzombie" ] },
+  { type: "Shambler", probability: 10,  hitPoints: 7, speedPxFrame: 3, costumes: [ "czombie_", "vnormalzombie" ] },
+  { type: "Walker", probability: 10, hitPoints: 10, speedPxFrame: 5, costumes: [ "czombie_", "vnormalzombie" ] },
+  { type: "Runner", probability: 10, hitPoints: 20, speedPxFrame: 10, costumes: [ "czombie_", "vnormalzombie" ] },
 ];
 
 // Sound file references for growls.
