@@ -65,20 +65,20 @@ function updatePlayerFromClientControls(playerInfo, currentLevel) {
   let player = playerInfo.player;
   let controlInfo = playerInfo.latestControlInfo;
 
-  if (controlInfo.turnRight) {
+  if (controlInfo.R) {  // Right
     player.dir += playerMaxTurnPerFrameRadians;
   }
-  if (controlInfo.turnLeft) {
+  if (controlInfo.L) {  // Left
     player.dir -= playerMaxTurnPerFrameRadians;
   }
-  if (controlInfo.fwd) {
+  if (controlInfo.F) {  // Forward
     player.x += playerSpeedPxPerFrame * Math.sin(player.dir);
     player.y -= playerSpeedPxPerFrame * Math.cos(player.dir);
     Level.clampPositionToLevel(currentLevel, player);
     playerInfo.modelCircle.centerX = player.x;
     playerInfo.modelCircle.centerY = player.y;
   }
-  if (controlInfo.back) {
+  if (controlInfo.B) {  // Back
     player.x -= playerSpeedPxPerFrame * Math.sin(player.dir);
     player.y += playerSpeedPxPerFrame * Math.cos(player.dir);
     Level.clampPositionToLevel(currentLevel, player);

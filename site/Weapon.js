@@ -9,6 +9,8 @@ const Physics = require('./Physics');
 // then we add in any extra small range we want to allow based on the length of the weapon.
 const minMeleeStrikeDistance = 16 + 16;
 
+const weaponLifeMsec = 30 * 1000;
+
 // Map/dictionary of weapons in the game, by name.
 // Ammo value -1 means infinite, anything less means after ammo reaches zero the player drops the empty weapon.
 const WeaponTypes = [
@@ -19,10 +21,10 @@ const WeaponTypes = [
   { name: "Chainsaw", number: 3, awesomeness: 30, probability: 8, type: "Melee", damage: 1, rechargeMsec: 100, rangePx: minMeleeStrikeDistance + 8, ammo: -1 },
 
   // Ranged weapons
-  { name: "Pistol", number: 4, awesomeness: 50, probability: 15, type: "Range", damage: 2, rechargeMsec: 500, accuracyConeRad: 0.4, rangePx: 192, ammo: 15 },
+  { name: "Pistol", number: 4, awesomeness: 50, probability: 15, type: "Range", damage: 3, rechargeMsec: 500, accuracyConeRad: 0.4, rangePx: 192, ammo: 15 },
   { name: "Rifle", number: 5, awesomeness: 60, probability: 8, type: "Range", damage: 12, rechargeMsec: 800, accuracyConeRad: 0.2, rangePx: 512, ammo: 12 },
-  { name: "MachineGun", number: 6, awesomeness: 70, probability: 2, type: "Range", damage: 12, rechargeMsec: 100, accuracyConeRad: 0.3, rangePx: 384, ammo: 30 },
-  { name: "Minigun", number: 7, awesomeness: 80, probability: 1, type: "Range", damage: 20, rechargeMsec: 10, accuracyConeRad: 0.3, rangePx: 324, ammo: 2000 },
+  { name: "MachineGun", number: 6, awesomeness: 70, probability: 2, type: "Range", damage: 10, rechargeMsec: 100, accuracyConeRad: 0.3, rangePx: 384, ammo: 30 },
+  { name: "Minigun", number: 7, awesomeness: 80, probability: 1, type: "Range", damage: 12, rechargeMsec: 10, accuracyConeRad: 0.3, rangePx: 324, ammo: 2000 },
 ];
 const NumWeapons = 8;
 
@@ -67,6 +69,7 @@ function spawnWeapon(level, currentTime) {
     modelCircle: Physics.circle(x, y, 24),
     
     type: weaponType,
+    timeOutAt: currentTime + weaponLifeMsec,
 
     // The portion of the data structure we send to the clients.
     weapon: {
@@ -84,6 +87,10 @@ function spawnWeapon(level, currentTime) {
   return weaponInfo;
 }
 
+function isTimedOut(weaponInfo, currentTime) {
+  return (currentTime >= weaponInfo.timeOutAt);
+}
+
 function isPickedUp(weaponInfo, playerInfo) {
   if (Physics.hitTestCircles(playerInfo.modelCircle, weaponInfo.modelCircle)) {
     Log.debug(`W${weaponInfo.weapon.id}: Picked up by ${playerInfo.player.id}`);
@@ -98,5 +105,6 @@ function isPickedUp(weaponInfo, playerInfo) {
 module.exports.WeaponTypes = WeaponTypes;
 module.exports.NumWeapons = NumWeapons;
 module.exports.spawnWeapon = spawnWeapon;
+module.exports.isTimedOut = isTimedOut;
 module.exports.isPickedUp = isPickedUp;
 module.exports.getWeaponStats = getWeaponStats;

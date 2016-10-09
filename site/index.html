@@ -58,6 +58,7 @@
       "Sounds/rifle.mp3",
       "Sounds/pistol.mp3",
       "Sounds/machinegun.mp3",
+      "Sounds/chainsawawesome.mp3",
 
       // Spritesheet and tileset JSON metadata files and related PNGs.
       'images/ZombAttackSpritesheet.json',
@@ -288,7 +289,7 @@
     function forEachBulletData(func) { forEachInMap(bulletDatas, func); }
 
     // Keep track of the local player's weapon change ID - we increment this each time the player
-    // actually presses a weapon key so the server knows that the controlInfo.setWpn value was updated.
+    // actually presses a weapon key so the server knows that the controlInfo.w value was updated.
     var currentWeaponChangeID = 0;
 
     // Called 30 times per second by the Hexi main loop.
@@ -572,11 +573,11 @@
 
       // Control keys don't change anything locally, we send to the server and it
       // determines what happens.
-      if (keyPressed[KEY_W]) { controlInfo.fwd = true; }
-      if (keyPressed[KEY_S]) { controlInfo.back = true; }
-      if (keyPressed[KEY_A]) { controlInfo.turnLeft = true; }
-      if (keyPressed[KEY_D]) { controlInfo.turnRight = true; }
-      if (keyPressed[KEY_SPACE]) { controlInfo.useWeapon = true; }
+      if (keyPressed[KEY_W]) { controlInfo.F = true; }  // Forward
+      if (keyPressed[KEY_S]) { controlInfo.B = true; }  // Back
+      if (keyPressed[KEY_A]) { controlInfo.L = true; }  // Left 
+      if (keyPressed[KEY_D]) { controlInfo.R = true; }  // Right
+      if (keyPressed[KEY_SPACE]) { controlInfo.A = true; }  // Attack
       for (var i = KEY_1; i <= KEY_9; i++) {
         if (keyPressed[i]) {
           //console.log("Weapon change key:", i - KEY_1);
@@ -674,7 +675,7 @@
       0: { sprite: "vdagger",     attackSound: "Sounds/swoosh.mp3" },
       1: { sprite: "vHalligan",   attackSound: "Sounds/swoosh.mp3" },
       2: { sprite: "vsword",      attackSound: "Sounds/swoosh.mp3" },
-      3: { sprite: "vchainsaw", },
+      3: { sprite: "vchainsaw",   attackSound: "Sounds/chainsawawesome.mp3" },
       4: { sprite: "vpistol",     attackSound: "Sounds/pistol.mp3"},
       5: { sprite: "vrifle",      attackSound: "Sounds/rifle.mp3" }, 
       6: { sprite: "vmachinegun", attackSound: "Sounds/machinegun.mp3"},

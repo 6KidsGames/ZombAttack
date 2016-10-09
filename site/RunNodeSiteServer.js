@@ -165,7 +165,7 @@ function worldUpdateLoop() {
       }
     });
     if (zombieDistances.length > 0) {
-      if (controlInfo.useWeapon) {
+      if (controlInfo.A) {  // Attack
         let weaponTracker = playerInfo.currentWeapon;
         let weaponStats = weaponTracker.weaponType;
         if ((currentTime - playerInfo.lastWeaponUse) >= weaponStats.rechargeMsec) {
@@ -197,7 +197,9 @@ function worldUpdateLoop() {
 
       let weaponsToRemove = [];
       currentWeapons.forEach(weaponInfo => {
-        if (Weapon.isPickedUp(weaponInfo, playerInfo)) {
+        if (Weapon.isTimedOut(weaponInfo, currentTime)) {
+          weaponsToRemove.push(weaponInfo);
+        } else if (Weapon.isPickedUp(weaponInfo, playerInfo)) {
           Log.debug(`Player ${playerInfo.player.id} touching weapon ${weaponInfo.type.name} id ${weaponInfo.weapon.id}`);
           if (Player.pickedUpWeapon(playerInfo, weaponInfo, currentTime)) {
             weaponsToRemove.push(weaponInfo);
