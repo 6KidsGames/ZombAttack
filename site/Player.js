@@ -37,6 +37,8 @@ function spawnPlayer(spark, currentLevel) {
 
     currentWeapon: weaponTracker,
     lastWeaponUse: 0,  // allow to use weapon immediately
+
+    lastWeaponChangeID: 0,  // Track client weapon change keypresses
     
     player: {
       id: spark.id,  // Used by clients to self-identify
@@ -60,29 +62,42 @@ function spawnPlayer(spark, currentLevel) {
 }
 
 function updatePlayerFromClientControls(playerInfo, currentLevel) {
-    let player = playerInfo.player;
-    let controlInfo = playerInfo.latestControlInfo;
+  let player = playerInfo.player;
+  let controlInfo = playerInfo.latestControlInfo;
 
-    if (controlInfo.turnRight) {
-        player.dir += playerMaxTurnPerFrameRadians;
+  if (controlInfo.turnRight) {
+    player.dir += playerMaxTurnPerFrameRadians;
+  }
+  if (controlInfo.turnLeft) {
+    player.dir -= playerMaxTurnPerFrameRadians;
+  }
+  if (controlInfo.fwd) {
+    player.x += playerSpeedPxPerFrame * Math.sin(player.dir);
+    player.y -= playerSpeedPxPerFrame * Math.cos(player.dir);
+    Level.clampPositionToLevel(currentLevel, player);
+    playerInfo.modelCircle.centerX = player.x;
+    playerInfo.modelCircle.centerY = player.y;
+  }
+  if (controlInfo.back) {
+    player.x -= playerSpeedPxPerFrame * Math.sin(player.dir);
+    player.y += playerSpeedPxPerFrame * Math.cos(player.dir);
+    Level.clampPositionToLevel(currentLevel, player);
+    playerInfo.modelCircle.centerX = player.x;
+    playerInfo.modelCircle.centerY = player.y;
+  }
+  if (controlInfo.wC > playerInfo.lastWeaponChangeID) {
+    playerInfo.lastWeaponChangeID = controlInfo.wC;
+    let weaponID = Util.clamp(controlInfo.w, 0, Weapon.NumWeapons - 1); 
+    //Log.debug("Weapon change", controlInfo.w);
+    if (player.w !== weaponID) {
+      let weaponTracker = player.inv.find(tracker => tracker.weaponType.number === weaponID);
+      if (weaponTracker) {
+        //Log.debug("Found weapon in inventory, changing");
+        player.w = weaponID;
+        playerInfo.currentWeapon = weaponTracker;
+      }
     }
-    if (controlInfo.turnLeft) {
-        player.dir -= playerMaxTurnPerFrameRadians;
-    }
-    if (controlInfo.fwd) {
-        player.x += playerSpeedPxPerFrame * Math.sin(player.dir);
-        player.y -= playerSpeedPxPerFrame * Math.cos(player.dir);
-        Level.clampPositionToLevel(currentLevel, player);
-        playerInfo.modelCircle.centerX = player.x;
-        playerInfo.modelCircle.centerY = player.y;
-    }
-    if (controlInfo.back) {
-        player.x -= playerSpeedPxPerFrame * Math.sin(player.dir);
-        player.y += playerSpeedPxPerFrame * Math.cos(player.dir);
-        Level.clampPositionToLevel(currentLevel, player);
-        playerInfo.modelCircle.centerX = player.x;
-        playerInfo.modelCircle.centerY = player.y;
-    }
+  }
 }
 
 function updatePlayer(playerInfo, currentTime) {
@@ -107,7 +122,8 @@ function hitByZombie(playerInfo, currentTime) {
 // Returns true if the player really picked up the weapon (player might not need it if already in inventory).
 function pickedUpWeapon(playerInfo, weaponInfo, currentTime) {
   let newWeaponType = weaponInfo.type;
-  let existingWeaponTracker = playerInfo.player.inv.find(t => t.weaponType === newWeaponType); 
+  let player = playerInfo.player;
+  let existingWeaponTracker = player.inv.find(t => t.weaponType === newWeaponType); 
   if (existingWeaponTracker) {
     if (newWeaponType.type === "Melee") {
       return false;
@@ -120,11 +136,11 @@ function pickedUpWeapon(playerInfo, weaponInfo, currentTime) {
     weaponType: newWeaponType,
     currentAmmo: newWeaponType.ammo
   }
-  playerInfo.player.inv.push(weaponTracker);
+  player.inv.push(weaponTracker);
 
   if (playerInfo.currentWeapon.weaponType.awesomeness < newWeaponType.awesomeness) {
     playerInfo.currentWeapon = weaponTracker;
-    playerInfo.player.w = newWeaponType.number;
+    player.w = newWeaponType.number;
   }
   return true;
 }

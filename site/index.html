@@ -246,6 +246,15 @@
     var KEY_SPACE = 32;
     var KEY_E = 69;
     var KEY_R = 82;
+    var KEY_1 = 49;
+    var KEY_2 = 50;
+    var KEY_3 = 51;
+    var KEY_4 = 52;
+    var KEY_5 = 53;
+    var KEY_6 = 54;
+    var KEY_7 = 55;
+    var KEY_8 = 56;
+    var KEY_9 = 57;
     
     // Keep a copy of the last PlayerControlInfo message sent, so we don't send
     // a new message if there has been no change since the last one.
@@ -278,6 +287,10 @@
     var bulletDatas = { };
     function forEachBulletData(func) { forEachInMap(bulletDatas, func); }
 
+    // Keep track of the local player's weapon change ID - we increment this each time the player
+    // actually presses a weapon key so the server knows that the controlInfo.setWpn value was updated.
+    var currentWeaponChangeID = 0;
+
     // Called 30 times per second by the Hexi main loop.
     function gameLoop() {
       var startTime = (new Date()).getTime();
@@ -286,6 +299,7 @@
       // with our current control status.
       var controlInfo = {
         t: 'c',  // Control message type
+        wC: currentWeaponChangeID,
       };
 
       // Create tile world object if we have never updated a level before, or if we changed levels.
@@ -563,6 +577,15 @@
       if (keyPressed[KEY_A]) { controlInfo.turnLeft = true; }
       if (keyPressed[KEY_D]) { controlInfo.turnRight = true; }
       if (keyPressed[KEY_SPACE]) { controlInfo.useWeapon = true; }
+      for (var i = KEY_1; i <= KEY_9; i++) {
+        if (keyPressed[i]) {
+          //console.log("Weapon change key:", i - KEY_1);
+          controlInfo.w = i - KEY_1;  // Weapon number 0-8
+          currentWeaponChangeID++;
+          controlInfo.wC = currentWeaponChangeID;
+          break;
+        }
+      }
 
       // Send the control update to the game server if it's different from the last update.
       // TODO: This should be handled asynchronously instead of in the game

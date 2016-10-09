@@ -24,6 +24,7 @@ const WeaponTypes = [
   { name: "MachineGun", number: 6, awesomeness: 70, probability: 2, type: "Range", damage: 12, rechargeMsec: 100, accuracyConeRad: 0.3, rangePx: 384, ammo: 30 },
   { name: "Minigun", number: 7, awesomeness: 80, probability: 1, type: "Range", damage: 20, rechargeMsec: 10, accuracyConeRad: 0.3, rangePx: 324, ammo: 2000 },
 ];
+const NumWeapons = 8;
 
 function getWeaponStats(weaponName) {
   return WeaponTypes.find(w => w.name === weaponName);
@@ -95,6 +96,7 @@ function isPickedUp(weaponInfo, playerInfo) {
 // --------------------------------------------------------------------
 // Exports
 module.exports.WeaponTypes = WeaponTypes;
+module.exports.NumWeapons = NumWeapons;
 module.exports.spawnWeapon = spawnWeapon;
 module.exports.isPickedUp = isPickedUp;
 module.exports.getWeaponStats = getWeaponStats;
