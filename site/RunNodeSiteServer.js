@@ -116,12 +116,13 @@ setInterval(worldUpdateLoop, 1000 / worldUpdateHz /*msec*/);
 function worldUpdateLoop() {
   let currentTime = (new Date()).getTime();
   let worldUpdateMessage = createEmptyWorldUpdateMessage();
+  let numConnectedPlayers = Math.max(1, Object.keys(currentPlayers).length);
 
-  if (Util.getRandomInt(0, 200) === 0) {  // About once in 100 seconds
+  if (Util.getRandomInt(0, 200 / numConnectedPlayers) === 0) {
     currentWeapons.push(Weapon.spawnWeapon(currentLevel, currentTime));
   }
 
-  if (Util.getRandomInt(0, 250) === 0) {  // About once in 10 seconds
+  if (Util.getRandomInt(0, 250 / numConnectedPlayers) === 0) {
     // TODO: Don't spawn within easy reach of players' current positions.
     currentZombies.push(Zombie.spawnZombie(currentLevel, currentTime));
   }
