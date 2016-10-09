@@ -24,7 +24,7 @@ function spawnPlayer(spark, currentLevel) {
 
   let weaponTracker = {
     weaponType: defaultWeaponType,
-    currentAmmo: defaultWeaponType.currentAmmo,
+    currentAmmo: defaultWeaponType.ammo,
   };
 
   return {
@@ -100,8 +100,9 @@ function updatePlayerFromClientControls(playerInfo, currentLevel) {
   }
 }
 
+// Called at the end of player processing.
 function updatePlayer(playerInfo, currentTime) {
-
+  playerInfo.player.a = playerInfo.currentWeapon.currentAmmo;
 }
 
 function hitByZombie(playerInfo, currentTime) {
@@ -126,16 +127,19 @@ function pickedUpWeapon(playerInfo, weaponInfo, currentTime) {
   let existingWeaponTracker = player.inv.find(t => t.weaponType === newWeaponType); 
   if (existingWeaponTracker) {
     if (newWeaponType.type === "Melee") {
+      // When we already have a melee weapon we don't pick up another one.
       return false;
     }
-    existingWeaponTracker.ammo += newWeaponType.ammo;
+    
+    // Take the ammo from the ranged weapon.
+    existingWeaponTracker.currentAmmo += newWeaponType.ammo;
     return true;
   }
 
   let weaponTracker = {
     weaponType: newWeaponType,
     currentAmmo: newWeaponType.ammo
-  }
+  };
   player.inv.push(weaponTracker);
 
   if (playerInfo.currentWeapon.weaponType.awesomeness < newWeaponType.awesomeness) {

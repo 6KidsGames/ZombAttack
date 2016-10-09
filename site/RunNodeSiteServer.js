@@ -169,11 +169,13 @@ function worldUpdateLoop() {
         let weaponTracker = playerInfo.currentWeapon;
         let weaponStats = weaponTracker.weaponType;
         if ((currentTime - playerInfo.lastWeaponUse) >= weaponStats.rechargeMsec) {
-          playerInfo.lastWeaponUse = currentTime;
-          player.wC++;  // Increment so client knows that current weapon is being used.
- 
-          if (weaponStats.type === "Melee") {
-            // Melee weapons different from ranged weapons - strikes nearest zombie if close enough.
+          let ammo = weaponTracker.currentAmmo;
+          if (ammo < 0) {
+            // Melee weapon
+            playerInfo.lastWeaponUse = currentTime;
+            player.wC++;  // Increment so client knows that current weapon is being used.
+
+            // Melee weapons differ from ranged weapons - strike nearest zombie if close enough.
             zombieDistances.sort((a, b) => a.sqrDist - b.sqrDist);
             let closestZombie = zombieDistances[0];
             let sqrWeaponRange = weaponStats.rangePx * weaponStats.rangePx;
@@ -188,8 +190,12 @@ function worldUpdateLoop() {
                 Log.debug(`Z${closestZombie.zombieInfo.zombie.id} hit, remainingHealth ${closestZombie.zombieInfo.zombie.hl}`);
               //}
             } 
-          } else {
-            // Ranged weapon
+          } else if (ammo > 0) {
+            // Distance weapon with enough ammo to fire.
+            playerInfo.lastWeaponUse = currentTime;
+            player.wC++;  // Increment so client knows that current weapon is being used.
+
+            weaponTracker.currentAmmo = ammo - 1;
             currentBullets.push(Bullet.spawnBullet(player.x, player.y, player.dir, weaponStats));
           }
         }
@@ -209,6 +215,8 @@ function worldUpdateLoop() {
         }
       });
       weaponsToRemove.forEach(w => currentWeapons.remove(w));
+
+      Player.updatePlayer(playerInfo, currentTime);
     }
 
     currentZombies.forEach(zombieInfo => {
@@ -217,11 +225,11 @@ function worldUpdateLoop() {
       }
     });
 
-    currentWeapons.forEach(weaponInfo => {
-      worldUpdateMessage.w.push(weaponInfo.weapon);  // Send only the client-side data structure.
-    });
-
     worldUpdateMessage.p.push(player);  // Player object, never playerInfo.
+  });
+
+  currentWeapons.forEach(weaponInfo => {
+    worldUpdateMessage.w.push(weaponInfo.weapon);  // Send only the client-side data structure.
   });
 
   // Send world update to all clients, as long as the world has changed

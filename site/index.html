@@ -82,10 +82,11 @@
     var zombieHurtSounds = [];
     var characterHurtSounds = [];
 
-    // User interface spites.
+    // User interface spites and tracking info.
     var playerHealthSprite = undefined;
     var playerWeaponSprite = undefined;
     var playerWeaponNumber = -1;
+    var playerAmmoSprite = undefined;
 
     function hexiLoading() {
       hexiObj.loadingBar();  // TODO: Keep?
@@ -131,12 +132,12 @@
     function logo1Loop() {
       var now = (new Date()).getTime();
       var dt = now - logo1Start;
-      if (dt < 800) {
-        logo1Sprite.alpha = (dt / 800) * (dt / 800);
-      } else if (dt < 1600) {
+      if (dt < 600) {
+        logo1Sprite.alpha = (dt / 600) * (dt / 600);
+      } else if (dt < 1200) {
         logo1Sprite.alpha = 1;
-      } else if (dt < 2400) {
-        logo1Sprite.alpha = (800 - (dt - 1600)) / 800;
+      } else if (dt < 1800) {
+        logo1Sprite.alpha = (600 - (dt - 1200)) / 600;
       } else {
         hexiObj.remove(logo1Sprite);
         logo2Setup();
@@ -163,12 +164,12 @@
     function logo2Loop() {
       var now = (new Date()).getTime();
       var dt = now - logo2Start;
-      if (dt < 800) {
-        logo2Sprite.alpha = (dt / 800) * (dt / 800);
-      } else if (dt < 1600) {
+      if (dt < 600) {
+        logo2Sprite.alpha = (dt / 600) * (dt / 600);
+      } else if (dt < 1200) {
         logo2Sprite.alpha = 1;
-      } else if (dt < 2400) {
-        logo2Sprite.alpha = (800 - (dt - 1600)) / 800;
+      } else if (dt < 1800) {
+        logo2Sprite.alpha = (600 - (dt - 1200)) / 600;
       } else {
         hexiObj.remove(logo2Sprite);
         gameLoopSetup();
@@ -176,12 +177,17 @@
     }
 
     function gameLoopSetup() {
-      playerHealthSprite = hexiObj.text("HEALTH: ", "32px sans-serif", "white", 10, 10);
+      playerHealthSprite = hexiObj.text("HEALTH: ", "24px sans-serif", "white", 10, 10);
       playerHealthSprite.alpha = 0.5;
       playerHealthSprite.layer = 1000;  // Foremost
 
+      playerAmmoSprite = hexiObj.text("AMMO: ", "24px sans-serif", "white", 10, 88);
+      playerAmmoSprite.alpha = 0.5;
+      playerAmmoSprite.layer = 1000;  // Foremost
+      playerAmmoSprite.visible = false;
+
       copyrightSprite = hexiObj.text("Copyright 2016 6KidsGames.com", "16px sans-serif", "white", 10, 625);
-      copyrightSprite.alpha = 0.33;
+      copyrightSprite.alpha = 0.4;
       copyrightSprite.layer = 1000;
 
       hexiObj.state = gameLoop;
@@ -357,8 +363,10 @@
         playerData.sprite.y = player.y;
         playerData.sprite.rotation = player.dir;
         playerData.lastHealth = playerData.health;
+        playerData.lastAmmo = playerData.ammo;
         playerData.health = player.hl;
         playerData.weapon = player.w;
+        playerData.ammo = player.a;
         if (player.dead && !playerData.dead) {
           // TODO: Make a sound.
           playerData.dead = true;
@@ -401,6 +409,15 @@
 
       if (myPlayerData.health !== myPlayerData.lastHealth) {
         playerHealthSprite.content = "HEALTH: " + myPlayerData.health;
+      }
+
+      if (myPlayerData.ammo !== myPlayerData.lastAmmo) {
+        if (myPlayerData.ammo < 0) {
+          playerAmmoSprite.visible = false;
+        } else {
+          playerAmmoSprite.content = "AMMO: " + myPlayerData.ammo;
+          playerAmmoSprite.visible = true;
+        }
       }
 
       if (myPlayerData.weapon !== playerWeaponNumber) {
@@ -607,9 +624,9 @@
 
     function createPlayerWeaponUISprite(weaponNumber) {
       if (playerWeaponSprite) { hexiObj.remove(playerWeaponSprite); }
-      playerWeaponSprite = hexiObj.sprite(WeaponNumberMap[weaponNumber].sprite, 10, 45);
-      playerWeaponSprite.scale.x = 2;
-      playerWeaponSprite.scale.y = 2;
+      playerWeaponSprite = hexiObj.sprite(WeaponNumberMap[weaponNumber].sprite, 10, 37);
+      playerWeaponSprite.scale.x = 1.5;
+      playerWeaponSprite.scale.y = 1.5;
       playerWeaponSprite.alpha = 0.4;
       playerWeaponSprite.layer = 1000;  // Foremost
     }
