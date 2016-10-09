@@ -3,30 +3,17 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Zomb Attack</title>
+  <title>ZombAttack</title>
   <link rel="stylesheet" href="//cdn.jsdelivr.net/normalize/3.0.1/normalize.min.css">
   <script src="/primus/primus.js"></script>
   <script src="/scripts/hexi.min.js"></script>
   <script src="/scripts/game.js"></script>
   <style>
     body { padding: 5px }
-    #output { display: block; border: 0; outline: 0; margin: 0 0 4px }
-    #textMessage { width: 400px; height: 25px; font-size: 16px }
-    button { border-radius: 5px; border: 0; background: #444; color: #FFF; padding: 6px }
   </style>
 </head>
 <body>  
-  <form id="chatForm">
-    <input placeholder="Write message to other players" id="textMessage" />
-    <button type="submit">Send</button>
-  </form> 
-  <textarea id="output" rows="3" cols="60" readonly></textarea>
-  <
   <script>
-    var output = document.getElementById('output');
-    output.value = '';
-    var textMessage = document.getElementById('textMessage');
-
     // Track the latest world updates from the server's world update messages.
     // We start with an empty world until the server can get a first message
     // back to us.
@@ -214,9 +201,7 @@
     // Listen for incoming messages from the server.
     primus.on('data', function received(data) {
       if (data.t === 't') {  // Text
-        // Place text messages in our textarea element.
-        output.value += nameOrUnknown(data.player) + ': ' + data.m + '\n';
-        output.scrollTop = output.scrollHeight;  // Follow messages at bottom of text area.
+        // TODO: If we keep chat functionality, show on screen in scrolling window
       }
       else if (data.t === 'u') {  // World update
         // console.log("Received world update:", data);
@@ -226,18 +211,6 @@
         console.log("ERROR: Received unknown message type " + data.t)
       }
     });
-
-    // Listen for submits of the form so we can send the message to the server.
-    document.getElementById('chatForm').onsubmit = function submit(e) {
-      if (e && e.preventDefault) {
-        e.preventDefault();
-      }
-      primus.write({
-        t: 't',
-        m: textMessage.value
-      });
-      textMessage.value = '';
-    };
 
     // Helpers that track the state of keyboard keys by hooking the current window's key events
     // and tracking if a key down or up has occurred.
