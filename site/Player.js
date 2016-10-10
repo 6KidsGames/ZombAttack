@@ -37,12 +37,12 @@ function spawnPlayer(spark, currentLevel) {
 
     currentWeapon: weaponTracker,
     lastWeaponUse: 0,  // allow to use weapon immediately
+    inventory: [ weaponTracker ],
 
     lastWeaponChangeID: 0,  // Track client weapon change keypresses
     
     player: {
       id: spark.id,  // Used by clients to self-identify
-      name: '',
 
       // Place the player in a random location on the map.
       // TODO: Account for the contents of the underlying tile - only place users into locations that
@@ -50,8 +50,8 @@ function spawnPlayer(spark, currentLevel) {
       x: x,
       y: y,
       dir: 0.0,
-      inv: [ weaponTracker ],  // Inventory
-      w: defaultWeaponIndex,  // Weapon number
+      inv: [ defaultWeaponIndex ],  // Inventory
+      w: defaultWeaponIndex,  // Current weapon number
       hl: 10,  // health
       snd: 0,  // sound number
       sndC: 0,  // sound state machine
@@ -90,7 +90,7 @@ function updatePlayerFromClientControls(playerInfo, currentLevel) {
     let weaponID = Util.clamp(controlInfo.w, 0, Weapon.NumWeapons - 1); 
     //Log.debug("Weapon change", controlInfo.w);
     if (player.w !== weaponID) {
-      let weaponTracker = player.inv.find(tracker => tracker.weaponType.number === weaponID);
+      let weaponTracker = playerInfo.inventory.find(tracker => tracker.weaponType.number === weaponID);
       if (weaponTracker) {
         //Log.debug("Found weapon in inventory, changing");
         player.w = weaponID;
@@ -124,7 +124,7 @@ function hitByZombie(playerInfo, currentTime) {
 function pickedUpWeapon(playerInfo, weaponInfo, currentTime) {
   let newWeaponType = weaponInfo.type;
   let player = playerInfo.player;
-  let existingWeaponTracker = player.inv.find(t => t.weaponType === newWeaponType); 
+  let existingWeaponTracker = playerInfo.inventory.find(t => t.weaponType === newWeaponType); 
   if (existingWeaponTracker) {
     if (newWeaponType.type === "Melee") {
       // When we already have a melee weapon we don't pick up another one.
@@ -140,13 +140,24 @@ function pickedUpWeapon(playerInfo, weaponInfo, currentTime) {
     weaponType: newWeaponType,
     currentAmmo: newWeaponType.ammo
   };
-  player.inv.push(weaponTracker);
+  playerInfo.inventory.push(weaponTracker);
+  player.inv.push(newWeaponType.number);
 
   if (playerInfo.currentWeapon.weaponType.awesomeness < newWeaponType.awesomeness) {
     playerInfo.currentWeapon = weaponTracker;
     player.w = newWeaponType.number;
   }
   return true;
+}
+
+function dropWeapon(playerInfo, weaponTracker) {
+  playerInfo.inventory.remove(weaponTracker);
+  playerInfo.player.inv.remove(weaponTracker.weaponType.number);
+  if (playerInfo.currentWeapon.weaponType.number === weaponTracker.weaponType.number) {
+    playerInfo.inventory.sort((a, b) => b.weaponType.awesomeness - a.weaponType.awesomeness);
+    playerInfo.currentWeapon = playerInfo.inventory[0];
+    playerInfo.player.w = playerInfo.inventory[0].weaponType.number;
+  }
 }
 
 
@@ -157,3 +168,4 @@ module.exports.updatePlayer = updatePlayer;
 module.exports.updatePlayerFromClientControls = updatePlayerFromClientControls;
 module.exports.hitByZombie = hitByZombie;
 module.exports.pickedUpWeapon = pickedUpWeapon;
+module.exports.dropWeapon = dropWeapon;

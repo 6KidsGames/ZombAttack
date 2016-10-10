@@ -195,9 +195,14 @@ function worldUpdateLoop() {
             // Distance weapon with enough ammo to fire.
             playerInfo.lastWeaponUse = currentTime;
             player.wC++;  // Increment so client knows that current weapon is being used.
-
-            weaponTracker.currentAmmo = ammo - 1;
             currentBullets.push(Bullet.spawnBullet(player.x, player.y, player.dir, weaponStats));
+            
+            ammo--;
+            if (ammo > 0) {
+              weaponTracker.currentAmmo = ammo;
+            } else {
+              Player.dropWeapon(playerInfo, weaponTracker);
+            }
           }
         }
       }
