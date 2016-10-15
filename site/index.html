@@ -305,7 +305,7 @@
             id: player.id,
             lastSoundCount: player.sndC,  // On reconnect, we don't want a ton of sounds, so use the current server count and play the next ones sent.
             lastWeaponUseCount: player.wC,
-            sprite: createNewPlayerSprite(),
+            sprite: createNewPlayerSprite(player.w),
             weapon: -1,
           };
 
@@ -338,7 +338,11 @@
         playerData.lastHealth = playerData.health;
         playerData.lastAmmo = playerData.ammo;
         playerData.health = player.hl;
-        playerData.weapon = player.w;
+        if (playerData.weapon !== player.w) {
+          playerData.weapon = player.w;
+          setPlayerWeaponSprite(playerData.sprite, player.w);
+        }
+        
         playerData.ammo = player.a;
         if (player.dead && !playerData.dead) {
           // TODO: Make a sound.
@@ -604,7 +608,7 @@
       playerWeaponSprite.layer = 1000;  // Foremost
     }
 
-    function createNewPlayerSprite() {
+    function createNewPlayerSprite(weaponNumber) {
       var sprite = hexiObj.sprite(hexiObj.spriteUtilities.frameSeries(0, 1, "vplayer"), 0, 0);
 
       // Add to the tile world so its position remains relative to that world.
@@ -616,9 +620,21 @@
       sprite.anchor.y = 0.5;
       sprite.layer = 100;  // In front of the tile map, weapons, zombies, but behind user interface
 
+      var weapon = hexiObj.sprite(WeaponNumberMap[weaponNumber].playerHolding, 0, WeaponNumberMap[weaponNumber].yPos);
+      weapon.anchor.x = 0.5;
+      weapon.anchor.y = 0.5;
+      weapon.layer = 101;
+      sprite.addChild(weapon);
+    
+
       return sprite;
     }
   
+    function setPlayerWeaponSprite(playerSprite, weaponNumber) {
+      playerSprite.children[0].texture = hexiObj.image(WeaponNumberMap[weaponNumber].playerHolding);
+      playerSprite.children[0].y = WeaponNumberMap[weaponNumber].yPos;  
+    }
+
     // Map from zombie costume numbers into texture names.
     // CODESYNC: Numeric keys are mapped in Zombie.js.
     var ZombieCostumeIDMap = {
@@ -662,14 +678,14 @@
     // Map from weapon numbers into texture names and sounds.
     // CODESYNC: Numeric keys are mapped in Weapon.js.
     var WeaponNumberMap = {
-      0: { sprite: "vdagger",     attackSound: "Sounds/swoosh.mp3" },
-      1: { sprite: "vHalligan",   attackSound: "Sounds/swoosh.mp3" },
-      2: { sprite: "vsword",      attackSound: "Sounds/swoosh.mp3" },
-      3: { sprite: "vchainsaw",   attackSound: "Sounds/chainsawawesome.mp3" },
-      4: { sprite: "vpistol",     attackSound: "Sounds/pistol.mp3"},
-      5: { sprite: "vrifle",      attackSound: "Sounds/rifle.mp3" }, 
-      6: { sprite: "vmachinegun", attackSound: "Sounds/machinegun.mp3"},
-      7: { sprite: "vminigun",    attackSound: "Sounds/miniGun.mp3" },  
+      0: { sprite: "vdagger",     attackSound: "Sounds/swoosh.mp3", playerHolding: "playerdagger", yPos: -14 },
+      1: { sprite: "vHalligan",   attackSound: "Sounds/swoosh.mp3", playerHolding: "PlayerHalliganTool", yPos: -14 },
+      2: { sprite: "vsword",      attackSound: "Sounds/swoosh.mp3", playerHolding: "PlayerSword", yPos: -16 },
+      3: { sprite: "vchainsaw",   attackSound: "Sounds/chainsawawesome.mp3", playerHolding: "PlayerChainsaw", yPos: -14 },
+      4: { sprite: "vpistol",     attackSound: "Sounds/pistol.mp3", playerHolding: "PlayerPistol", yPos: -14},
+      5: { sprite: "vrifle",      attackSound: "Sounds/rifle.mp3", playerHolding: "playerRifle", yPos: -14 }, 
+      6: { sprite: "vmachinegun", attackSound: "Sounds/machinegun.mp3", playerHolding: "playerMachineGun", yPos: -14},
+      7: { sprite: "vminigun",    attackSound: "Sounds/miniGun.mp3", playerHolding: "playerMiniGun", yPos: -14 },
     };
 
     function createNewWeaponSprite(serverWeaponInfo) {
