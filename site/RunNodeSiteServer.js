@@ -155,82 +155,87 @@ function worldUpdateLoop() {
 
   forEachPlayer(playerInfo => {
     let player = playerInfo.player;
-    let controlInfo = playerInfo.latestControlInfo;
+    if (player.dead) {
+      // We are waiting for respawn and cannot interact with the world.
+    } else {
+      let controlInfo = playerInfo.latestControlInfo;
 
-    Player.updatePlayerFromClientControls(playerInfo, currentLevel);
+      Player.updatePlayerFromClientControls(playerInfo, currentLevel);
 
-    let zombieDistances = [];
-    currentZombies.forEach(zombieInfo => {
-      if (!zombieInfo.dead) {
-        zombieDistances.push({ zombieInfo: zombieInfo, sqrDist: Physics.sqrDistanceCircles(zombieInfo.modelCircle, playerInfo.modelCircle) });
-      }
-    });
-    if (zombieDistances.length > 0) {
-      if (controlInfo.A) {  // Attack
-        let weaponTracker = playerInfo.currentWeapon;
-        let weaponStats = weaponTracker.weaponType;
-        if ((currentTime - playerInfo.lastWeaponUse) >= weaponStats.rechargeMsec) {
-          let ammo = weaponTracker.currentAmmo;
-          if (ammo < 0) {
-            // Melee weapon
-            playerInfo.lastWeaponUse = currentTime;
-            player.wC++;  // Increment so client knows that current weapon is being used.
+      let zombieDistances = [];
+      currentZombies.forEach(zombieInfo => {
+        if (!zombieInfo.dead) {
+          zombieDistances.push({ zombieInfo: zombieInfo, sqrDist: Physics.sqrDistanceCircles(zombieInfo.modelCircle, playerInfo.modelCircle) });
+        }
+      });
+      if (zombieDistances.length > 0) {
+        if (controlInfo.A) {  // Attack
+          let weaponTracker = playerInfo.currentWeapon;
+          let weaponStats = weaponTracker.weaponType;
+          if ((currentTime - playerInfo.lastWeaponUse) >= weaponStats.rechargeMsec) {
+            let ammo = weaponTracker.currentAmmo;
+            if (ammo < 0) {
+              // Melee weapon
+              playerInfo.lastWeaponUse = currentTime;
+              player.wC++;  // Increment so client knows that current weapon is being used.
 
-            // Melee weapons differ from ranged weapons - strike nearest zombie if close enough.
-            zombieDistances.sort((a, b) => a.sqrDist - b.sqrDist);
-            let closestZombie = zombieDistances[0];
-            let sqrWeaponRange = weaponStats.rangePx * weaponStats.rangePx;
-            Log.debug(`Melee: Closest Z ${closestZombie.sqrDist}, we can hit out to ${sqrWeaponRange}`);
-            if (closestZombie.sqrDist <= sqrWeaponRange) {
-              // TODO - add in logic to only hit in front of player instead of in any direction.
-              //let angle = Math.atan2(closestZombie.zombie.modelCircle.y - playerInfo.modelCircle.y,
-              //  closestZombie.zombie.modelCircle.x - playerInfo.modelCircle.x);
-              //const halfFrontalArc = Math.PI / 3;
-              //if (angle >= -halfFrontalArc && angle <= halfFrontalArc) {
-                Zombie.hitByPlayer(closestZombie.zombieInfo, weaponStats, currentTime);
-                Log.debug(`Z${closestZombie.zombieInfo.zombie.id} hit, remainingHealth ${closestZombie.zombieInfo.zombie.hl}`);
-              //}
-            } 
-          } else if (ammo > 0) {
-            // Distance weapon with enough ammo to fire.
-            playerInfo.lastWeaponUse = currentTime;
-            player.wC++;  // Increment so client knows that current weapon is being used.
-            currentBullets.push(Bullet.spawnBullet(player.x, player.y, player.dir, weaponStats));
-            
-            ammo--;
-            if (ammo > 0) {
-              weaponTracker.currentAmmo = ammo;
-            } else {
-              Player.dropWeapon(playerInfo, weaponTracker);
+              // Melee weapons differ from ranged weapons - strike nearest zombie if close enough.
+              zombieDistances.sort((a, b) => a.sqrDist - b.sqrDist);
+              let closestZombie = zombieDistances[0];
+              let sqrWeaponRange = weaponStats.rangePx * weaponStats.rangePx;
+              Log.debug(`Melee: Closest Z ${closestZombie.sqrDist}, we can hit out to ${sqrWeaponRange}`);
+              if (closestZombie.sqrDist <= sqrWeaponRange) {
+                // TODO - add in logic to only hit in front of player instead of in any direction.
+                //let angle = Math.atan2(closestZombie.zombie.modelCircle.y - playerInfo.modelCircle.y,
+                //  closestZombie.zombie.modelCircle.x - playerInfo.modelCircle.x);
+                //const halfFrontalArc = Math.PI / 3;
+                //if (angle >= -halfFrontalArc && angle <= halfFrontalArc) {
+                  Zombie.hitByPlayer(closestZombie.zombieInfo, weaponStats, currentTime);
+                  Log.debug(`Z${closestZombie.zombieInfo.zombie.id} hit, remainingHealth ${closestZombie.zombieInfo.zombie.hl}`);
+                //}
+              } 
+            } else if (ammo > 0) {
+              // Distance weapon with enough ammo to fire.
+              playerInfo.lastWeaponUse = currentTime;
+              player.wC++;  // Increment so client knows that current weapon is being used.
+              currentBullets.push(Bullet.spawnBullet(player.x, player.y, player.dir, weaponStats));
+              
+              ammo--;
+              if (ammo > 0) {
+                weaponTracker.currentAmmo = ammo;
+              } else {
+                Player.dropWeapon(playerInfo, weaponTracker);
+              }
             }
           }
         }
+
+        let weaponsToRemove = [];
+        currentWeapons.forEach(weaponInfo => {
+          if (Weapon.isTimedOut(weaponInfo, currentTime)) {
+            weaponsToRemove.push(weaponInfo);
+          } else if (Weapon.isPickedUp(weaponInfo, playerInfo)) {
+            Log.debug(`Player ${playerInfo.player.id} touching weapon ${weaponInfo.type.name} id ${weaponInfo.weapon.id}`);
+            if (Player.pickedUpWeapon(playerInfo, weaponInfo, currentTime)) {
+              weaponsToRemove.push(weaponInfo);
+            } else {
+              Log.debug(`Player ${playerInfo.player.id} did not pick up weapon ${weaponInfo.weapon.id}`);
+            }
+          }
+        });
+        weaponsToRemove.forEach(w => currentWeapons.remove(w));
+
+        // Must be last action in player update.
+        Player.updatePlayer(playerInfo, currentTime);
       }
 
-      let weaponsToRemove = [];
-      currentWeapons.forEach(weaponInfo => {
-        if (Weapon.isTimedOut(weaponInfo, currentTime)) {
-          weaponsToRemove.push(weaponInfo);
-        } else if (Weapon.isPickedUp(weaponInfo, playerInfo)) {
-          Log.debug(`Player ${playerInfo.player.id} touching weapon ${weaponInfo.type.name} id ${weaponInfo.weapon.id}`);
-          if (Player.pickedUpWeapon(playerInfo, weaponInfo, currentTime)) {
-            weaponsToRemove.push(weaponInfo);
-          } else {
-            Log.debug(`Player ${playerInfo.player.id} did not pick up weapon ${weaponInfo.weapon.id}`);
-          }
+      currentZombies.forEach(zombieInfo => {
+        if (Zombie.isBiting(zombieInfo, playerInfo, currentTime)) {
+          Player.hitByZombie(playerInfo, currentTime);
         }
       });
-      weaponsToRemove.forEach(w => currentWeapons.remove(w));
-
-      Player.updatePlayer(playerInfo, currentTime);
     }
-
-    currentZombies.forEach(zombieInfo => {
-      if (Zombie.isBiting(zombieInfo, playerInfo, currentTime)) {
-        Player.hitByZombie(playerInfo, currentTime);
-      }
-    });
-
+    
     worldUpdateMessage.p.push(player);  // Player object, never playerInfo.
   });
 
