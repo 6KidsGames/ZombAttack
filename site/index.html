@@ -74,9 +74,11 @@
     var playerWeaponSprite = undefined;
     var playerWeaponNumber = -1;
     var playerAmmoSprite = undefined;
+    var playerDeathSprite = undefined;
+    var playerDeathStart = 0;
 
     function hexiLoading() {
-      hexiObj.loadingBar();  // TODO: Keep?
+      hexiObj.loadingBar();
     }
 
     function hexiSetupCompleted() {
@@ -273,7 +275,7 @@
 
     // Called 30 times per second by the Hexi main loop.
     function gameLoop() {
-      var startTime = (new Date()).getTime();
+      var currentTime = (new Date()).getTime();
 
       // Create a new, empty PlayerControlInfo message to send to the server
       // with our current control status.
@@ -337,6 +339,7 @@
         playerData.sprite.rotation = player.dir;
         playerData.lastHealth = playerData.health;
         playerData.lastAmmo = playerData.ammo;
+        playerData.lastDead = playerData.dead;
         playerData.health = player.hl;
         if (playerData.weapon !== player.w) {
           playerData.weapon = player.w;
@@ -344,10 +347,7 @@
         }
         
         playerData.ammo = player.a;
-        if (player.dead && !playerData.dead) {
-          // TODO: Make a sound.
-          playerData.dead = true;
-        }
+        playerData.dead = player.dead;
 
         if (player.sndC > playerData.lastSoundCount) {
           playerData.lastSoundCount = player.sndC;
@@ -401,6 +401,42 @@
         // console.log("Player weapon in UI changing from", playerWeaponNumber, "to", myPlayerData.weapon);
         createPlayerWeaponUISprite(myPlayerData.weapon);
         playerWeaponNumber = myPlayerData.weapon;
+      }
+
+      if (myPlayerData.dead) {
+        if (!myPlayerData.lastDead) {  // Just died
+          playerDeathStart = currentTime;
+ 
+          console.log("Player died! Starting fadeout");
+
+          playerDeathSprite = hexiObj.rectangle(
+            window.innerWidth,
+            window.innerHeight,
+            "black",  // <fillColor></fillColor>
+            "black",  // lineColor
+            0,  // lineWidth 
+            0,  // xPosition 
+            0);  // yPosition
+          playerDeathSprite.alpha = 0;
+          playerDeathSprite.layer = 5000;  // In front of all other sprites including user interface.
+
+          var deathMessageSprite = hexiObj.text(
+              "You died.\nRefresh to respawn.",
+              "40px sans-serif",
+              "white",
+              0, 0);
+          deathMessageSprite.layer = 10000;  // Above the fade-out.
+          hexiObj.stage.putCenter(deathMessageSprite);
+        } else {
+          // Continue fade-out
+          var timeSinceDeath = currentTime - playerDeathStart;
+          if (timeSinceDeath < 3000) {
+            console.log(`${timeSinceDeath} ms since death, still fading out`)
+            playerDeathSprite.alpha = timeSinceDeath / 3000;
+          } else {
+            playerDeathSprite.alpha = 1;
+          }
+        }
       }
 
       // Find any playerDatas that were not touched this round and remove -
@@ -593,7 +629,7 @@
       // Keep the local player's sprite centered on the screen, and move the level map around the player.
       scrollingTileCamera.follow(myPlayerData.sprite);
 
-      var processingTimeMsec = (new Date()).getTime() - startTime;
+      var processingTimeMsec = (new Date()).getTime() - currentTime;
       if (processingTimeMsec > 50) {
         console.log(`Excessive loop processing time: ${processingTimeMsec} ms`);
       }

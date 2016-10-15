@@ -57,14 +57,19 @@ function spawnPlayer(spark, currentLevel) {
       sndC: 0,  // sound state machine
       wuse: 0,  // Weapon ID in use
       wC: 0,  // Weapon use state machine - increments on actual weapon use. Used for triggering sounds and other actions.
+      // 'dead' variable starts undefined and gets set true on player death.
     }
   };
 }
 
 function updatePlayerFromClientControls(playerInfo, currentLevel) {
   let player = playerInfo.player;
+  if (player.dead) {
+    // Dead, can't do much of anything but bleed out.
+    return;
+  }
+  
   let controlInfo = playerInfo.latestControlInfo;
-
   if (controlInfo.R) {  // Right
     player.dir += playerMaxTurnPerFrameRadians;
   }
@@ -109,9 +114,10 @@ function hitByZombie(playerInfo, currentTime) {
   let player = playerInfo.player;
   player.hl -= 1;
   if (player.hl <= 0) {
-    // TODO: Player is dead, what animation and sound to send to the client, and what state machine for death (e.g. blood puddle, spurt particles, ...)
-    playerInfo.dead = true;
     playerInfo.deadAt = currentTime;
+    player.dead = true;
+    player.snd = 0;  // Last death sound.
+    player.sndC++;
   } else {
     // Pick a hurt sound to play.
     player.snd = Util.getRandomInt(0, playerOuchSoundsPerCharacter);
