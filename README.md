@@ -1,8 +1,8 @@
 # ZombAttack - 6KidsGames 2016 Summer Project
 
-![6KidsGames Logo](https://github.com/erikma/ScratchPlus2016Project/blob/master/Sprites/6KidsLogo.png "6KidsGames")
+![6KidsGames Logo](https://github.com/6KidsGames/ZombAttack/blob/master/Sprites/6KidsLogo.png "6KidsGames")
 
-![ZombAttack Logo](https://github.com/erikma/ScratchPlus2016Project/blob/master/Sprites/ZombAttackLogo1.png "ZombAttack")
+![ZombAttack Logo](https://github.com/6KidsGames/ZombAttack/blob/master/Sprites/ZombAttackLogo1.png "ZombAttack")
 
 
 # About This Repo
@@ -22,7 +22,7 @@ from May through October, 2016.
 1. Install the Tiled tilemap editor from https://thorbjorn.itch.io/tiled . The Art/Website team uses this for designing tile maps. The main website is at http://www.mapeditor.org/
 1. Open a Windows console: Windows+R (to open the Run box), then type `cmd` and press Enter.
 1. Create a new folder: `mkdir c:\ZombAttack`
-1. Clone the Git repo to your new folder: `git clone https://github.com/erikma/ScratchPlus2016Project.git .`
+1. Clone the Git repo to your new folder: `git clone https://github.com/6KidsGames/ZombAttack .`
 
 ## Every day - syncing code and installing updates
 When you're developing code with a team, you're going to need to get their code as well as upload your code. A good time to do this is at the start of
@@ -47,7 +47,7 @@ When you are done with your changes you'll use GitHub to send the changes for te
 1. Now you're ready to make changes to the code, graphics, sounds, and other parts of the system.
 1. When you have something done that you want to check in, use `git commit -a` and give a good description of the changes you made.
 1. When you are done with everything in your change, it is time to push your code to the cloud (GitHub.com). Use `push`.
-1. Now you can request that the team accept the changes in your topic branch. In your browser go to https://github.com/erikma/ScratchPlus2016Project and click the `New pull request` button.
+1. Now you can request that the team accept the changes in your topic branch. In your browser go to https://github.com/6KidsGames/ZombAttack and click the `New pull request` button.
 1. Select your topic branch name from the list.
 1. On the next page, click the "Create pull request" button.
 1. Add some information into the pull request instructions if you need to, then click "Create pull request"
