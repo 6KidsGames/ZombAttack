@@ -1,6 +1,11 @@
-# ScratchPlus class - 2016 summer project
+# ZombAttack - 6KidsGames 2016 Summer Project
 
-Public repo for use with the ScratchPlus Summer 2016 class project.
+![6KidsGames Logo](https://github.com/erikma/ScratchPlus2016Project/blob/master/Sprites/6KidsLogo.png "6KidsGames")
+
+![ZombAttack Logo](https://github.com/erikma/ScratchPlus2016Project/blob/master/Sprites/ZombAttackLogo1.png "ZombAttack")
+
+
+# Using This Repo
 
 ## Getting started - First Time Setup
 
