@@ -5,6 +5,11 @@
 ![ZombAttack Logo](https://github.com/erikma/ScratchPlus2016Project/blob/master/Sprites/ZombAttackLogo1.png "ZombAttack")
 
 
+# About This Repo
+This repo contains the first large-scale game created by the kid-developers at 6 Kids Games,
+from May through October, 2016.
+
+
 # Using This Repo
 
 ## Getting started - First Time Setup
@@ -16,7 +21,7 @@
 1. Install TexturePacker from https://www.codeandweb.com/texturepacker/download . We use this tool during the build for creating spritesheets. For basic info, see https://www.codeandweb.com/texturepacker/documentation
 1. Install the Tiled tilemap editor from https://thorbjorn.itch.io/tiled . The Art/Website team uses this for designing tile maps. The main website is at http://www.mapeditor.org/
 1. Open a Windows console: Windows+R (to open the Run box), then type `cmd` and press Enter.
-1. Create a new folder: `mkdir c:\Class2016`
+1. Create a new folder: `mkdir c:\ZombAttack`
 1. Clone the Git repo to your new folder: `git clone https://github.com/erikma/ScratchPlus2016Project.git .`
 
 ## Every day - syncing code and installing updates
@@ -24,7 +29,7 @@ When you're developing code with a team, you're going to need to get their code 
 each day, unless you're in the middle of something.
 
 1. (If you don't already have a console open) Open a Windows console: Windows+R (to open the Run box), then type `cmd` and press Enter.
-1. Change location to that folder: `cd c:\Class2016`
+1. Change location to that folder: `cd c:\ZombAttack`
 1. See if you have any files changed locally, and if you're in a working branch: `git status` .
 1. If you are not on the `master` branch, run `git checkout master`
 1. If "package.json" is listed in red, run `git checkout -- package.json`
@@ -62,23 +67,6 @@ We have integrated executing the Node.js server into Visual Studio Code. There a
 
 * Pressing the `F5` key will run the project within VSCode.
 * If you are already running and have changed code and want to run again, use `Ctrl+Shift+F5` which will stop, build, and start again.
-
-### The Chat Server
-Lesson 1 includes running the first code in the class project, the chat program.
-When you press `F5` to run the program, you're told to open a browser and go to http://localhost:8080.
-You can type messages and press Enter. They will get sent to everyone connected to your server.
-
-But wait! If you're running a server on your computer, and connecting with your browser, and everyone else is doing the same with their own computers, how can you chat to each other?
-
-In order to connect to another person's server you need to find the IP address of their computer. It's displayed on your server, like this:
-
-`This machine has IP address: 10.0.0.16 (interface: Wi-Fi)`
-
-The 10.0.0.16 address is just an example; yours will likely be different. If others take that address and make a browser URL for it:
-
-`http://10.0.0.16:8080`
-
-Everyone can connect to one server, and the chats will be shared.
 
 ### Hexi.js as a Game Engine
 We're using Hexi.js as our game engine, since its Pixi.js engine provides fast animation on pretty much any modern browser,
