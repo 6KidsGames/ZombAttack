@@ -5,6 +5,10 @@ const Util = require('./Util');
 const Log = require('./Log');
 const Level = require('./Level');
 
+// We have to limit the number of zombies in the world at one time to avoid excessive costs in
+// sending world state updates.
+const MaxZombies = 20;
+
 // Reduce transmission sizes by sending only integers over the wire, mapped to costume names.
 // CODESYNC: Numeric values are mapped in index.html back to costume names.
 const ZombieCostumeIDs = {
@@ -223,3 +227,4 @@ module.exports.updateZombie = updateZombie;
 module.exports.isBiting = isBiting;
 module.exports.hitByPlayer = hitByPlayer;
 module.exports.checkBulletHit = checkBulletHit;
+module.exports.MaxZombies = MaxZombies;

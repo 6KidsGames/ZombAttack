@@ -15,9 +15,9 @@ const weaponLifeMsec = 30 * 1000;
 // Ammo value -1 means infinite, anything less means after ammo reaches zero the player drops the empty weapon.
 const WeaponTypes = [
   // Melee weapons
-  { name: "Dagger", number: 0, awesomeness: 0, probability: 0, type: "Melee", damage: 1, rechargeMsec: 500, rangePx: minMeleeStrikeDistance + 8, ammo: -1 },
-  { name: "HalliganTool", number: 1, awesomeness: 10, probability: 10, type: "Melee", damage: 3, rechargeMsec: 2000, rangePx: minMeleeStrikeDistance + 16, ammo: -1 },
-  { name: "Sword", number: 2, awesomeness: 20, probability: 5, type: "Melee", damage: 5, rechargeMsec: 1500, rangePx: minMeleeStrikeDistance + 16, ammo: -1 },
+  { name: "Dagger", number: 0, awesomeness: 0, probability: 0, type: "Melee", damage: 2, rechargeMsec: 500, rangePx: minMeleeStrikeDistance + 8, ammo: -1 },
+  { name: "HalliganTool", number: 1, awesomeness: 10, probability: 10, type: "Melee", damage: 4, rechargeMsec: 1000, rangePx: minMeleeStrikeDistance + 16, ammo: -1 },
+  { name: "Sword", number: 2, awesomeness: 20, probability: 5, type: "Melee", damage: 5, rechargeMsec: 750, rangePx: minMeleeStrikeDistance + 16, ammo: -1 },
   { name: "Chainsaw", number: 3, awesomeness: 30, probability: 8, type: "Melee", damage: 1, rechargeMsec: 100, rangePx: minMeleeStrikeDistance + 8, ammo: -1 },
 
   // Ranged weapons

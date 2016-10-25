@@ -10,6 +10,9 @@ const Util = require('./Util');
 const Weapon = require('./Weapon');
 const Zombie = require('./Zombie');
 const Bullet = require('./Bullet');
+const Telemetry = require('./Telemetry');
+
+Telemetry.init();
 
 // We use Express (http://expressjs.com/) for serving web pages and content.
 var express = require('express');
@@ -63,6 +66,7 @@ var currentLevel = Level.chooseLevel();
 // Listen for WebSockets connections and echo the events sent.
 primusServer.on('connection', spark => {
   Log.info(spark.id, 'Connected to spark from', spark.address, '- sending first world update');
+  Telemetry.onUserConnected();
   spark.write(prevWorldUpdate);
 
   currentPlayers[spark.id] = Player.spawnPlayer(spark, currentLevel);
@@ -87,12 +91,14 @@ primusServer.on('connection', spark => {
 
 primusServer.on('disconnection', spark => {
   Log.debug(spark.id, 'Spark disconnected from', spark.address);
+  Telemetry.onUserDisconnected();
   currentPlayers[spark.id] = undefined;
 });
 
 network.DisplayLocalIPAddresses();
 
-httpServer.listen(8080, function() {
+let port = process.env.port || 8080;
+httpServer.listen(port, function() {
   Log.info('Open http://localhost:8080 in your browser');
 });
 
@@ -122,7 +128,8 @@ function worldUpdateLoop() {
     currentWeapons.push(Weapon.spawnWeapon(currentLevel, currentTime));
   }
 
-  if (Util.getRandomInt(0, 250 / numConnectedPlayers) === 0) {
+  if (currentZombies.length < Zombie.MaxZombies &&
+      Util.getRandomInt(0, 250 / numConnectedPlayers) === 0) {
     // TODO: Don't spawn within easy reach of players' current positions.
     currentZombies.push(Zombie.spawnZombie(currentLevel, currentTime));
   }
@@ -247,14 +254,19 @@ function worldUpdateLoop() {
   // from the last time we sent.
   if (!Util.objectsEqual(prevWorldUpdate, worldUpdateMessage)) {
     //Log.debug("Sending world update");
+    let sendSW = Telemetry.startStopwatch();
     forEachPlayer(playerInfo => playerInfo.spark.write(worldUpdateMessage));
+    Telemetry.sendStopwatch(sendSW, "SendWorldUpdateMsec")
 
     // Deep clone the original message so we can get new player objects created
     // in order to get a valid comparison in object_equals().
+    let cloneSW = Telemetry.startStopwatch();
     prevWorldUpdate = JSON.parse(JSON.stringify(worldUpdateMessage));
+    Telemetry.sendStopwatch(cloneSW, "CloneWorldMsec")
   }
 
   let processingTimeMsec = (new Date()).getTime() - currentTime;
+  Telemetry.sendServerLoopStats(processingTimeMsec, currentZombies.length);
   if (processingTimeMsec > 50) {
     Log.warning(`Excessive loop processing time: ${processingTimeMsec} ms`);
   }

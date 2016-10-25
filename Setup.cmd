@@ -72,13 +72,15 @@ echo   ws - needed for Primus as a WebSockets implementation.
 echo   binary-pack - needed for using a binary-mode transport in Primus.
 echo   Express - web site framework. http://expressjs.com/
 echo   compression - Express plugin for compressing content sent over the network.
+echo   ApplicationInsights - Microsoft Azure telemetry service, which we use for
+echo     game site telemetry.
 echo.
 echo Installed into site\scripts:
 echo   Hexi.js - Wrapper onto Pixi.js WebGL/Canvas game engine, Sound.js, and more.
 echo     https://github.com/kittykatattack/hexi
 echo ==========================================================================
 echo.
-call npm install --save primus ws binary-pack express compression
+call npm install --save primus ws binary-pack express compression applicationinsights
 if ERRORLEVEL 1 echo ERROR: npm install failed for site modules with errorlevel %ERRORLEVEL% && exit /b 1
 
 echo.
