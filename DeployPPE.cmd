@@ -21,8 +21,8 @@ if ERRORLEVEL 8 echo ERROR: Robocopy failed with errorlevel %ERRORLEVEL%. && exi
 @echo =================================================================
 @echo Committing and pushing copied deployment.
 @echo =================================================================
-robocopy.exe out\. DeployPPE\. /s /mir
-if ERRORLEVEL 8 echo ERROR: Robocopy failed with errorlevel %ERRORLEVEL%. && exit /b 1
-
+call git add Deployed/*
+call git commit -am "Deploy PPE"
+call git push --set-upstream origin DeployPPE
 
 exit /b 0
