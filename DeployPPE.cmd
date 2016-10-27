@@ -15,7 +15,7 @@ if ERRORLEVEL 1 echo ERROR: Git checkout failed && exit /b 1
 @echo Copying build in the out\ directory to the PPE deployment
 @echo directory.
 @echo =================================================================
-robocopy.exe out\. DeployPPE\. /s /mir
+robocopy.exe out\. Deployed\PPE\. /s /mir
 if ERRORLEVEL 8 echo ERROR: Robocopy failed with errorlevel %ERRORLEVEL%. && exit /b 1
 
 @echo =================================================================
