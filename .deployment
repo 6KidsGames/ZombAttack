@@ -1,0 +1,4 @@
+; Kudu deployment specification file for Azure App Service
+
+[config]
+project = Deployed/site
