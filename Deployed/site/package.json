@@ -9,7 +9,7 @@
   "files": [],
   "bin": {},
   "man": "",
-  "start": "node site/RunNodeSiteServer.js",
+  "start": "node RunNodeSiteServer.js",
   "dependencies": {
     "applicationinsights": "^0.16.0",
     "binary-pack": "^1.0.2",
