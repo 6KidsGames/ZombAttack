@@ -1,5 +1,8 @@
 // Telemetry manager.
 
+'use strict';
+
+// Azure Application Insights
 const AppInsights = require("applicationinsights");
 
 
