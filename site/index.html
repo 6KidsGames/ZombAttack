@@ -21,6 +21,7 @@
     var scrollingTileCamera = null;
     var currentLevelName = null;
     var levelWorldObj = null;
+    var numZombieGrowlSounds = 2;
 
     // Sound and graphics files we want to load via Hexi.js.
     var thingsToLoadIntoHexi = [
@@ -34,7 +35,7 @@
       "Sounds/character3(boy)_hurt_0.mp3",
       "Sounds/character3(boy)_hurt_1.mp3",
 
-      // CODESYNC: Zombie.js keeps this list as well.
+      // CODESYNC: numZombieGrowlSounds above, and Zombie.js keeps this list as well.
       'Sounds/ZombieGrowl1.mp3',
       'Sounds/ZombieGrowl2.mp3',
       'Sounds/zombieHurt0.mp3',
@@ -65,8 +66,7 @@
     hexiObj.scaleToWindow();
     hexiObj.start();
 
-    var zombieGrowls = [];
-    var zombieHurtSounds = [];
+    var zombieSounds = [];
     var characterHurtSounds = [];
 
     // User interface spites and tracking info.
@@ -84,12 +84,12 @@
     function hexiSetupCompleted() {
       console.log("Hexi setup complete");
 
-      // CODESYNC: The number of sounds here is set in Zombie.js numGrowlSounds
-      zombieGrowls[0] = hexiObj.sound('Sounds/ZombieGrowl1.mp3');
-      zombieGrowls[1] = hexiObj.sound('Sounds/ZombieGrowl2.mp3');
+      // CODESYNC: The number of sounds here is set in Zombie.js numGrowlSounds and in numZombieGrowlSounds above
+      zombieSounds[0] = hexiObj.sound('Sounds/ZombieGrowl1.mp3');
+      zombieSounds[1] = hexiObj.sound('Sounds/ZombieGrowl2.mp3');
 
       // CODESYNC: The number of sounds here is set in Zombie.js numHurtSounds
-      zombieHurtSounds[0] = hexiObj.sound('Sounds/zombieHurt0.mp3');
+      zombieSounds[2] = hexiObj.sound('Sounds/zombieHurt0.mp3');
 
       // CODESYNC: The number of sounds here is set in RunNodeSiteServer.js numPlayerHurtSounds
       characterHurtSounds[0] = [
@@ -202,10 +202,7 @@
     
     // Listen for incoming messages from the server.
     primus.on('data', function received(data) {
-      if (data.t === 't') {  // Text
-        // TODO: If we keep chat functionality, show on screen in scrolling window
-      }
-      else if (data.t === 'u') {  // World update
+      if (data.t === 0) {  // World update
         // console.log("Received world update:", data);
         currentWorld = data;
       }
@@ -280,7 +277,7 @@
       // Create a new, empty PlayerControlInfo message to send to the server
       // with our current control status.
       var controlInfo = {
-        t: 'c',  // Control message type
+        t: 0,  // Control message type
         wC: currentWeaponChangeID,
       };
 
@@ -305,7 +302,7 @@
         if (!playerDatas.hasOwnProperty(player.id)) {
           playerData = {
             id: player.id,
-            lastSoundCount: player.sndC,  // On reconnect, we don't want a ton of sounds, so use the current server count and play the next ones sent.
+            lastSoundCount: player.sC,  // On reconnect, we don't want a ton of sounds, so use the current server count and play the next ones sent.
             lastWeaponUseCount: player.wC,
             sprite: createNewPlayerSprite(player.w),
             weapon: -1,
@@ -336,11 +333,11 @@
         // Update the sprite and playerData with current world information.
         playerData.sprite.x = player.x;
         playerData.sprite.y = player.y;
-        playerData.sprite.rotation = player.dir;
+        playerData.sprite.rotation = player.d;
         playerData.lastHealth = playerData.health;
         playerData.lastAmmo = playerData.ammo;
         playerData.lastDead = playerData.dead;
-        playerData.health = player.hl;
+        playerData.health = player.h;
         if (playerData.weapon !== player.w) {
           playerData.weapon = player.w;
           setPlayerWeaponSprite(playerData.sprite, player.w);
@@ -349,9 +346,9 @@
         playerData.ammo = player.a;
         playerData.dead = player.dead;
 
-        if (player.sndC > playerData.lastSoundCount) {
-          playerData.lastSoundCount = player.sndC;
-          characterHurtSounds[0][player.snd].play();
+        if (player.sC > playerData.lastSoundCount) {
+          playerData.lastSoundCount = player.sC;
+          characterHurtSounds[0][player.s].play();
 
           // Create a blood spray using particles.
           hexiObj.createParticles(
@@ -531,9 +528,8 @@
             id: zombie.id,
             sprite: createNewZombieSprite(zombie),
             serverZombieInfo: zombie,
-            lastGrowlCount: zombie.growlC,  // On reconnect, we don't want a ton of growls, so use the current server count and play the next ones sent.
-            lastHurtCount: zombie.hurtC,
-            lastHealth: zombie.hl,
+            lastSoundCount: zombie.sC,  // On reconnect, we don't want a ton of sounds, so use the current server count and play the next ones sent.
+            lastHealth: zombie.h,
           };
           zombieDatas[zombie.id] = zombieData;
         }
@@ -542,24 +538,25 @@
         }
         zombieData.touched = true;
 
-        // See if the growlCount is newer than our last known update, and if so, start a growl sound.
-        if (zombie.growlC > zombieData.lastGrowlCount) {
-          zombieData.lastGrowlCount = zombie.growlC;
-          console.log(`Z${zombie.id} playing growl ${zombie.growl}`);
-          zombieGrowls[zombie.growl].play();
+        // See if the soundCount is newer than our last known update, and if so, start a sound.
+        var zombieHurt = false;
+        if (zombie.sC > zombieData.lastSoundCount) {
+          zombieData.lastSoundCount = zombie.sC;
+          //console.log(`Z${zombie.id} playing sound ${zombie.s}`);
+          zombieSounds[zombie.s].play();
+          if (zombie.s >= numZombieGrowlSounds) {
+            zombieHurt = true;
+          }
         }
 
         var bloodParticles = 0;
-        if (zombie.hl <= 0) {
+        if (zombie.h <= 0) {
           if (!zombieData.dead) {
             zombieData.dead = true;
             console.log(`Z${zombie.id} dead`);
             bloodParticles = 20;
           }
-        } else if (zombie.hurtC > zombieData.lastHurtCount) {
-          zombieData.lastHurtCount = zombie.hurtC;
-          console.log(`Z${zombie.id} playing hurt sound ${zombie.hurt}`);
-          zombieHurtSounds[zombie.hurt].play();
+        } else if (zombieHurt) {
           bloodParticles = 8; 
         }
         if (bloodParticles > 0) {
@@ -582,7 +579,7 @@
         // Update the sprite with current world information.
         zombieData.sprite.x = zombie.x;
         zombieData.sprite.y = zombie.y;
-        zombieData.sprite.rotation = zombie.dir;
+        zombieData.sprite.rotation = zombie.d;
       }
 
       // Find any zombieDatas that were not touched this round and remove -
@@ -694,7 +691,7 @@
     }
 
     function createNewZombieSprite(serverZombieInfo) {
-      var costumeName = ZombieCostumeIDMap[serverZombieInfo.cstm];
+      var costumeName = ZombieCostumeIDMap[serverZombieInfo.c];
       console.log("Creating Z" + serverZombieInfo.id + " with costume " + costumeName +
           " at (" + serverZombieInfo.x + "," + serverZombieInfo.y + ")");
       var sprite = hexiObj.sprite(hexiObj.spriteUtilities.frameSeries(0, 1, costumeName), serverZombieInfo.x, serverZombieInfo.y);

@@ -63,7 +63,6 @@ var currentWeapons = [ ];
 let currentBullets = [ ];
 var currentLevel = Level.chooseLevel();
 
-// Listen for WebSockets connections and echo the events sent.
 primusServer.on('connection', spark => {
   Log.info(spark.id, 'Connected to spark from', spark.address, '- sending first world update');
   Telemetry.onUserConnected();
@@ -72,12 +71,7 @@ primusServer.on('connection', spark => {
   currentPlayers[spark.id] = Player.spawnPlayer(spark, currentLevel);
 
   spark.on('data', function received(data) {
-    //Log.debug(spark.id, 'received message:', data);
-    if (data.t === 't') { // t == text
-      // Broadcast player text messages to all players. 
-      forEachPlayer(p => p.spark.write(data));
-    }
-    else if (data.t === 'c') {  // c == control
+    if (data.t === 0) {  // c == control
       // Update our current view of what the player is doing.
       // Our world update loop will use this info to update all players with
       // each other's info.
@@ -98,6 +92,7 @@ primusServer.on('disconnection', spark => {
 network.DisplayLocalIPAddresses();
 
 let port = process.env.port || 8080;
+Log.info(`Opening port for listen: ${port}`);
 httpServer.listen(port, function() {
   Log.info('Open http://localhost:8080 in your browser');
 });
@@ -198,7 +193,7 @@ function worldUpdateLoop() {
                 //const halfFrontalArc = Math.PI / 3;
                 //if (angle >= -halfFrontalArc && angle <= halfFrontalArc) {
                   Zombie.hitByPlayer(closestZombie.zombieInfo, weaponStats, currentTime);
-                  Log.debug(`Z${closestZombie.zombieInfo.zombie.id} hit, remainingHealth ${closestZombie.zombieInfo.zombie.hl}`);
+                  Log.debug(`Z${closestZombie.zombieInfo.zombie.id} hit, remainingHealth ${closestZombie.zombieInfo.zombie.h}`);
                 //}
               }
             } 
@@ -206,7 +201,7 @@ function worldUpdateLoop() {
             // Distance weapon with enough ammo to fire.
             playerInfo.lastWeaponUse = currentTime;
             player.wC++;  // Increment so client knows that current weapon is being used.
-            currentBullets.push(Bullet.spawnBullet(player.x, player.y, player.dir, weaponStats));
+            currentBullets.push(Bullet.spawnBullet(player.x, player.y, player.d, weaponStats));
             
             ammo--;
             if (ammo > 0) {
@@ -255,7 +250,7 @@ function worldUpdateLoop() {
   if (!Util.objectsEqual(prevWorldUpdate, worldUpdateMessage)) {
     //Log.debug("Sending world update");
     let sendSW = Telemetry.startStopwatch();
-    forEachPlayer(playerInfo => playerInfo.spark.write(worldUpdateMessage));
+    primusServer.write(worldUpdateMessage);  // Broadcasts message to all sparks
     Telemetry.sendStopwatch(sendSW, "SendWorldUpdateMsec")
 
     // Deep clone the original message so we can get new player objects created
@@ -275,7 +270,7 @@ function worldUpdateLoop() {
 function createEmptyWorldUpdateMessage() {
   // Property names deliberately kept short to reduce space on the network.
   return {
-    t: 'u',  // Message type
+    t: 0,  // Message type (world update)
     l: currentLevel.name,
     lW: currentLevel.widthPx,
     lH: currentLevel.heightPx,
