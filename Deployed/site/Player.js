@@ -49,13 +49,12 @@ function spawnPlayer(spark, currentLevel) {
       // make sense, or at map-specific spawn points.
       x: x,
       y: y,
-      dir: 0.0,
-      inv: [ defaultWeaponIndex ],  // Inventory
+      d: 0.0,  // Direction in radians
+      // Restore if used by the client.  i: [ defaultWeaponIndex ],  // Inventory
       w: defaultWeaponIndex,  // Current weapon number
-      hl: 10,  // health
-      snd: 0,  // sound number
-      sndC: 0,  // sound state machine
-      wuse: 0,  // Weapon ID in use
+      h: 10,  // health
+      s: 0,  // sound number
+      sC: 0,  // sound state machine
       wC: 0,  // Weapon use state machine - increments on actual weapon use. Used for triggering sounds and other actions.
       // 'dead' variable starts undefined and gets set true on player death.
     }
@@ -71,21 +70,21 @@ function updatePlayerFromClientControls(playerInfo, currentLevel) {
   
   let controlInfo = playerInfo.latestControlInfo;
   if (controlInfo.R) {  // Right
-    player.dir += playerMaxTurnPerFrameRadians;
+    player.d += playerMaxTurnPerFrameRadians;
   }
   if (controlInfo.L) {  // Left
-    player.dir -= playerMaxTurnPerFrameRadians;
+    player.d -= playerMaxTurnPerFrameRadians;
   }
   if (controlInfo.F) {  // Forward
-    player.x += playerSpeedPxPerFrame * Math.sin(player.dir);
-    player.y -= playerSpeedPxPerFrame * Math.cos(player.dir);
+    player.x += playerSpeedPxPerFrame * Math.sin(player.d);
+    player.y -= playerSpeedPxPerFrame * Math.cos(player.d);
     Level.clampPositionToLevel(currentLevel, player);
     playerInfo.modelCircle.centerX = player.x;
     playerInfo.modelCircle.centerY = player.y;
   }
   if (controlInfo.B) {  // Back
-    player.x -= playerSpeedPxPerFrame * Math.sin(player.dir);
-    player.y += playerSpeedPxPerFrame * Math.cos(player.dir);
+    player.x -= playerSpeedPxPerFrame * Math.sin(player.d);
+    player.y += playerSpeedPxPerFrame * Math.cos(player.d);
     Level.clampPositionToLevel(currentLevel, player);
     playerInfo.modelCircle.centerX = player.x;
     playerInfo.modelCircle.centerY = player.y;
@@ -112,17 +111,16 @@ function updatePlayer(playerInfo, currentTime) {
 
 function hitByZombie(playerInfo, currentTime) {
   let player = playerInfo.player;
-  player.hl -= 1;
-  if (player.hl <= 0) {
+  player.h -= 1;
+  if (player.h <= 0) {
     playerInfo.deadAt = currentTime;
     player.dead = true;
-    player.snd = 0;  // Last death sound.
-    player.sndC++;
+    player.s = 0;  // Last death sound.
   } else {
-    // Pick a hurt sound to play.
-    player.snd = Util.getRandomInt(0, playerOuchSoundsPerCharacter);
-    player.sndC++;
+    // Pick a hurt sound to play. Hurt sounds are at the head of the client's sound array.
+    player.s = Util.getRandomInt(0, playerOuchSoundsPerCharacter);
   }
+  player.sC++;
 }
 
 // Called when a player runs over a weapon.
@@ -147,7 +145,7 @@ function pickedUpWeapon(playerInfo, weaponInfo, currentTime) {
     currentAmmo: newWeaponType.ammo
   };
   playerInfo.inventory.push(weaponTracker);
-  player.inv.push(newWeaponType.number);
+  // Restore if used by the client  player.inv.push(newWeaponType.number);
 
   if (playerInfo.currentWeapon.weaponType.awesomeness < newWeaponType.awesomeness) {
     playerInfo.currentWeapon = weaponTracker;
@@ -158,7 +156,7 @@ function pickedUpWeapon(playerInfo, weaponInfo, currentTime) {
 
 function dropWeapon(playerInfo, weaponTracker) {
   playerInfo.inventory.remove(weaponTracker);
-  playerInfo.player.inv.remove(weaponTracker.weaponType.number);
+  // Restore if used by the client  playerInfo.player.inv.remove(weaponTracker.weaponType.number);
   if (playerInfo.currentWeapon.weaponType.number === weaponTracker.weaponType.number) {
     playerInfo.inventory.sort((a, b) => b.weaponType.awesomeness - a.weaponType.awesomeness);
     playerInfo.currentWeapon = playerInfo.inventory[0];
