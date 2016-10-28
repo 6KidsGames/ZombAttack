@@ -1,10 +1,10 @@
 {
-  "name": "ScratchPlus2016Project",
-  "description": "Class project for Summer 2016",
+  "name": "ZombAttack",
+  "description": "6KidsGames project for Summer 2016",
   "version": "1.0.0",
-  "homepage": "https://github.com/erikma/ScratchPlus2016Project",
-  "repository": "https://github.com/erikma/ScratchPlus2016Project",
-  "author": "Erik Mavrinac <erikma1@hotmail.com>",
+  "homepage": "https://github.com/6KidsGames/ZombAttack",
+  "repository": "https://github.com/6KidsGames/ZombAttack.git",
+  "author": "6 Kids Games https://github.com/6KidsGames",
   "tags": [],
   "files": [],
   "bin": {},
@@ -45,7 +45,7 @@
     "start": "node RunNodeSiteServer.js"
   },
   "engines": {
-    "node": ">= 4.0"
+    "node": ">= 6.9.1"
   },
   "license": "MIT"
 }
