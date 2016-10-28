@@ -1,0 +1,22 @@
+Application settings for Azure App Service deployments:
+
+- Release Node.js optimized version: NODE_ENV = production
+
+- PHP, Java, Python = off.
+
+- Web Sockets = on.
+
+- Always on = off
+
+- WEBSITE_NODE_DEFAULT_VERSION = 6.9.1
+
+- APPINSIGHTS_INSTRUMENTATIONKEY = AppInsights key for the matching environment name (e.g. ZombAttackPPEInsights key for ZombAttackPPE web app).
+
+
+Naming conventions and locations for resources:
+- App Service web apps: ZombAttackPPE|PROD - US West 2 (MWH01 datacenter)
+- AppInsights: ZombAttackPPE|PRODInsights - US East (BN datacenter)
+
+
+Custom domain for PROD: zombattack.com and www.zombattack.com CNAMEd to zombattack.azurewebsites.net. zombattack.azurewebsites.net settings add hostname for zombattack.com.
+

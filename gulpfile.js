@@ -144,7 +144,7 @@ gulp.task('copy-levels', ['clean'], function () {
 gulp.task('copy-deployment-files', ['clean'], function() {
     return pump([
             gulp.src([ "package.json", "IISNode.yml" ]),
-            gulp.dest(SiteOutput)
+            gulp.dest(Paths.SiteOutput)
         ]);
 });
 

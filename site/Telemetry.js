@@ -29,7 +29,7 @@ function init() {
 function sendServerLoopStats(serverLoopProcessingTimeMsec, numZombies) {
   if (appInsightsClient) {
     appInsightsClient.trackMetric("ServerProcessingLoopTime", serverLoopProcessingTimeMsec);
-    appInsightsClient.trackMetric("ZombieCount", serverLoopProcessingTimeMsec);
+    appInsightsClient.trackMetric("ZombieCount", numZombies);
     
     // Report each time through the loop to ensure our dashboard continues
     // to have a current count.
