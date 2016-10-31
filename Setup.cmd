@@ -69,6 +69,7 @@ echo     ^(https://github.com/binaryjs/js-binarypack^) which is based on Message
 echo     ^(http://msgpack.org/^) wire formats for a choice of debuggability and wire
 echo     speed.
 echo   ws - needed for Primus as a WebSockets implementation.
+echo   uws - High performance WebSockets implementation for use in Primus.
 echo   binary-pack - needed for using a binary-mode transport in Primus.
 echo   Express - web site framework. http://expressjs.com/
 echo   compression - Express plugin for compressing content sent over the network.
@@ -80,12 +81,12 @@ echo   Hexi.js - Wrapper onto Pixi.js WebGL/Canvas game engine, Sound.js, and mo
 echo     https://github.com/kittykatattack/hexi
 echo ==========================================================================
 echo.
-call npm install --save primus ws binary-pack express compression applicationinsights
+call npm install --save primus ws uws binary-pack express compression applicationinsights
 if ERRORLEVEL 1 echo ERROR: npm install failed for site modules with errorlevel %ERRORLEVEL% && exit /b 1
 
 echo.
 echo ==========================================================================
-echo Verifying you installed TexturePacker, and accepting EULA.
+echo Verifying your installed TexturePacker, and accepting EULA.
 echo ==========================================================================
 echo.
 set __TexturePackerExePath="C:\Program Files\CodeAndWeb\TexturePacker\bin\TexturePacker.exe"
