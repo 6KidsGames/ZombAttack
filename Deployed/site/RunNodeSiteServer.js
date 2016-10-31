@@ -17,8 +17,15 @@ Telemetry.init();
 // We use Express (http://expressjs.com/) for serving web pages and content.
 var express = require('express');
 var webApp = express();
-var compression = require('compression');  // Compress content returned through HTTP.
-webApp.use(compression());
+
+// Do NOT enable compression - this will greatly add to the per-message
+// latency of high-speed messages during the game.
+// Example latencies - 20 zombies in world, WebSockets transport, BinaryPack transform, 5 connected clients:
+//   - With compression: 70-85 ms
+//   - Compression off: 0-3 ms 
+//var compression = require('compression');  // Compress content returned through HTTP.
+//webApp.use(compression());
+
 var httpServer = require('http').createServer(webApp);
 var network = require('./Network.js');
 
@@ -251,20 +258,20 @@ function worldUpdateLoop() {
     //Log.debug("Sending world update");
     let sendSW = Telemetry.startStopwatch();
     primusServer.write(worldUpdateMessage);  // Broadcasts message to all sparks
-    Telemetry.sendStopwatch(sendSW, "SendWorldUpdateMsec")
+    Telemetry.sendStopwatch(sendSW, "SendWorldUpdateMsec");
 
     // Deep clone the original message so we can get new player objects created
     // in order to get a valid comparison in object_equals().
     let cloneSW = Telemetry.startStopwatch();
     prevWorldUpdate = JSON.parse(JSON.stringify(worldUpdateMessage));
-    Telemetry.sendStopwatch(cloneSW, "CloneWorldMsec")
+    Telemetry.sendStopwatch(cloneSW, "CloneWorldMsec");
   }
 
   let processingTimeMsec = (new Date()).getTime() - currentTime;
   Telemetry.sendServerLoopStats(processingTimeMsec, currentZombies.length);
-  if (processingTimeMsec > 50) {
+  //if (processingTimeMsec > 50) {
     Log.warning(`Excessive loop processing time: ${processingTimeMsec} ms`);
-  }
+  //}
 }
 
 function createEmptyWorldUpdateMessage() {
