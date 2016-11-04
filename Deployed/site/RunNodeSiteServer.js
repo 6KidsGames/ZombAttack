@@ -258,13 +258,13 @@ function worldUpdateLoop() {
     //Log.debug("Sending world update");
     let sendSW = Telemetry.startStopwatch();
     primusServer.write(worldUpdateMessage);  // Broadcasts message to all sparks
-    Telemetry.sendStopwatch(sendSW, "SendWorldUpdateMsec");
+    Telemetry.sendStopwatch(sendSW, "sendWorldUpdateMsec");
 
     // Deep clone the original message so we can get new player objects created
     // in order to get a valid comparison in object_equals().
     let cloneSW = Telemetry.startStopwatch();
     prevWorldUpdate = JSON.parse(JSON.stringify(worldUpdateMessage));
-    Telemetry.sendStopwatch(cloneSW, "CloneWorldMsec");
+    Telemetry.sendStopwatch(cloneSW, "cloneWorldMsec");
   }
 
   let processingTimeMsec = (new Date()).getTime() - currentTime;
