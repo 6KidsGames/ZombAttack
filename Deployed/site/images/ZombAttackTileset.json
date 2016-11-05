@@ -449,14 +449,23 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
 	"sourceSize": {"w":64,"h":64},
 	"pivot": {"x":0.5,"y":0.5}
+},
+"051_barnMid":
+{
+	"frame": {"x":3200,"y":0,"w":64,"h":64},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":64},
+	"sourceSize": {"w":64,"h":64},
+	"pivot": {"x":0.5,"y":0.5}
 }},
 "meta": {
 	"app": "http://www.codeandweb.com/texturepacker",
 	"version": "1.0",
 	"image": "ZombAttackTileset.png",
 	"format": "RGBA8888",
-	"size": {"w":3200,"h":64},
+	"size": {"w":3264,"h":64},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:33612ea7753f58b3723c7b3d229d3194:37a64750e277fed591ab09e506f6a0b2:0ab72a024d29c866b68f58bfdf9b6055$"
+	"smartupdate": "$TexturePacker:SmartUpdate:e9eee878d09ba10f7f5c468369b1af5b:8a05b5529904af7675bfa38ccc62aa3a:0ab72a024d29c866b68f58bfdf9b6055$"
 }
 }

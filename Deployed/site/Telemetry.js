@@ -6,7 +6,7 @@
 const AppInsights = require("applicationinsights");
 
 // AppIns
-const updateIntervalMsec = 20000;
+const updateIntervalMsec = 60000;
 
 let lastWriteTime = 0;
 
