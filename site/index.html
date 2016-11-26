@@ -10,7 +10,7 @@
   <script src="/scripts/game.js"></script>
   <style>
     body { padding: 5px }
-  </style>
+  </style>r
 </head>
 <body>  
   <script>
@@ -89,6 +89,7 @@
     var playerAmmoSprite = undefined;
     var playerDeathSprite = undefined;
     var playerDeathStart = 0;
+    var forwardButtonSprite = undefined;
 
     function hexiLoading() {
       hexiObj.loadingBar();
@@ -219,6 +220,10 @@
       copyrightSprite = hexiObj.text("Copyright 2016 6KidsGames.com", "16px sans-serif", "white", 10, 625);
       copyrightSprite.alpha = 0.4;
       copyrightSprite.layer = 1000;
+
+      forwardButtonSprite = hexiObj.sprite("ForwardButton", 400, 300);
+      forwardButtonSprite.alpha = 0.5;
+      forwardButtonSprite.layer = 1000;  // Foremost
 
       hexiObj.state = gameLoop;
     }
