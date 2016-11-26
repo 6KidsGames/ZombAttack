@@ -62,6 +62,9 @@ var primusOptions = {
 };
 var primusServer = new primus(httpServer, primusOptions);
 
+// Restart timer
+var serverStartTime = (new Date()).getTime();
+
 // Server-side object tracking.
 var currentPlayers = { };  // Maps from spark ID (string) to PlayerInfo server data structure..
 function forEachPlayer(func) { Util.forEachInMap(currentPlayers, func); }
@@ -122,7 +125,20 @@ var prevWorldUpdate = createEmptyWorldUpdateMessage();
 const worldUpdateHz = 20;
 setInterval(worldUpdateLoop, 1000 / worldUpdateHz /*msec*/);
 function worldUpdateLoop() {
-  let currentTime = (new Date()).getTime();
+  let currentDateTime = new Date();
+  let currentTime = currentDateTime.getTime();
+  
+  // We need to restart at night to avoid the Node process getting gummed up with a fragmented heap and other
+  // problems that make it eventually unresponsive. In the Kudu/Azure hosting environment we are running inside IIS
+  // and cannot set the periodic restart setting to less than 29 hours. So we orchestrate our own
+  // process exit to allow recycling in IIS.
+  const minRunTimeMsec = 60 * 60 * 1000;  // 1 hour in milliseconds
+  if ((currentTime - serverStartTime) >= minRunTimeMsec && 
+      currentDateTime.getUTCHours() === 10) {  // 2:00a Pacific during winter, 3:00a during Daylight Savings
+    Log.info("Exiting the server process on restart timer");
+    process.exit();
+  }
+  
   let worldUpdateMessage = createEmptyWorldUpdateMessage();
   let numConnectedPlayers = Math.max(1, Object.keys(currentPlayers).length);
 
@@ -269,9 +285,9 @@ function worldUpdateLoop() {
 
   let processingTimeMsec = (new Date()).getTime() - currentTime;
   Telemetry.sendServerLoopStats(processingTimeMsec, currentZombies.length);
-  //if (processingTimeMsec > 50) {
+  if (processingTimeMsec > 50) {
     Log.warning(`Excessive loop processing time: ${processingTimeMsec} ms`);
-  //}
+  }
 }
 
 function createEmptyWorldUpdateMessage() {
