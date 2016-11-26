@@ -20,6 +20,10 @@ exit /b 1
 @echo =================================================================
 call git checkout Deploy%_env%
 if ERRORLEVEL 1 echo ERROR: Git checkout failed && exit /b 1
+call git pull
+if ERRORLEVEL 1 echo ERROR: Git pull failed && exit /b 1
+call git reset --hard origin/Deploy%_env%
+if ERRORLEVEL 1 echo ERROR: Git reset failed && exit /b 1
 
 @echo =================================================================
 @echo Copying build in the out\ directory to the %_env% deployment
