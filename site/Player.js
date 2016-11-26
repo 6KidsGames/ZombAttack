@@ -9,6 +9,7 @@ const Weapon = require('./Weapon');
 const playerMaxTurnPerFrameRadians = 0.3;
 const playerSpeedPxPerFrame = 10;
 const playerOuchSoundsPerCharacter = 2;
+const numCharacters = 3;
 
 // Returns a new PlayerInfo object. Called at connection of the client, before
 // we have any identifying information.
@@ -43,6 +44,7 @@ function spawnPlayer(spark, currentLevel) {
     
     player: {
       id: spark.id,  // Used by clients to self-identify
+      n:  Util.getRandomInt(0, numCharacters),  // character number
 
       // Place the player in a random location on the map.
       // TODO: Account for the contents of the underlying tile - only place users into locations that
