@@ -67,7 +67,20 @@
     hexiObj.start();
 
     var zombieSounds = [];
-    var characterHurtSounds = [];
+    var characterInfo = [
+      {
+        costumeFrames: hexiObj.spriteUtilities.frameSeries(0, 1, "vplayer"),
+        hurtSounds: [],
+      },
+      {
+        costumeFrames: hexiObj.spriteUtilities.frameSeries(0, 1, "playerE0"),
+        hurtSounds: [],
+      },
+      {
+        costumeFrames: hexiObj.spriteUtilities.frameSeries(0, 1, "playerE1"),
+        hurtSounds: [],
+      },
+    ];
 
     // User interface spites and tracking info.
     var playerHealthSprite = undefined;
@@ -90,21 +103,22 @@
 
       // CODESYNC: The number of sounds here is set in Zombie.js numHurtSounds
       zombieSounds[2] = hexiObj.sound('Sounds/zombieHurt0.mp3');
-
+      
       // CODESYNC: The number of sounds here is set in RunNodeSiteServer.js numPlayerHurtSounds
-      characterHurtSounds[0] = [
+      characterInfo[0].hurtSounds = [
         hexiObj.sound('Sounds/character1(girl)_hurt_0.mp3'),
         hexiObj.sound('Sounds/character1(girl)_hurt_1.mp3'),
-      ];
-      characterHurtSounds[1] = [
+      ]; 
+      characterInfo[1].hurtSounds = [
         hexiObj.sound('Sounds/character2(boy)_hurt_0.mp3'),
         hexiObj.sound('Sounds/character2(boy)_hurt_1.mp3'),
       ];
-      characterHurtSounds[2] = [
+      characterInfo[2].hurtSounds = [
         hexiObj.sound('Sounds/character3(boy)_hurt_0.mp3'),
         hexiObj.sound('Sounds/character3(boy)_hurt_1.mp3'),
       ];
 
+      // CODESYNC: The number of sounds here is set in RunNodeSiteServer.js numPlayerHurtSounds
       logo1Setup();
     }
 
@@ -348,7 +362,7 @@
 
         if (player.sC > playerData.lastSoundCount) {
           playerData.lastSoundCount = player.sC;
-          characterHurtSounds[0][player.s].play();
+          characterInfo[player.n].hurtSounds[player.s].play();
 
           // Create a blood spray using particles.
           hexiObj.createParticles(
