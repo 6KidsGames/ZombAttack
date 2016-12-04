@@ -22,6 +22,27 @@
             "outDir": null
         },
         {
+            "name": "Profile",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceRoot}/out/site/RunNodeSiteServer.js",
+            "stopOnEntry": false,
+            "args": [],
+            "cwd": "${workspaceRoot}/out/site",
+            "preLaunchTask": "build",
+            "runtimeExecutable": null,
+            "runtimeArgs": [
+                "--nolazy",
+                "--prof"
+            ],
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "externalConsole": false,
+            "sourceMaps": false,
+            "outDir": null
+        },
+        {
             "name": "Attach",
             "type": "node",
             "request": "attach",
