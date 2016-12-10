@@ -105,14 +105,12 @@ function onUserDisconnected() {
 
 // Returns a started stopwatch timer tied to a server metric.
 function startStopwatch() {
-  return {
-    startMsec: (new Date()).getTime(),
-  };
+  return (new Date()).getTime()
 }
 
 function sendStopwatch(stopwatch, metricName) {
   if (appInsightsClient) {
-    let processingTimeMsec = (new Date()).getTime() - stopwatch.startMsec;
+    let processingTimeMsec = (new Date()).getTime() - stopwatch;
     currentIntervalTracker[metricName] += processingTimeMsec;
     currentIntervalTracker[metricName + "Samples"]++;
   }
