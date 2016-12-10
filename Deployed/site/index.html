@@ -335,6 +335,8 @@
       // Make changes to player sprites from the current world state sent by the server.
       clearAllMapTouches(playerDatas);
       var myPlayerData  = null;
+      var playerDatasToPlayWeaponSound = [];  // To allow playing after myPlayerData is determined
+      var playersToPlayOuchSound = [];  // To allow playing after myPlayerData is determined
       for (var i = 0; i < currentWorld.p.length; i++) {
         var player = currentWorld.p[i];
 
@@ -389,7 +391,7 @@
 
         if (player.sC > playerData.lastSoundCount) {
           playerData.lastSoundCount = player.sC;
-          characterInfo[player.n].hurtSounds[player.s].play();
+          playersToPlayOuchSound.push(player);
 
           // Create a blood spray using particles.
           hexiObj.createParticles(
@@ -414,11 +416,7 @@
 
           // TODO: Animate melee weapons.
 
-          // Play the sound related to the weapon.
-          var weaponSound = WeaponNumberMap[playerData.weapon].attackSound;
-          if (weaponSound) {
-            hexiObj.sound(weaponSound).play();
-          }
+          playerDatasToPlayWeaponSound.push(playerData);
         }
       }
 
@@ -440,6 +438,17 @@
         createPlayerWeaponUISprite(myPlayerData.weapon);
         playerWeaponNumber = myPlayerData.weapon;
       }
+
+      playersToPlayOuchSound.forEach(player => {
+        playSound(characterInfo[player.n].hurtSounds[player.s], player, myPlayerData.sprite);
+      });
+      playerDatasToPlayWeaponSound.forEach(playerData => {
+          // Play the sound related to the weapon.
+          var weaponSound = WeaponNumberMap[playerData.weapon].attackSound;
+          if (weaponSound) {
+            playSound(hexiObj.sound(weaponSound), playerData.sprite, myPlayerData.sprite);
+          }
+      });
 
       if (myPlayerData.dead) {
         if (!myPlayerData.lastDead) {  // Just died
@@ -584,7 +593,7 @@
         if (zombie.sC > zombieData.lastSoundCount) {
           zombieData.lastSoundCount = zombie.sC;
           //console.log(`Z${zombie.id} playing sound ${zombie.s}`);
-          zombieSounds[zombie.s].play();
+          playSound(zombieSounds[zombie.s], zombie, myPlayerData.sprite);
           if (zombie.s >= numZombieGrowlSounds) {
             zombieHurt = true;
           }
@@ -787,6 +796,55 @@
 
     function clearAllMapTouches(map) {
       forEachInMap(map, function(val) { val.touched = false; });
+    }
+
+    // Plays a sound with attenuation based on distance, and pan effect based on relative postion on screen.
+    // Consider the following 4 quadrants:
+    //
+    // Up, left    |    Up, right
+    //           player 
+    // Down, left  |    Down, right
+    //
+    // Overall sound strength is based on an inverse-linear decay with a base constant
+    // chosen empirically for best effect. (Real sound falls off as inverse square but
+    // for gameplay we want to be able to hear zombies further out.)
+    // Left/right pan strength is chosen as the cosine of the angle between the player
+    // and the sound emitter: If the emitter is directly right, the pan is fully to the
+    // right, same for direct left. Directly above or below is zero (center).
+    // Other locations mix based on the cosine value.
+    function playSound(soundObj, playerPos, soundPos) {
+      var xDist = soundPos.x - playerPos.x;
+      var yDist = soundPos.y - playerPos.y;
+      var sqrDist = xDist * xDist + yDist * yDist;
+      var dist = Math.sqrt(sqrDist);
+      var volume;
+      var distanceConstant = 256;  // Vol = 1 out to this pixel distance
+      if (sqrDist !== 0) {
+        volume = distanceConstant / dist;
+        if (volume > 1) {
+          volume = 1;
+        } else if (volume < 0.01) {
+          volume = 0.01;
+        }
+      } else {
+        volume = 1;
+      }
+
+      // Pan can be from -1 to 1. We want cosine = adjacent / hypotenuse, where adjacent is xDist, hypotenuse calculated from adjacent and opposite (yDist).
+      var pan;
+      if (xDist !== 0) {
+        pan = xDist / dist;
+      } else {
+        // Directly above or below player.
+        pan = 0;
+      }
+
+      // If we are reusing the same sound buffer for multiple plays, restart it now to avoid the previous
+      // play becoming suddenly attenuated partway through.
+      console.log(`Playing sound with volume ${volume} and pan ${pan} for xDist ${xDist} yDist ${yDist}`);
+      soundObj.restart();
+      soundObj.volume = volume;
+      soundObj.pan = pan;
     }
 
     function forEachInMap(map, func) {
