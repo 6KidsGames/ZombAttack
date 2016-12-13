@@ -17,7 +17,7 @@
             "env": {
                 "NODE_ENV": "development"
             },
-            "externalConsole": false,
+            "console": "internalConsole",
             "sourceMaps": false,
             "outDir": null
         },
@@ -38,7 +38,7 @@
             "env": {
                 "NODE_ENV": "development"
             },
-            "externalConsole": false,
+            "console": "integratedTerminal",
             "sourceMaps": false,
             "outDir": null
         },
@@ -57,7 +57,8 @@
         {
             "name": "Mocha Test",
             "type": "node",
-            "request": "localhost",
+            "request": "launch",
+            "cwd": "${workspaceRoot}/out/site",
             "port": 5858,
             "sourceMaps": false
         }

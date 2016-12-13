@@ -15,12 +15,6 @@
             "problemMatcher": [
                 "$jshint"
             ]
-        },
-        {
-            "taskName": "run-unit-tests",
-            "args": ["default"],
-            "isTestCommand": true,
-            "isBuildCommand" : false
         }
     ]
 }
