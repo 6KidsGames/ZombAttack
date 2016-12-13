@@ -67,20 +67,7 @@
     hexiObj.start();
 
     var zombieSounds = [];
-    var characterInfo = [
-      {
-        costumeFrames: hexiObj.spriteUtilities.frameSeries(0, 1, "vplayer"),
-        hurtSounds: [],
-      },
-      {
-        costumeFrames: hexiObj.spriteUtilities.frameSeries(0, 1, "playerE0"),
-        hurtSounds: [],
-      },
-      {
-        costumeFrames: hexiObj.spriteUtilities.frameSeries(0, 1, "playerE1"),
-        hurtSounds: [],
-      },
-    ];
+    var characterInfo = [];
 
     // User interface spites and tracking info.
     var playerHealthSprite = undefined;
@@ -105,18 +92,27 @@
       zombieSounds[2] = hexiObj.sound('Sounds/zombieHurt0.mp3');
       
       // CODESYNC: The number of sounds here is set in RunNodeSiteServer.js numPlayerHurtSounds
-      characterInfo[0].hurtSounds = [
-        hexiObj.sound('Sounds/character1(girl)_hurt_0.mp3'),
-        hexiObj.sound('Sounds/character1(girl)_hurt_1.mp3'),
-      ]; 
-      characterInfo[1].hurtSounds = [
-        hexiObj.sound('Sounds/character2(boy)_hurt_0.mp3'),
-        hexiObj.sound('Sounds/character2(boy)_hurt_1.mp3'),
-      ];
-      characterInfo[2].hurtSounds = [
-        hexiObj.sound('Sounds/character3(boy)_hurt_0.mp3'),
-        hexiObj.sound('Sounds/character3(boy)_hurt_1.mp3'),
-      ];
+      characterInfo[0] = {
+        costumeFrames: hexiObj.spriteUtilities.frameSeries(0, 1, "vplayer"),
+        hurtSounds: [
+          hexiObj.sound('Sounds/character1(girl)_hurt_0.mp3'),
+          hexiObj.sound('Sounds/character1(girl)_hurt_1.mp3'),
+        ]
+      }; 
+      characterInfo[1] = {
+        costumeFrames: hexiObj.spriteUtilities.frameSeries(0, 1, "playerE0"),
+        hurtSounds: [
+          hexiObj.sound('Sounds/character2(boy)_hurt_0.mp3'),
+          hexiObj.sound('Sounds/character2(boy)_hurt_1.mp3'),
+        ]
+      };
+      characterInfo[2] = {
+        costumeFrames: hexiObj.spriteUtilities.frameSeries(0, 1, "playerE1"),
+        hurtSounds: [
+          hexiObj.sound('Sounds/character3(boy)_hurt_0.mp3'),
+          hexiObj.sound('Sounds/character3(boy)_hurt_1.mp3'),
+        ]
+      }
 
       // CODESYNC: The number of sounds here is set in RunNodeSiteServer.js numPlayerHurtSounds
       logo1Setup();
