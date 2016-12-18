@@ -22,6 +22,7 @@ from May through October, 2016.
 1. Install the Tiled tilemap editor from https://thorbjorn.itch.io/tiled . The Art/Website team uses this for designing tile maps. The main website is at http://www.mapeditor.org/
 1. Open a Windows console: Windows+R (to open the Run box), then type `cmd` and press Enter.
 1. Create a new folder: `mkdir c:\ZombAttack`
+1. Move to that folder: `cd c:\ZombAttack`
 1. Clone the Git repo to your new folder: `git clone https://github.com/6KidsGames/ZombAttack .`
 
 ## Every day - syncing code and installing updates
@@ -82,3 +83,5 @@ avoid writing lots of extra code.
 * Learning the basics of JavaScript - https://www.codecademy.com/learn/javascript
 * More JavaScript lessons - Khan Academy - games using Processing.js (we're using Pixi.js but many ideas are similar) - https://www.khanacademy.org/computing/computer-programming
 * JSDoc - JavaScript doc comment format. http://usejsdoc.org/
+* Valve Software article on network game engine, lag, and interpolation: https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking
+* Related game design paper: https://developer.valvesoftware.com/wiki/Latency_Compensating_Methods_in_Client/Server_In-game_Protocol_Design_and_Optimization
