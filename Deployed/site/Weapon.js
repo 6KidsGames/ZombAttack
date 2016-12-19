@@ -24,7 +24,7 @@ const WeaponTypes = [
   { name: "Pistol", number: 4, awesomeness: 50, probability: 15, type: "Range", damage: 3, rechargeMsec: 500, accuracyConeRad: 0.4, rangePx: 192, ammo: 15 },
   { name: "Rifle", number: 5, awesomeness: 60, probability: 8, type: "Range", damage: 12, rechargeMsec: 800, accuracyConeRad: 0.2, rangePx: 512, ammo: 12 },
   { name: "MachineGun", number: 6, awesomeness: 70, probability: 2, type: "Range", damage: 10, rechargeMsec: 100, accuracyConeRad: 0.3, rangePx: 384, ammo: 30 },
-  { name: "Minigun", number: 7, awesomeness: 80, probability: 1, type: "Range", damage: 12, rechargeMsec: 10, accuracyConeRad: 0.3, rangePx: 324, ammo: 200 },
+  { name: "Minigun", number: 7, awesomeness: 80, probability: 10, type: "Range", damage: 12, rechargeMsec: 10, accuracyConeRad: 0.3, rangePx: 512, ammo: 300 },
 ];
 const NumWeapons = 8;
 

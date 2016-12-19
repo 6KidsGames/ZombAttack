@@ -24,6 +24,10 @@ function spawnBullet(x, y, direction, weaponStats, currentTime) {
     // The portion of the data structure we send to the clients.
     bullet: {
       id: bulletID,
+
+      // Place the zombie in a random location on the map.
+      // TODO: Account for the contents of the underlying tile - only place zombies into locations that
+      // make sense, or at map-specific spawn points.
       x: x,
       y: y,
     }

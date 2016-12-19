@@ -1,7 +1,7 @@
 <!doctype html>
+<!-- Based on Echo sample from Primus. -->
 <html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta charset="utf-8">
   <title>ZombAttack</title>
   <link rel="stylesheet" href="//cdn.jsdelivr.net/normalize/3.0.1/normalize.min.css">
@@ -9,22 +9,11 @@
   <script src="/scripts/hexi.min.js"></script>
   <script src="/scripts/game.js"></script>
   <style>
-    body {
-      /* Ensure scrollbars do not appear if space is pressed */
-      overflow:hidden;
-    }
+    body { padding: 5px }
   </style>
 </head>
 <body>  
   <script>
-    // Disable spacebar from scrolling page
-    window.onkeydown = function(event) {
-      if (event.keyCode === 32 && event.target === document.body) {
-        event.preventDefault();
-        return false;
-      }
-    };
-
     // Track the latest world updates from the server's world update messages.
     // We start with an empty world until the server can get a first message
     // back to us.
@@ -32,7 +21,6 @@
     var scrollingTileCamera = null;
     var currentLevelName = null;
     var levelWorldObj = null;
-    var numZombieGrowlSounds = 2;
 
     // Sound and graphics files we want to load via Hexi.js.
     var thingsToLoadIntoHexi = [
@@ -46,7 +34,7 @@
       "Sounds/character3(boy)_hurt_0.mp3",
       "Sounds/character3(boy)_hurt_1.mp3",
 
-      // CODESYNC: numZombieGrowlSounds above, and Zombie.js keeps this list as well.
+      // CODESYNC: Zombie.js keeps this list as well.
       'Sounds/ZombieGrowl1.mp3',
       'Sounds/ZombieGrowl2.mp3',
       'Sounds/zombieHurt0.mp3',
@@ -77,8 +65,9 @@
     hexiObj.scaleToWindow();
     hexiObj.start();
 
-    var zombieSounds = [];
-    var characterInfo = [];
+    var zombieGrowls = [];
+    var zombieHurtSounds = [];
+    var characterHurtSounds = [];
 
     // User interface spites and tracking info.
     var playerHealthSprite = undefined;
@@ -87,11 +76,6 @@
     var playerAmmoSprite = undefined;
     var playerDeathSprite = undefined;
     var playerDeathStart = 0;
-    var forwardButton = undefined;
-    var backButton = undefined;
-    var leftButton = undefined;
-    var rightButton = undefined;
-    var shootButton = undefined;
 
     function hexiLoading() {
       hexiObj.loadingBar();
@@ -100,37 +84,27 @@
     function hexiSetupCompleted() {
       console.log("Hexi setup complete");
 
-      // CODESYNC: The number of sounds here is set in Zombie.js numGrowlSounds and in numZombieGrowlSounds above
-      zombieSounds[0] = hexiObj.sound('Sounds/ZombieGrowl1.mp3');
-      zombieSounds[1] = hexiObj.sound('Sounds/ZombieGrowl2.mp3');
+      // CODESYNC: The number of sounds here is set in Zombie.js numGrowlSounds
+      zombieGrowls[0] = hexiObj.sound('Sounds/ZombieGrowl1.mp3');
+      zombieGrowls[1] = hexiObj.sound('Sounds/ZombieGrowl2.mp3');
 
       // CODESYNC: The number of sounds here is set in Zombie.js numHurtSounds
-      zombieSounds[2] = hexiObj.sound('Sounds/zombieHurt0.mp3');
-      
-      // CODESYNC: The number of sounds here is set in RunNodeSiteServer.js numPlayerHurtSounds
-      characterInfo[0] = {
-        costumeFrames: hexiObj.spriteUtilities.frameSeries(0, 1, "vplayer"),
-        hurtSounds: [
-          hexiObj.sound('Sounds/character1(girl)_hurt_0.mp3'),
-          hexiObj.sound('Sounds/character1(girl)_hurt_1.mp3'),
-        ]
-      }; 
-      characterInfo[1] = {
-        costumeFrames: hexiObj.spriteUtilities.frameSeries(0, 1, "playerE0"),
-        hurtSounds: [
-          hexiObj.sound('Sounds/character2(boy)_hurt_0.mp3'),
-          hexiObj.sound('Sounds/character2(boy)_hurt_1.mp3'),
-        ]
-      };
-      characterInfo[2] = {
-        costumeFrames: hexiObj.spriteUtilities.frameSeries(0, 1, "playerE1"),
-        hurtSounds: [
-          hexiObj.sound('Sounds/character3(boy)_hurt_0.mp3'),
-          hexiObj.sound('Sounds/character3(boy)_hurt_1.mp3'),
-        ]
-      }
+      zombieHurtSounds[0] = hexiObj.sound('Sounds/zombieHurt0.mp3');
 
       // CODESYNC: The number of sounds here is set in RunNodeSiteServer.js numPlayerHurtSounds
+      characterHurtSounds[0] = [
+        hexiObj.sound('Sounds/character1(girl)_hurt_0.mp3'),
+        hexiObj.sound('Sounds/character1(girl)_hurt_1.mp3'),
+      ];
+      characterHurtSounds[1] = [
+        hexiObj.sound('Sounds/character2(boy)_hurt_0.mp3'),
+        hexiObj.sound('Sounds/character2(boy)_hurt_1.mp3'),
+      ];
+      characterHurtSounds[2] = [
+        hexiObj.sound('Sounds/character3(boy)_hurt_0.mp3'),
+        hexiObj.sound('Sounds/character3(boy)_hurt_1.mp3'),
+      ];
+
       logo1Setup();
     }
 
@@ -155,36 +129,9 @@
         logo1Sprite.alpha = (600 - (dt - 1200)) / 600;
       } else {
         hexiObj.remove(logo1Sprite);
-        esrbLogoSetup();
-      }
-    }
-
-    var esrbSprite = undefined;
-    var esrbLogoStart;
-    function esrbLogoSetup() {
-      console.log("esrbLogoSetup");
-      esrbLogoStart = (new Date()).getTime();
-      esrbSprite = hexiObj.sprite("esrbRating");
-      esrbSprite.alpha = 0;
-      esrbSprite.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
-      hexiObj.stage.putCenter(esrbSprite);
-      hexiObj.state = esrbLogoLoop;
-    }
-    function esrbLogoLoop() {
-      var now = (new Date()).getTime();
-      var dt = now - esrbLogoStart;
-      if (dt < 250) {
-        esrbSprite.alpha = (dt / 250) * (dt / 250);
-      } else if (dt < 750) {
-        esrbSprite.alpha = 1;
-      } else if (dt < 1000) {
-        esrbSprite.alpha = (250 - (dt - 750)) / 250;
-      } else {
-        hexiObj.remove(esrbSprite);
         logo2Setup();
       }
     }
-
 
     var logo2Sprite = undefined;
     var logo2Start;
@@ -228,30 +175,9 @@
       playerAmmoSprite.layer = 1000;  // Foremost
       playerAmmoSprite.visible = false;
 
-      var copyrightHeightPx = 16;
-      copyrightSprite = hexiObj.text("Copyright 2016 6KidsGames.com", `${copyrightHeightPx}px sans-serif`, "white", 10, hexiObj.canvas.height - copyrightHeightPx - 1);
+      copyrightSprite = hexiObj.text("Copyright 2016 6KidsGames.com", "16px sans-serif", "white", 10, 625);
       copyrightSprite.alpha = 0.4;
       copyrightSprite.layer = 1000;
-
-      forwardButton = hexiObj.button(["ForwardButton"], 74, hexiObj.canvas.height - copyrightHeightPx - 1 - 3 - 64 - 32 - 64);
-      forwardButton.alpha = 0.5;
-      forwardButton.layer = 1000;  // Foremost
-
-      backButton = hexiObj.button(["BackButton"], 74, hexiObj.canvas.height - copyrightHeightPx - 1 - 3 - 64);
-      backButton.alpha = 0.5;
-      backButton.layer = 1000;  // Foremost
-
-      leftButton = hexiObj.button(["LeftButton"], 10, hexiObj.canvas.height - copyrightHeightPx - 1 - 3 - 64 - 32);
-      leftButton.alpha = 0.5;
-      leftButton.layer = 1000;  // Foremost
-
-      rightButton = hexiObj.button(["RightButton"], 106, hexiObj.canvas.height - copyrightHeightPx - 1 - 3 - 64 - 32);
-      rightButton.alpha = 0.5;
-      rightButton.layer = 1000;  // Foremost
-
-      shootButton = hexiObj.button(["ShootButton"], hexiObj.canvas.width - 10 - 96, hexiObj.canvas.height - copyrightHeightPx - 1 - 3 - 64 - 48);
-      shootButton.alpha = 0.5;
-      shootButton.layer = 1000;  // Foremost
 
       hexiObj.state = gameLoop;
     }
@@ -276,7 +202,10 @@
     
     // Listen for incoming messages from the server.
     primus.on('data', function received(data) {
-      if (data.t === 0) {  // World update
+      if (data.t === 't') {  // Text
+        // TODO: If we keep chat functionality, show on screen in scrolling window
+      }
+      else if (data.t === 'u') {  // World update
         // console.log("Received world update:", data);
         currentWorld = data;
       }
@@ -351,7 +280,7 @@
       // Create a new, empty PlayerControlInfo message to send to the server
       // with our current control status.
       var controlInfo = {
-        t: 0,  // Control message type
+        t: 'c',  // Control message type
         wC: currentWeaponChangeID,
       };
 
@@ -368,8 +297,6 @@
       // Make changes to player sprites from the current world state sent by the server.
       clearAllMapTouches(playerDatas);
       var myPlayerData  = null;
-      var playerDatasToPlayWeaponSound = [];  // To allow playing after myPlayerData is determined
-      var playersToPlayOuchSound = [];  // To allow playing after myPlayerData is determined
       for (var i = 0; i < currentWorld.p.length; i++) {
         var player = currentWorld.p[i];
 
@@ -378,7 +305,7 @@
         if (!playerDatas.hasOwnProperty(player.id)) {
           playerData = {
             id: player.id,
-            lastSoundCount: player.sC,  // On reconnect, we don't want a ton of sounds, so use the current server count and play the next ones sent.
+            lastSoundCount: player.sndC,  // On reconnect, we don't want a ton of sounds, so use the current server count and play the next ones sent.
             lastWeaponUseCount: player.wC,
             sprite: createNewPlayerSprite(player.w),
             weapon: -1,
@@ -409,11 +336,11 @@
         // Update the sprite and playerData with current world information.
         playerData.sprite.x = player.x;
         playerData.sprite.y = player.y;
-        playerData.sprite.rotation = player.d;
+        playerData.sprite.rotation = player.dir;
         playerData.lastHealth = playerData.health;
         playerData.lastAmmo = playerData.ammo;
         playerData.lastDead = playerData.dead;
-        playerData.health = player.h;
+        playerData.health = player.hl;
         if (playerData.weapon !== player.w) {
           playerData.weapon = player.w;
           setPlayerWeaponSprite(playerData.sprite, player.w);
@@ -422,9 +349,9 @@
         playerData.ammo = player.a;
         playerData.dead = player.dead;
 
-        if (player.sC > playerData.lastSoundCount) {
-          playerData.lastSoundCount = player.sC;
-          playersToPlayOuchSound.push(player);
+        if (player.sndC > playerData.lastSoundCount) {
+          playerData.lastSoundCount = player.sndC;
+          characterHurtSounds[0][player.snd].play();
 
           // Create a blood spray using particles.
           hexiObj.createParticles(
@@ -449,7 +376,11 @@
 
           // TODO: Animate melee weapons.
 
-          playerDatasToPlayWeaponSound.push(playerData);
+          // Play the sound related to the weapon.
+          var weaponSound = WeaponNumberMap[playerData.weapon].attackSound;
+          if (weaponSound) {
+            hexiObj.sound(weaponSound).play();
+          }
         }
       }
 
@@ -471,17 +402,6 @@
         createPlayerWeaponUISprite(myPlayerData.weapon);
         playerWeaponNumber = myPlayerData.weapon;
       }
-
-      playersToPlayOuchSound.forEach(player => {
-        playSound(characterInfo[player.n].hurtSounds[player.s], player, myPlayerData.sprite);
-      });
-      playerDatasToPlayWeaponSound.forEach(playerData => {
-          // Play the sound related to the weapon.
-          var weaponSound = WeaponNumberMap[playerData.weapon].attackSound;
-          if (weaponSound) {
-            playSound(hexiObj.sound(weaponSound), playerData.sprite, myPlayerData.sprite);
-          }
-      });
 
       if (myPlayerData.dead) {
         if (!myPlayerData.lastDead) {  // Just died
@@ -611,8 +531,9 @@
             id: zombie.id,
             sprite: createNewZombieSprite(zombie),
             serverZombieInfo: zombie,
-            lastSoundCount: zombie.sC,  // On reconnect, we don't want a ton of sounds, so use the current server count and play the next ones sent.
-            lastHealth: zombie.h,
+            lastGrowlCount: zombie.growlC,  // On reconnect, we don't want a ton of growls, so use the current server count and play the next ones sent.
+            lastHurtCount: zombie.hurtC,
+            lastHealth: zombie.hl,
           };
           zombieDatas[zombie.id] = zombieData;
         }
@@ -621,25 +542,24 @@
         }
         zombieData.touched = true;
 
-        // See if the soundCount is newer than our last known update, and if so, start a sound.
-        var zombieHurt = false;
-        if (zombie.sC > zombieData.lastSoundCount) {
-          zombieData.lastSoundCount = zombie.sC;
-          //console.log(`Z${zombie.id} playing sound ${zombie.s}`);
-          playSound(zombieSounds[zombie.s], zombie, myPlayerData.sprite);
-          if (zombie.s >= numZombieGrowlSounds) {
-            zombieHurt = true;
-          }
+        // See if the growlCount is newer than our last known update, and if so, start a growl sound.
+        if (zombie.growlC > zombieData.lastGrowlCount) {
+          zombieData.lastGrowlCount = zombie.growlC;
+          console.log(`Z${zombie.id} playing growl ${zombie.growl}`);
+          zombieGrowls[zombie.growl].play();
         }
 
         var bloodParticles = 0;
-        if (zombie.h <= 0) {
+        if (zombie.hl <= 0) {
           if (!zombieData.dead) {
             zombieData.dead = true;
             console.log(`Z${zombie.id} dead`);
             bloodParticles = 20;
           }
-        } else if (zombieHurt) {
+        } else if (zombie.hurtC > zombieData.lastHurtCount) {
+          zombieData.lastHurtCount = zombie.hurtC;
+          console.log(`Z${zombie.id} playing hurt sound ${zombie.hurt}`);
+          zombieHurtSounds[zombie.hurt].play();
           bloodParticles = 8; 
         }
         if (bloodParticles > 0) {
@@ -662,7 +582,7 @@
         // Update the sprite with current world information.
         zombieData.sprite.x = zombie.x;
         zombieData.sprite.y = zombie.y;
-        zombieData.sprite.rotation = zombie.d;
+        zombieData.sprite.rotation = zombie.dir;
       }
 
       // Find any zombieDatas that were not touched this round and remove -
@@ -684,15 +604,10 @@
       // Control keys don't change anything locally, we send to the server and it
       // determines what happens.
       if (keyPressed[KEY_W]) { controlInfo.F = true; }  // Forward
-      if (forwardButton.state === "down") { controlInfo.F = true; }  //Forward
       if (keyPressed[KEY_S]) { controlInfo.B = true; }  // Back
-      if (backButton.state === "down") { controlInfo.B = true; }  //Backward
       if (keyPressed[KEY_A]) { controlInfo.L = true; }  // Left 
-      if (leftButton.state === "down") { controlInfo.L = true; }  //Left
       if (keyPressed[KEY_D]) { controlInfo.R = true; }  // Right
-      if (rightButton.state === "down") { controlInfo.R = true; }  //Right
       if (keyPressed[KEY_SPACE]) { controlInfo.A = true; }  // Attack
-      if (shootButton.state === "down") { controlInfo.A = true; }  //Attack
       for (var i = KEY_1; i <= KEY_9; i++) {
         if (keyPressed[i]) {
           //console.log("Weapon change key:", i - KEY_1);
@@ -779,7 +694,7 @@
     }
 
     function createNewZombieSprite(serverZombieInfo) {
-      var costumeName = ZombieCostumeIDMap[serverZombieInfo.c];
+      var costumeName = ZombieCostumeIDMap[serverZombieInfo.cstm];
       console.log("Creating Z" + serverZombieInfo.id + " with costume " + costumeName +
           " at (" + serverZombieInfo.x + "," + serverZombieInfo.y + ")");
       var sprite = hexiObj.sprite(hexiObj.spriteUtilities.frameSeries(0, 1, costumeName), serverZombieInfo.x, serverZombieInfo.y);
@@ -834,55 +749,6 @@
 
     function clearAllMapTouches(map) {
       forEachInMap(map, function(val) { val.touched = false; });
-    }
-
-    // Plays a sound with attenuation based on distance, and pan effect based on relative postion on screen.
-    // Consider the following 4 quadrants:
-    //
-    // Up, left    |    Up, right
-    //           player 
-    // Down, left  |    Down, right
-    //
-    // Overall sound strength is based on an inverse-linear decay with a base constant
-    // chosen empirically for best effect. (Real sound falls off as inverse square but
-    // for gameplay we want to be able to hear zombies further out.)
-    // Left/right pan strength is chosen as the cosine of the angle between the player
-    // and the sound emitter: If the emitter is directly right, the pan is fully to the
-    // right, same for direct left. Directly above or below is zero (center).
-    // Other locations mix based on the cosine value.
-    function playSound(soundObj, playerPos, soundPos) {
-      var xDist = soundPos.x - playerPos.x;
-      var yDist = soundPos.y - playerPos.y;
-      var sqrDist = xDist * xDist + yDist * yDist;
-      var dist = Math.sqrt(sqrDist);
-      var volume;
-      var distanceConstant = 256;  // Vol = 1 out to this pixel distance
-      if (sqrDist !== 0) {
-        volume = distanceConstant / dist;
-        if (volume > 1) {
-          volume = 1;
-        } else if (volume < 0.01) {
-          volume = 0.01;
-        }
-      } else {
-        volume = 1;
-      }
-
-      // Pan can be from -1 to 1. We want cosine = adjacent / hypotenuse, where adjacent is xDist, hypotenuse calculated from adjacent and opposite (yDist).
-      var pan;
-      if (xDist !== 0) {
-        pan = xDist / dist;
-      } else {
-        // Directly above or below player.
-        pan = 0;
-      }
-
-      // If we are reusing the same sound buffer for multiple plays, restart it now to avoid the previous
-      // play becoming suddenly attenuated partway through.
-      console.log(`Playing sound with volume ${volume} and pan ${pan} for xDist ${xDist} yDist ${yDist}`);
-      soundObj.restart();
-      soundObj.volume = volume;
-      soundObj.pan = pan;
     }
 
     function forEachInMap(map, func) {
