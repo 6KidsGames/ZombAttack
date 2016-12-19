@@ -26,8 +26,9 @@ const ZombieTypes = [
   { type: "Runner", probability: 10, hitPoints: 15, speedPxFrame: 10, costumes: [ "czombie_", "vnormalzombie" ] },
 ];
 
-// Sound file references for growls.
-// CODESYNC: index.html keeps the opposing list in 2 places.
+// Sound file references for growls. On the client a common
+// sound array has growls followed by hurt sounds.
+// CODESYNC: index.html keeps the list.
 const numGrowlSounds = 2;
 const numHurtSounds = 1;
 
@@ -89,13 +90,11 @@ function spawnZombie(level, currentTime) {
       // make sense, or at map-specific spawn points.
       x: x,
       y: y,
-      dir: Util.getRandomFloat(0, 2 * Math.PI),
-      hl: zombieType.hitPoints,
-      cstm: ZombieCostumeIDs[zombieType.costumes[Util.getRandomInt(0, zombieType.costumes.length)]],
-      growl: 0,  // When growlC (growlCount) is increased, this is the growl sound index to play.
-      growlC: 0,  // Incremented whenever the zombie growls. Used by the client to know when to growl.
-      hurt: 0,  // When huttC (hurtCount) is increased, this is the hurt sound index to play.
-      hurtC: 0,  // Incremented whenever the zombie is hurt. Used by the client to know when to play the hurt sound.
+      d: Util.getRandomFloat(0, 2 * Math.PI),
+      h: zombieType.hitPoints,
+      c: ZombieCostumeIDs[zombieType.costumes[Util.getRandomInt(0, zombieType.costumes.length)]],
+      s: 0,  // When sC (soundCount) is increased, this is the sound index to play.
+      sC: 0,  // Incremented whenever the zombie growls or is hurt. Used by the client to know when to play a sound.
     }
   };
 
@@ -124,11 +123,11 @@ function updateZombie(zombieInfo, currentTime, level) {
   // AI: Random walk. Turn some amount each frame, and go that way to the maximum possible distance allowed
   // (based on the zombie's speed).
   let angleChange = Util.getRandomFloat(-zombieMaxTurnPerFrameRadians, zombieMaxTurnPerFrameRadians);
-  zombie.dir += angleChange;
+  zombie.d += angleChange;
 
   let speedPxPerFrame = zombieInfo.type.speedPxFrame;
-  zombie.x -= speedPxPerFrame * Math.sin(zombie.dir);
-  zombie.y += speedPxPerFrame * Math.cos(zombie.dir);
+  zombie.x -= speedPxPerFrame * Math.sin(zombie.d);
+  zombie.y += speedPxPerFrame * Math.cos(zombie.d);
   Level.clampPositionToLevel(level, zombie);
   zombieInfo.modelCircle.centerX = zombie.x;
   zombieInfo.modelCircle.centerY = zombie.y;
@@ -143,8 +142,8 @@ function updateZombie(zombieInfo, currentTime, level) {
     if (Util.getRandomInt(0, msecSinceLastGrowl) < growlProbabilityInMsec) {
       if (registerGrowl(currentTime)) {
         let zombie = zombieInfo.zombie;
-        zombie.growl = Util.getRandomInt(0, numGrowlSounds);
-        zombie.growlC++;
+        zombie.s = Util.getRandomInt(0, numGrowlSounds);  // Growl sounds are at the head of the client's sound array
+        zombie.sC++;
         zombieInfo.lastGrowlTime = currentTime;
       } 
     }
@@ -155,18 +154,18 @@ function updateZombie(zombieInfo, currentTime, level) {
 
 function hitByPlayer(zombieInfo, weaponStats, currentTime) {
   let zombie = zombieInfo.zombie;
-  zombie.hl -= weaponStats.damage;
-  Log.debug(`Z${zombie.id} hit, ${weaponStats.damage} damage, ${zombie.hl} hp remaining`)
-  if (zombie.hl <= 0) {
+  zombie.h -= weaponStats.damage;
+  Log.debug(`Z${zombie.id} hit, ${weaponStats.damage} damage, ${zombie.h} hp remaining`)
+  if (zombie.h <= 0) {
     // TODO: Zombie is dead, what animation and sound to send to the client, and what state machine for death (e.g. blood puddle, spurt particles, ...)
     zombieInfo.dead = true;
     zombieInfo.deadAt = currentTime;
   } else {
     zombieInfo.lastHurtTime = currentTime;
     
-    // Pick a hurt sound to play.
-    zombie.hurt = Util.getRandomInt(0, numHurtSounds);
-    zombie.hurtC++;
+    // Pick a hurt sound to play. Hurt sounds come after growls in the client's sound array.
+    zombie.s = numGrowlSounds + Util.getRandomInt(0, numHurtSounds);
+    zombie.sC++;
   }
 }
 
