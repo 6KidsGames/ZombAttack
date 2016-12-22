@@ -34,18 +34,24 @@ echo   path - Always better than using string concatenation.
 echo   gulp-filter - Allows filtering files out of a stream.
 echo     Used to avoid re-minifying scripts when building.
 echo     https://github.com/sindresorhus/gulp-filter
-echo   browserify - Bundles Require declarations in scripts into a single file 
 echo   vinyl-source-stream - Allows using stream conversion tools.
 echo   vinyl-buffer - Buffer/stream conversion
 echo   gulp-sourcemaps - Allows generating a Source Map from .min.js files back
 echo     to the original uncompressed source, for debugging.
 echo   gulp-babel and presets - Uses Babel (http://babeljs.io) to transpile
 echo     ES6 JavaScript to ES5 for older browsers.
+echo   browserify - Allows using CommonJS modules (Node.js format) for common code
+echo     by bundling a main .js file like game.js with all its require()'d
+echo     modules into one file for use in the browser. http://browserify.org/
+echo   babelify - Shim for combining Babel and Browserify together to get
+echo     both ES5 output code and bundled single file.
+echo     https://github.com/babel/babelify
 echo   gulp-using - Useful for debugging what files are being processed in Gulp.
 echo   gulp-sort - Allows sorting the order of paths processed from gulp. 
+echo   gulp-rename - Allows renaming the output filename for a stream.
 echo ==========================================================================
 echo.
-call npm install --save-dev gulp-uglify pump del path gulp-filter browserify vinyl-source-stream vinyl-buffer gulp-sourcemaps gulp-babel babel-preset-es2015 gulp-using gulp-sort
+call npm install --save-dev gulp-uglify pump del path gulp-filter vinyl-source-stream vinyl-buffer gulp-sourcemaps gulp-babel babel-preset-es2015 browserify babelify gulp-using gulp-sort gulp-rename
 if ERRORLEVEL 1 echo ERROR: npm install failed for Gulp modules  with errorlevel %ERRORLEVEL% && exit /b 1
 
 echo.

@@ -37,6 +37,9 @@ const using = require('gulp-using');
 const source = require('vinyl-source-stream');
 const buffer = require('vinyl-buffer');
 
+// Allows renaming the output filename for a stream.
+const rename = require('gulp-rename');
+
 // Helper method - allows recursive copying a directory structure.
 // http://stackoverflow.com/questions/25038014/how-do-i-copy-directories-recursively-with-gulp#25038015
 // 'finishedAsyncTaskCallback' param is optional and is the Gulp completion callback for asynchronous tasks.
@@ -49,9 +52,10 @@ gulp.copy = function(src, dest, finishedAsyncTaskCallback) {
 };
 
 // Conversion tools that use Babel (http://babeljs.io) to convert first from our ES6 JavaScript files
-// (like game.js) into CommonJS, then from CommonJS to browser-compatible ES% JavaScript.
+// (like game.js) into CommonJS, then from CommonJS to browser-compatible ES5 JavaScript.
 const browserify = require('browserify');
 const babel      = require('gulp-babel');
+const babelify   = require('babelify');
 
 // Allows sorting the file ordering from gulp.src.
 // https://www.npmjs.com/package/gulp-sort
@@ -79,8 +83,9 @@ var Paths = {
     Site: 'site',
     SiteAll: 'site/**',
     SiteScripts: 'site/scripts',
+    SiteGameScript: 'site/scripts/game.js',  // Main module that is browserified into a single bundle
     SiteScriptsAll: 'site/scripts/**',
-    Hexi: 'External/Hexi.js',
+    Hexi: 'External/Hexi.js/*.js',
 
     // Node.js packages.
     PrimusNodeJsRoot: 'node_modules/primus',
@@ -104,7 +109,7 @@ var Paths = {
 // ---------------------------------------------------------------------------
 gulp.task('default', [
     'copy-site-content',
-    'convert-scripts-es6-to-es5-minify-sourcemap',
+    'browserify-convert-es6-to-es5-minify-sourcemap',
     'copy-Hexi',
     'copy-web-primus-script',
     'assemble-spritesheet',
@@ -128,7 +133,7 @@ gulp.task('copy-site-content', ['clean'], function () {
 
 gulp.task('copy-Hexi', ['clean'], function () {
     return pump([
-            gulp.src([ Paths.Hexi + '/**/*.js' ]),
+            gulp.src([ Paths.Hexi ]),
             gulp.dest(Paths.SiteScriptsOutput)
         ]);
 });
@@ -156,19 +161,30 @@ gulp.task('copy-web-primus-script', ['clean'], function() {
         ]);
 });
 
-// Convert ES6 JavaScript to ES5 JavaScript for scripts in the site/scripts directory
-// that are not already minified.
-gulp.task('convert-scripts-es6-to-es5-minify-sourcemap', ['copy-site-content'], function () {
-    return pump([
-        gulp.src(Paths.SiteScripts + '/*.js'),
-        // using(),
-        babel({ "presets": [ "es2015" ] }),
-        sourcemaps.init(),
-        uglify(),
-        sourcemaps.write('.'),  // Path is relative to output directory, writes script.js.map
-        gulp.dest(Paths.SiteScriptsOutput)
-    ]);
-});
+// Run Browserify to bundle up game.js and all of its require()'d modules into a single
+// output file for use by the browser, to allow writing common code in CommonJS
+// module format, and avoid having to  write all common code in Universal Module
+// Definition (UMD) format and use require.js in the browser environment.
+//
+// We also use Babel to transpile ES6 JavaScript into universally accepted ES5.
+//
+// Task definition and utility method derived from https://gist.github.com/Fishrock123/8ea81dad3197c2f84366
+function bundleJS(bundler, mainScriptBaseName) {
+  return bundler.bundle()
+    .pipe(source(mainScriptBaseName + '.js'))
+    .pipe(buffer())
+    .pipe(gulp.dest(Paths.SiteScriptsOutput))
+    .pipe(rename(mainScriptBaseName + '.min.js'))
+    .pipe(sourcemaps.init({ loadMaps: true }))  // capture sourcemaps from transforms
+    .pipe(uglify())
+    .pipe(sourcemaps.write('.'))  // Path is relative to output directory, writes script.js.map
+    .pipe(gulp.dest(Paths.SiteScriptsOutput))
+}
+gulp.task('browserify-convert-es6-to-es5-minify-sourcemap', ['copy-site-content'], function () {
+  let bundler = browserify(Paths.SiteGameScript, { debug: true }).transform(babelify, { "presets": [ "es2015" ] });
+
+  return bundleJS(bundler, 'game');
+})
 
 gulp.task('assemble-tileset', [ 'clean'], function() {
   return runTexturePacker('ZombAttackTileset', Paths.TilesRoot, 64);
