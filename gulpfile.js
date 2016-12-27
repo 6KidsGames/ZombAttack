@@ -184,14 +184,14 @@ gulp.task('browserify-convert-es6-to-es5-minify-sourcemap', ['copy-site-content'
   let bundler = browserify(Paths.SiteGameScript, { debug: true }).transform(babelify, { "presets": [ "es2015" ] });
 
   return bundleJS(bundler, 'game');
-})
+});
 
 gulp.task('assemble-tileset', [ 'clean'], function() {
-  return runTexturePacker('ZombAttackTileset', Paths.TilesRoot, 64);
+  return runTexturePacker('LevelTileset', Paths.TilesRoot, 64);
 });
 
 gulp.task('assemble-spritesheet', ['clean'], function() {
-  return runTexturePacker('ZombAttackSpritesheet', Paths.SpritesRoot);
+  return runTexturePacker('GameSpritesheet', Paths.SpritesRoot);
 });
 
 // http://andrewconnell.com/blog/running-mocha-tests-with-visual-studio-code

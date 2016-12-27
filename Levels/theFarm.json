@@ -19,11 +19,11 @@
         {
          "columns":51,
          "firstgid":1,
-         "image":"..\/out\/site\/images\/ZombAttackTileset.png",
+         "image":"..\/out\/site\/images\/LevelTileset.png",
          "imageheight":64,
          "imagewidth":3264,
          "margin":0,
-         "name":"ZombAttackTileset",
+         "name":"LevelTileset",
          "spacing":0,
          "tilecount":51,
          "tileheight":64,
