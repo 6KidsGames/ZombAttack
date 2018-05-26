@@ -26,8 +26,7 @@ from May through October, 2016.
 1. Clone the Git repo to your new folder: `git clone https://github.com/6KidsGames/ZombAttack .`
 
 ## Every day - syncing code and installing updates
-When you're developing code with a team, you're going to need to get their code as well as upload your code. A good time to do this is at the start of
-each day, unless you're in the middle of something.
+When you're developing code with a team, you're going to need to get their code as well as upload your code. A good time to do this is at the start of each day, unless you're in the middle of something.
 
 1. (If you don't already have a console open) Open a Windows console: Windows+R (to open the Run box), then type `cmd` and press Enter.
 1. Change location to that folder: `cd c:\ZombAttack`
