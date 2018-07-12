@@ -18,8 +18,7 @@
                 "NODE_ENV": "development"
             },
             "console": "internalConsole",
-            "sourceMaps": false,
-            "outDir": null
+            "sourceMaps": false
         },
         {
             "name": "Profile",
@@ -39,8 +38,7 @@
                 "NODE_ENV": "development"
             },
             "console": "integratedTerminal",
-            "sourceMaps": false,
-            "outDir": null
+            "sourceMaps": false
         },
         {
             "name": "Attach",
@@ -50,7 +48,6 @@
             "address": "localhost",
             "restart": false,
             "sourceMaps": false,
-            "outDir": null,
             "localRoot": "${workspaceRoot}/out/site",
             "remoteRoot": null
         },
